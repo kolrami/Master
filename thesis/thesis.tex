@@ -1,0 +1,129 @@
+\documentclass[
+	a4paper,
+	12pt,
+	twoside,
+	DIV=12,
+	%BCOR=12mm,
+	abstracton,
+	parskip,
+	listof=totoc,
+	bibliography=totoc]{scrreprt}
+
+% Header font as serif
+\setkomafont{disposition}{\normalcolor\bfseries}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[numbers]{natbib}
+\bibliographystyle{natdin}
+
+\usepackage{url}
+\usepackage{hyperref}
+
+\usepackage{graphicx}
+\usepackage{rotating}
+
+\usepackage{todo}
+
+% Listings
+\usepackage{scrhack}
+\usepackage{listings}
+\lstset{
+	numbers=left,
+	numbersep=5pt,
+	xleftmargin=2em,
+	xrightmargin=1em,
+	framexleftmargin=1em,
+	frame=tb,
+	captionpos=b}
+\lstset{
+	basicstyle=\ttfamily\footnotesize}
+
+% Quotes before Chapter
+\usepackage{epigraph}
+\setlength{\epigraphwidth}{.6\textwidth}
+\setlength{\epigraphrule}{0pt}
+
+% Hurenkinder und Schusterjungen
+\clubpenalty = 10000
+\widowpenalty = 10000
+\displaywidowpenalty = 10000
+
+% Line Spacing Table
+\renewcommand{\arraystretch}{1.6}
+
+\begin{document}
+
+\pagenumbering{roman}
+
+\subject{
+	Master Thesis}
+\title{
+	Self-adaptation in Programmable Automation Controllers based on Hybrid
+	Multicores}
+\author{
+	Christoph Rüthing\\[-12pt]
+	Student ID: 6619350}
+\publishers{
+	{\large Supervisors}\\[12pt]
+	Prof. Dr. Marco Platzner\\
+	Dipl.-Inf. Andreas Agne}
+\lowertitleback{
+	Master Thesis\\
+	\textbf{
+		Self-adaptation in Programmable Automation Controller\\
+		based on Hybrid Multicores}\\[.5cm]
+	University of Paderborn\\
+	Faculty of Electrical Engineering, Computer Science and Mathematics\\
+	Department of Computer Science\\
+	Warburger Str. 100\\
+	33098 Paderborn}
+
+\maketitle
+
+\include{abstract}
+
+\chapter*{Declaration}
+
+I hereby declare that I prepared this thesis entirely on my own and have not
+used outside sources without declaration in the text. Any concepts or
+quotations applicable to these sources are clearly attributed to them. This
+thesis has not been submitted in the same or substantially similar version,
+not even in part, to any other authority for grading and has not been
+published elsewhere.\\[27pt]
+
+\begin{center}
+	\begin{tabular}{l p{0.1\textwidth} r}
+		\cline{1-1}\cline{3-3}
+		\begin{minipage}[t]{0.4\textwidth}
+			\centering
+			City, Date
+		\end{minipage}
+		&
+		\begin{minipage}[t]{0.2\textwidth}
+		\end{minipage}
+		&
+		\begin{minipage}[t]{0.4\textwidth}
+  			\centering
+  			Signatur
+		\end{minipage}
+	\end{tabular}
+\end{center}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\cleardoublepage
+
+\pagenumbering{arabic}
+
+\include{introduction}
+
+\cleardoublepage
+
+\bibliography{thesis}
+
+\include{appendix}
+
+\end{document}
