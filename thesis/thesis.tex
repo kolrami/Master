@@ -2,26 +2,32 @@
 	a4paper,
 	12pt,
 	twoside,
-	DIV=12,
+	DIV=10,
 	%BCOR=12mm,
 	abstracton,
 	parskip,
 	listof=totoc,
 	bibliography=totoc]{scrreprt}
 
-% Header font as serif
+% Headers and Footers
+\pagestyle{headings}
+
+% Font as serif
 \setkomafont{disposition}{\normalcolor\bfseries}
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
+
 \usepackage[numbers]{natbib}
 \bibliographystyle{natdin}
+\usepackage{acronym}
 
 \usepackage{url}
 \usepackage{hyperref}
 
 \usepackage{graphicx}
 \usepackage{rotating}
+\usepackage{subcaption}
 
 \usepackage{todo}
 
@@ -54,12 +60,14 @@
 
 \begin{document}
 
+\include{acronyms}
+
 \pagenumbering{roman}
 
 \subject{
 	Master Thesis}
 \title{
-	Self-adaptation in Programmable Automation Controllers based on Hybrid
+	Self-adaptation??? in Programmable Automation Controllers based on Hybrid
 	Multicores}
 \author{
 	Christoph Rüthing\\[-12pt]
@@ -119,6 +127,46 @@ published elsewhere.\\[27pt]
 \pagenumbering{arabic}
 
 \include{introduction}
+\chapter{Background}
+\section{Programmable Automation Controllers}
+\begin{itemize}
+\item What is an PAC
+\item Differentiation to PLC and PC
+\item Incorporation of FPGAs
+\item Problems (Hard to program, error-prone, ...)
+\end{itemize}
+\section{ReconOS}
+\begin{itemize}
+\item Multithreaded Programming model
+\item Abstraction form hardware software boundary
+\item ...
+\end{itemize}
+
+\chapter{Interconnect}
+\begin{itemize}
+\item Motivation for interconnect (experiments, other projects, ...)
+\item Always via software to slow
+\item Consideration (resource limitations, ...)
+\item Reconfigurable later on?
+\end{itemize}
+\section{Architectural Considerations}
+\begin{itemize}
+\item Comparison of different approaches
+\item HThreads, ...?
+\end{itemize}
+\section{Implementation}
+\section{Evaluation}
+\begin{itemize}
+\item measure time differences for old/new
+\item show speedup/speeddown
+\end{itemize}
+
+\chapter{Integration of HLS}
+\begin{itemize}
+\item Motivation of HLS
+\end{itemize}
+
+\chapter{Demonstrator}
 
 \cleardoublepage
 
