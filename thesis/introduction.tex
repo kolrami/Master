@@ -20,7 +20,7 @@ without loosing the benefits of executing time critical control functions
 directly in silicon.
 
 Unfortunately, the increasing complexity of such systems introduces new
-challenges and demand convenient programming methods abstracting from the
+challenges and demand convenient programming methods abstracting the
 underlying low-level components to make these devices accessible to a broad
 range of developers. Classical ladder logic used for \acp{PLC} reaches its
 limits and \ac{FPGA} technology is restricted to hardware designers capable of
@@ -28,28 +28,8 @@ handling low level programming languages like VHDL. Because of its acceptance
 in the field of software engineering and its eligibility to model embedded
 systems composed of concurrently running tasks, the multithreaded approach
 seems to be suitable as a convenient programming model for these hybrid
-devices.
-
-In this thesis, the ReconOS programming model should be applied 
-
-\begin{itemize}
-\item \acp{PLC} dominate market of automation and control
-\item Growing demands show limits of \acp{PLC} (Web-based, database, ...)
-\item For 20 percent of advanced applications (rest only small, low cost)
-\item PCs arrive, not suitable (OS not stable, rugged environment, complexity)
-\item $\Rightarrow$ live without functionality or combine PC and PLC
-\item \acp{PAC} as combination of PLC and PC
-\item Custom hardware goes away (incorporation of FPGAs)
-\item Complex system, hardware software boundary
-\item abstraction of hardware and software
-\item multithreaded programming model
-\item ReconOS as framework for hybrid multi-core systems
-\end{itemize}
+devices. The different threads specified by the developer are distributed
+across the system's \acs{CPU} and \ac{FPGA} resources and communicate via
+defined interaction mechanisms like message passing or shared memory.
 
 
-\begin{itemize}
-\item Background for PAC and ReconOS
-\item Improvements on ReconOS for PAC
-\item Ease of programming by HLS
-\item Demonstrator to show feasability
-\end{itemize}
