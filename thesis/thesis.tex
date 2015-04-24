@@ -1,9 +1,9 @@
 \documentclass[
 	a4paper,
-	12pt,
+	11pt,
 	twoside,
-	DIV=10,
-	%BCOR=12mm,
+	DIV=12,
+	BCOR=15mm,
 	abstracton,
 	parskip,
 	listof=totoc,
@@ -19,8 +19,8 @@
 \usepackage[english]{babel}
 
 \usepackage[numbers]{natbib}
-\bibliographystyle{natdin}
-\usepackage{acronym}
+\bibliographystyle{plainnat}
+\usepackage[printonlyused]{acronym}
 
 \usepackage{url}
 \usepackage{hyperref}
@@ -60,8 +60,6 @@
 
 \begin{document}
 
-\include{acronyms}
-
 \pagenumbering{roman}
 
 \subject{
@@ -88,6 +86,8 @@
 	33098 Paderborn}
 
 \maketitle
+
+\cleardoublepage
 
 \include{abstract}
 
@@ -121,6 +121,7 @@ published elsewhere.\\[27pt]
 \tableofcontents
 \listoffigures
 \listoftables
+\include{acronyms}
 
 \cleardoublepage
 
