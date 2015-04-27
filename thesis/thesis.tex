@@ -29,7 +29,13 @@
 \usepackage{rotating}
 \usepackage{subcaption}
 
+\usepackage{siunitx}
+
 \usepackage{todonotes}
+\usepackage[firstpage]{draftwatermark}
+\SetWatermarkFontSize{12pt}
+\SetWatermarkScale{8}
+\SetWatermarkColor[gray]{0.95}
 
 % Listings
 \usepackage{scrhack}
@@ -60,8 +66,6 @@
 
 \begin{document}
 
-\listoftodos
-
 \pagenumbering{roman}
 
 \subject{
@@ -76,6 +80,8 @@
 	{\large Supervisors}\\[12pt]
 	Prof. Dr. Marco Platzner\\
 	Dipl.-Inf. Andreas Agne}
+%\dedication{
+%	Xilling Bing Bing}
 \lowertitleback{
 	Master Thesis\\
 	\textbf{
@@ -124,6 +130,7 @@ published elsewhere.\\[27pt]
 \listoffigures
 \listoftables
 \include{acronyms}
+\listoftodos
 
 \cleardoublepage
 
