@@ -1,5 +1,6 @@
 %!TEX root = thesis.tex
 \chapter{Motivation and Backgroud}
+
 \section{\aclp{PAC}}
 \aclp{PAC} are a relatively new class of controllers emerged in the past years
 out of the discussion on advantages and disadvantages of \acp{PLC} compared to
@@ -20,7 +21,7 @@ ladder-logic programming eased the transition to the new technology. Figure
 and output ports and a program, implementing the control logic.
 \begin{figure}
 	\centering
-	\includegraphics[width=5cm]{../figures/plc}
+	\includegraphics[width=6cm]{../figures/plc}
 	\caption{The \acs{PLC} program scan \citep[adapted from][]{par99}}
 	\label{fig:plc}
 \end{figure}
@@ -54,7 +55,7 @@ device by incorporating robustness and reliability with advanced software
 capabilities as illustrated in figure \ref{fig:pac}.
 \begin{figure}
 	\centering
-	\includegraphics[width=5cm]{../figures/pac}
+	\includegraphics[width=6cm]{../figures/pac}
 	\caption{\acsp{PAC} compared to \acsp{PLC} and \acsp{PC} \citep[adapted from][]{bel05}}
 	\label{fig:pac}
 \end{figure}
@@ -71,30 +72,38 @@ this approach allows extremely flexible solutions for complex applications, it
 lacks the familiar \ac{PLC} programming architecture, making applications more
 demanding.
 
-\begin{itemize}
-\item In 1969 developed based on a specification for an industrial computer  produced by General Motors \citep{par99}\\
-\lstinline{http://books.google.de/books?id=zLwtngK3T1UC&printsec=frontcover&hl=de&source=gbs_ge_summary_r&cad=0#v=onepage&q=programmable%20logic&f=false}
-\item \acp{PLC} dominate market of automation and control
-\item brief explanation what PLC is doing (input, loop, ouput, ...)
-\item Growing demands show limits of \acp{PLC} (Web-based, database, ...)
-\item For 20 percent of advanced applications (rest only small, low cost)
+The flexible software architecture introduced for the \acp{PAC} enables
+engineers to implement complex applications, without being restricted to a
+fixed device structure. However, the software implementation reaches its
+limits for high-performance or low-latency applications. These demands
+typically result in custom hardware implementations utilizing direct I/O
+connections and parallel processing. While \acp{ASIC} are often not
+financially viable, \acp{FPGA} are getting more and more ubiquitous
+\citep{VMB13}. \acp{FPGA} consist out of configurable logic, interconnect and
+I/O blocks, which can be programmed to implement arbitrary logic. While this
+technology seems to perfectly fit into the concept of \acp{PAC}, especially
+with upcoming integrated \acp{SoC}, it is limited to hardware designers
+capable of programming in low-level languages like \ac{VHDL} and understanding
+the architecture of the underlying system. Efficiently programming such a
+hybrid system requires a high-level abstraction of hardware and software
+resources \citep{ANA} and a unified programming environment. Both topics are
+part of ongoing research including programming models for hybrid multi-core
+systems and high-level specifications of hardware logic. 
 
-\item PCs arrive, not suitable (OS not stable, rugged environment, complexity)
-\item $\Rightarrow$ live without functionality or combine PC and PLC
-\item \acp{PAC} as combination of PLC and PC
-\item Custom hardware goes away (incorporation of FPGAs)
-\item $\Rightarrow$ emphasize this with paper hybrid2.pdf
-\item Complex system, hardware software boundary
-\item abstraction of hardware and software
-\item multithreaded programming model
-\item ReconOS as framework for hybrid multi-core systems
-\end{itemize}
-
-\section{ReconOS}
+\section{ReconOS for Hybrid Multi-Core Systems}
 \begin{itemize}
+
 \item Multithreaded Programming model
 \item Abstraction form hardware software boundary
 \item ...
 \end{itemize}
 
 \section{High Level Synthesis}
+
+\section{Contribution of this Work}
+Due to the promising perspective for the use of reconfigurable device  in
+\acp{PAC} and the ongoing research in hybrid multi-core systems, this thesis
+tries to evaluate the feasibility of such an approach. Within the scope of its
+research on multi-core systems, the University of Paderborn is developing a
+multithreaded framework called ReconOS, abstracting the hardware/software
+boundary and providing a convenient programming model. 
