@@ -19,6 +19,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 
+\usepackage[lighttt]{lmodern}
+
 \usepackage[numbers]{natbib}
 \bibliographystyle{plainnat}
 \usepackage[printonlyused]{acronym}
@@ -43,14 +45,20 @@
 \usepackage{listings}
 \lstset{
 	numbers=left,
-	numbersep=5pt,
+	numbersep=4pt,
 	xleftmargin=2em,
 	xrightmargin=1em,
 	framexleftmargin=1em,
+	aboveskip=2\parskip,
+	%belowskip=\baselineskip,
 	frame=tb,
-	captionpos=b}
+	captionpos=b,
+	breaklines=true}
 \lstset{
-	basicstyle=\ttfamily\footnotesize}
+	basicstyle=\ttfamily\footnotesize,
+	keywordstyle=\bfseries,
+	%stringstyle=\color{gray},
+	commentstyle=\color{gray}}
 
 % Quotes before Chapter
 \usepackage{epigraph}
