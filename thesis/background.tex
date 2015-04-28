@@ -1,5 +1,5 @@
 %!TEX root = thesis.tex
-\chapter{Backgroud}
+\chapter{Motivation and Backgroud}
 \section{\aclp{PAC}}
 \aclp{PAC} are a relatively new class of controllers emerged in the past years
 out of the discussion on advantages and disadvantages of \acp{PLC} compared to
@@ -15,7 +15,7 @@ control and automation market by providing high reliability, a well-known
 programming model and industrial I/O. It is used for various automation tasks
 in typically electromechanical processes, for example machinery or plant
 control. Inspired by the hand-wired relay logic systems and wire-diagrams, the
-programming in ladder logic ease the transition to the new technology. Figure
+ladder-logic programming eased the transition to the new technology. Figure
 \ref{fig:plc} shows the basic structure of a \ac{PLC} consisting out of input
 and output ports and a program, implementing the control logic.
 \begin{figure}
@@ -27,7 +27,7 @@ and output ports and a program, implementing the control logic.
 The input ports are typically connected to different sensors, for example
 light barriers, level indicators or temperature sensors, while the output
 ports control actuators like contactors or valves. Each time the program scan
-is executed, the inputs are read and fed into the control logic updating the
+is executed, the inputs are read and fed into the control logic, updating the
 output ports accordingly. Note, that a \ac{PLC} does not control the system
 continuously, but typically at a frequency of several $\SI{}{\kilo\hertz}$
 \citep{par99}.
@@ -36,25 +36,41 @@ While the \ac{PLC} structure was designed for basic machine control, it
 reaches its limits for more advanced applications requiring, for example,
 extensive analog I/O, network connectivity, or enterprise integration. Back in
 the 1980s and 1990s around 80\% of the industry's applications were solved by
-traditional \acp{PLC} \citep{bel05}, resulting in a growth of low-cost systems
-and a discontinuity in controller technology. Engineers targeting the 20\% of
-feature rich applications pushed the classical designs to its limits.
-Consequently, they started evaluating different technology and came up with
-\acp{PC} for industrial control, offering advanced software capabilities,
-utilization of \ac{COTS} components and graphical environments \citep{bel05}.
-However, standard \acp{PC} are not ideal for industrial control applications
-due to missing robustness in rugged environments, stable operating systems and
-common programming environments. Finally, the engineers either omitted
-advanced functionalities or deployed a coupled \ac{PC}/\ac{PLC} system.
-Without any satisfactory solution, the engineers worked together with hardware
-vendors to develop
+traditional \acp{PLC} \citep{bel05}. This results in a growth of low-cost
+systems and a discontinuity in controller technology. Engineers, targeting the
+20\% of feature-rich applications, pushed the classical designs to its limits
+and started evaluating different technology. They came up with \acp{PC} for
+industrial control, offering advanced software capabilities, utilization of
+\ac{COTS} components and graphical environments \citep{bel05}. However,
+standard \acp{PC} are not ideal for industrial control applications due to
+missing robustness in rugged environments, stable operating systems and common
+programming environments. Finally, the engineers either omitted advanced
+functionalities or deployed a coupled \ac{PC}/\ac{PLC} system. Without any
+satisfactory solution, hardware vendors tried to fill up the gap by developing
+new products.
 
+The \ac{PAC} combines the best features of \acp{PLC} and \acp{PC} in a single
+device by incorporating robustness and reliability with advanced software
+capabilities as illustrated in figure \ref{fig:pac}.
 \begin{figure}
 	\centering
 	\includegraphics[width=5cm]{../figures/pac}
-	\caption{\acp{PAC} compared to \acp{PLC} and \acp{PC} \citep[adapted from][]{bel05}}
+	\caption{\acsp{PAC} compared to \acsp{PLC} and \acsp{PC} \citep[adapted from][]{bel05}}
 	\label{fig:pac}
 \end{figure}
+However, vendors pursue different strategies to provide the advanced software
+for complex applications. \citep{bel05}. Traditional \ac{PLC} companies
+adjusted the existing scanning architecture and extended it by new
+functionality. While the well-known architecture provides short development
+cycles and eliminates the need of low-level knowledge by the engineers, it
+still limits the flexibility and customizability of the system. On the other
+hand, \ac{PC} vendors addressed the demand for advanced features by starting
+with a general-purpose programming environment, which provides access to the
+internals of the system and abstractions for commonly used operations. While
+this approach allows extremely flexible solutions for complex applications, it
+lacks the familiar \ac{PLC} programming architecture, making applications more
+demanding.
+
 \begin{itemize}
 \item In 1969 developed based on a specification for an industrial computer  produced by General Motors \citep{par99}\\
 \lstinline{http://books.google.de/books?id=zLwtngK3T1UC&printsec=frontcover&hl=de&source=gbs_ge_summary_r&cad=0#v=onepage&q=programmable%20logic&f=false}
