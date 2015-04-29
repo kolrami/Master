@@ -19,7 +19,7 @@ control. Inspired by the hand-wired relay logic systems and wire-diagrams, the
 ladder-logic programming eased the transition to the new technology. Figure
 \ref{fig:plc} shows the basic structure of a \ac{PLC} consisting out of input
 and output ports and a program, implementing the control logic.
-\begin{figure}
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=6cm]{../figures/plc}
 	\caption{The \acs{PLC} program scan \citep[adapted from][]{par99}}
@@ -53,7 +53,7 @@ controller, the so-called \acp{PAC}.
 The \ac{PAC} combines the best features of \acp{PLC} and \acp{PC} in a single
 device by incorporating robustness and reliability with advanced software
 capabilities as illustrated in figure \ref{fig:pac}.
-\begin{figure}
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=6cm]{../figures/pac}
 	\caption{\acsp{PAC} compared to \acsp{PLC} and \acsp{PC} \citep[adapted from][]{bel05}}
@@ -111,7 +111,7 @@ and distributed across the \ac{CPU} and \ac{FPGA} resources, while having
 symmetrical access to all communication mechanisms. Figure
 \ref{fig:reconos_model} illustrated the concept of hardware and software
 threads communicating via a standardized \ac{OS} interface.
-\begin{figure}
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=6cm]{../figures/reconos_model}
 	\caption{The ReconOS programming model}
@@ -122,14 +122,18 @@ remains at a high level and the partitioning can be changed during development
 without additional effort. Furthermore, the applications are portable between
 different platforms, due to the defined \ac{OS} interface \citep{AHK14}.
 
-To illustrate the concept of a ReconOS thread, consider the exemplary thread
+To illustrate the concept of a ReconOS thread, consider the example sketched
 in listing \ref{lst:swt}. It receives data via an incoming mailbox, processes
-this data internally and writes back the result to an outgoing mailbox.
+this data internally and writes back the result to an outgoing mailbox. Using
+the predefined \ac{OS} functions for communication and synchronization, the
+thread description separates internal processing from the \ac{OS}
+interactions.
 \begin{lstlisting}[
 	language=C,
 	caption={Exemplary ReconOS thread in C},
 	label={lst:swt},
-	morekeywords={THREAD_ENTRY}
+	morekeywords={THREAD_ENTRY,MBOX_GET,MBOX_PUT},
+	float=tb
 ]
 #include "reconos_thread.h"
 #include "reconos_calls.h"
@@ -138,11 +142,55 @@ THREAD_ENTRY() {
 	data_t data;
 
 	while(1) {
-		data = mbox_get(resources_mbox_in);
-		process(data);
-		mbox_put(resources_mbox_out, data);
+		data = MBOX_GET(res_mbox_in);
+		processing(&data);
+		MBOX_PUT(res_mbox_out, data);
 	}
 }
+\end{lstlisting}
+This separation becomes even more apparent in the VHDL implementation shown in
+listing \ref{lst:hwt}. The \ac{OSFSM} handles all requests to \ac{OS}
+functions and controls the internal processing logic via handshaking signals.
+For seamless integration, the ReconOS runtime provides a \ac{VHDL} library
+wrapping all \ac{OS} functions as procedures and a guarding signal
+\lsinline{done} to condition the state transitions of the \ac{OSFSM}. This
+signal allows blocking \ac{OS} calls to temporarily suspend the hardware
+thread. While the \ac{OSFSM} mimics the sequence of \ac{OS} calls of the
+software thread, the implementation of the internal processing may differ
+significantly. It can benefit from the advantages of a custom \ac{FPGA} design
+like fine-grained parallelism or specialized \ac{FPGA} resources.
+\begin{lstlisting}[
+	language=VHDL,
+	caption={Exemplary ReconOS thread in VHDL},
+	label={lst:hwt},
+	morekeywords={MBOX_GET,MBOX_PUT},
+	float=tb
+]
+OSFSM: process(HWT_Clk,HWT_Rst)
+	variable done : boolean;
+begin
+	if rst = '1' then
+		state <= GET_DATA;
+		run <= '0';
+		osif_reset(o_osif);
+		memif_reset(o_memif);
+	elsif rising_edge(clk) then
+		case state is
+			when GET_DATA =>
+				MBOX_GET(i_osif, o_osif, res_mbox_in, data_in, done);
+				if done then state <= PROCESSING; end if;
+			when PROCESSING =>
+				run <= '1';
+				if rdy = '1' then
+					run <= '0';
+					if done then state <= PUT_DATA; end if;
+				end if;
+			when PUT_DATA =>
+				MBOX_PUT(i_osif, o_osif, res_mbox_out, data_out, done);
+				if done then state <= GET_DATA; end if;
+		end case;
+	end if;
+end process OSFSM;
 \end{lstlisting}
 
 %To support a transparent multithreading across the hardware/software boundary,
