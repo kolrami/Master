@@ -127,7 +127,7 @@ in listing \ref{lst:swt}. It receives data via an incoming mailbox, processes
 this data internally and writes back the result to an outgoing mailbox. Using
 the predefined \ac{OS} functions for communication and synchronization, the
 thread description separates internal processing from the \ac{OS}
-interactions.
+interactions \citep{AHK14}.
 \begin{lstlisting}[
 	language=C,
 	caption={Exemplary ReconOS thread in C},
@@ -152,8 +152,8 @@ This separation becomes even more apparent in the VHDL implementation shown in
 listing \ref{lst:hwt}. The \ac{OSFSM} handles all requests to \ac{OS}
 functions and controls the internal processing logic via handshaking signals.
 For seamless integration, the ReconOS runtime provides a \ac{VHDL} library
-wrapping all \ac{OS} functions as procedures and a guarding signal
-\lsinline{done} to condition the state transitions of the \ac{OSFSM}. This
+wrapping all \ac{OS} functions as procedures with a guarding signal
+\lstinline{done} to condition the state transitions of the \ac{OSFSM}. This
 signal allows blocking \ac{OS} calls to temporarily suspend the hardware
 thread. While the \ac{OSFSM} mimics the sequence of \ac{OS} calls of the
 software thread, the implementation of the internal processing may differ
@@ -192,15 +192,6 @@ begin
 	end if;
 end process OSFSM;
 \end{lstlisting}
-
-%To support a transparent multithreading across the hardware/software boundary,
-%ReconOS implements a runtime as shown in figure \ref{fig:reconos_runtime}.
-%\begin{figure}
-%	\centering
-%	\includegraphics[width=6cm]{../figures/reconos_hwt}
-%	\caption{The ReconOS runtime}
-%	\label{fig:reconos_runtime}
-%\end{figure}
 
 \section{High Level Synthesis}
 
