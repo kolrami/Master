@@ -247,12 +247,12 @@ However, hardware implementations are still limited to developers familiar
 with \ac{FPGA} technology and low-level programming languages like \ac{VHDL}.
 To lower these entry barriers and open the technology to a broader range of
 developers, recent research explores \ac{HLS} to synthesize efficient hardware
-out of high-level languages like C \citep{SWL13}. Having a common description
-for both software and hardware implementations offers even more possibilities.
-Due to the transparency of hardware and software implementations, a thread
-might be migrated from software to hardware or vice versa. Self-adaptiveness
-allows the system to reconfigure itself based on the current needs to reduce
-power or increase performance.
+out of high-level languages like C \citep{SWL13}. A common description for
+both software and hardware implementations fits perfectly into the concept of
+transparent multi-core systems. A thread might be migrated at runtime from
+software to hardware or vice versa, to fulfill requirements in, for example,
+power consumption or performance. Such self-adaptive systems are also a hot
+topic in current research. \todo{maybe literature}
 
 \section{High Level Synthesis}
 
