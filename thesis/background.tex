@@ -113,14 +113,14 @@ symmetrical access to all communication mechanisms. Figure
 threads communicating via a standardized \ac{OS} interface.
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=6cm]{../figures/reconos_model}
+	\includegraphics[width=8cm]{../figures/reconos_model}
 	\caption{The ReconOS programming model}
 	\label{fig:reconos_model}
 \end{figure}
 This approach reduces development costs since the application structure
 remains at a high level and the partitioning can be changed during development
 without additional effort. Furthermore, the applications are portable between
-different platforms, due to the defined \ac{OS} interface \citep{AHK14}.
+different platforms, due to the defined \ac{OS} interface.
 
 To illustrate the concept of a ReconOS thread, consider the example sketched
 in listing \ref{lst:swt}. It receives data via an incoming mailbox, processes
@@ -198,7 +198,7 @@ boundary, ReconOS implements a runtime architecture as shown in figure
 \ref{fig:reconos_runtime}.
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=6cm]{../figures/reconos_hwt}
+	\includegraphics[width=10cm]{../figures/reconos_hwt}
 	\caption{The ReconOS runtime}
 	\label{fig:reconos_runtime}
 \end{figure}
@@ -240,6 +240,19 @@ translates virtual addresses by accessing the \ac{OS}' page table directly and
 accelerates translation by a \ac{TLB}. Similar to the \ac{OS} functions,
 ReconOS provides \ac{VHDL} procedures to perform single-word or burst accesses
 for convenient use.
+
+Providing complete transparency against the implementation and execution mode
+of threads simplifies the design process of hybrid multi-core systems.
+However, hardware implementations are still limited to developers familiar
+with \ac{FPGA} technology and low-level programming languages like \ac{VHDL}.
+To lower these entry barriers and open the technology to a broader range of
+developers, recent research explores \ac{HLS} to synthesize efficient hardware
+out of high-level languages like C \citep{SWL13}. Having a common description
+for both software and hardware implementations offers even more possibilities.
+Due to the transparency of hardware and software implementations, a thread
+might be migrated from software to hardware or vice versa. Self-adaptiveness
+allows the system to reconfigure itself based on the current needs to reduce
+power or increase performance.
 
 \section{High Level Synthesis}
 
