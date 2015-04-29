@@ -193,6 +193,54 @@ begin
 end process OSFSM;
 \end{lstlisting}
 
+To support the transparent multithreading across the hardware/software
+boundary, ReconOS implements a runtime architecture as shown in figure
+\ref{fig:reconos_runtime}.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=6cm]{../figures/reconos_hwt}
+	\caption{The ReconOS runtime}
+	\label{fig:reconos_runtime}
+\end{figure}
+It consists out of the application specific threads implemented either in
+hardware or software, the \ac{OS} kernel executed on the main \ac{CPU}, and the
+ReconOS runtime components. While the host \ac{OS} provides scheduling, memory
+management, low-level hardware access and the different programming model
+objects published through the \ac{POSIX} API, the ReconOS runtime interfaces
+with the \ac{OS} as software libraries and device drivers and implements
+hardware components for communication and management.
+
+The software threads are executed on the main \ac{CPU} as regular threads, for
+example \ac{POSIX} threads -- and scheduled by the host \ac{OS}. To integrate the
+hardware threads transparently into this system, ReconOS introduces the
+concept of delegate threads. These lightweight software threads are connected
+via the \ac{OSIF} to the hardware threads and provide an interface to the
+\ac{OS}. Whenever a hardware thread needs to execute an \ac{OS} function, it
+passes this request through the \ac{OSIF} to its associated delegate thread,
+which executes the desired function and returns the result. From the \ac{OS}
+point of view, the hardware implementation is hidden behind the delegate
+thread and the \ac{OS} only handles regular software threads. On the other
+hand, the management of delegate threads is performed by the ReconOS runtime
+and is completely hidden for the developer, seeing only the implemented
+hardware and software threads. Although the delegate mechanism introduces an
+overhead for executing \ac{OS} calls, it provides a exceptional transparency
+regarding the threads implementation and execution mode and simplifies the
+system design.
+
+While the additional overhead for \ac{OS} calls is legitimated by the great
+simplicity and portability of the design, access to shared memory is rather
+performance critical. Handling memory requests via the delegate mechanism
+would burden the processor with additional load and slow down the entire
+system dramatically. To avoid this bottleneck, each hardware thread is
+connected through a separate \ac{MEMIF} to the ReconOS memory subsystem. The
+memory subsystem arbitrates the hardware thread's requests and performs the
+memory access via the system bus. To support operating systems, like Linux,
+providing virtual addressing, ReconOS implements a full-featured \ac{MMU}. It
+translates virtual addresses by accessing the \ac{OS}' page table directly and
+accelerates translation by a \ac{TLB}. Similar to the \ac{OS} functions,
+ReconOS provides \ac{VHDL} procedures to perform single-word or burst accesses
+for convenient use.
+
 \section{High Level Synthesis}
 
 \section{Contribution of this Work}
@@ -201,4 +249,4 @@ Due to the promising perspective for the use of reconfigurable device  in
 tries to evaluate the feasibility of such an approach. Within the scope of its
 research on multi-core systems, the University of Paderborn is developing a
 multithreaded framework called ReconOS, abstracting the hardware/software
-boundary and providing a convenient programming model. 
+boundary and providing a convenient programming model.
