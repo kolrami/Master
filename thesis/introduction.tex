@@ -31,12 +31,30 @@ approach seems to be suitable as a convenient programming model for these
 hybrid devices. The different threads specified by the developer are
 distributed across the system's \ac{CPU} and \ac{FPGA} resources and
 communicate via defined interaction mechanisms like message passing or shared
-memory.
-
-\todo{Proposal Andreas}
+memory.\todo{Proposal Andreas}
 \begin{itemize}
-\item Background for PAC and ReconOS
-\item Improvements on ReconOS for PAC
-\item Ease of programming by HLS
-\item Demonstrator to show feasability
+\item Develop a reconfigurable infrastructure for direct communication
+between hardware threads. The new communication method should be integrated
+into the ReconOS programming model as a new or as an extension of an existing
+operating system abstraction. The choice of communication method should be
+made by the runtime system in a way that is transparent for the programmer of
+the hardeware thread.
+\item Develop a toolchain that enables the use of \ac{HLS} for the creation of
+ReconOS hardware threads. Investigate, how \ac{HLS} can be used to generate
+the processing logic of a thread as well as the \ac{OSFSM}.
+\item Implement a method to meassure the power consumption of the system.
+Investigate means to meassure the on-chip power usage in a fine-grained way.
+Investigate whether it is possible to meassure the power usage of individual
+hardware threads.
+\item Develop a \ac{PAC} that controlls a ball-on-plate application. The
+application should contain components for the tracking of the ball, inverse
+kinematics, and the required control algorithms. These components should be
+implemented as a combination of hardware and software threads.
+\item Use the previously developed application and components to meassure
+thread performance, resource utilization and power consumption. Make the
+application adapt to given goals and constraints by mechanisms like switching
+on and off hardware and software threads, or switching between different
+algorithms or implementations. Investigate different adaptation strategies
+ranging from simple heuristics to more sophisticated methods involving machine
+learning.
 \end{itemize}
