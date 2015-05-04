@@ -92,23 +92,24 @@ logic.
 
 \section{ReconOS for Hybrid Multi-Core Systems}
 With increasing demand for high-performance embedded systems and upcoming
-\acp{SoC} integrating powerful general-purpose processors with reconfigurable
+\acp{SoC}, integrating powerful general-purpose processors with reconfigurable
 logic, convenient programming models are required to tap the full potential of
 these hybrid systems \citep{ANA04,VMB13}. \ac{HLS} approaches allow the
 synthesis of hardware designs from a high-level language and simplify the
 development of custom hardware, but do not provide an abstraction for the
-underlying hardware components at system level. 
+underlying hardware components at system level.
 
 ReconOS addresses this problem and provides a unified execution environment
-leveraging the well-established multithreaded programming model and extends an
-\ac{OS} with hardware thread support \citep{AHK14}. The multithreaded
-programming model is highly accepted in the software engineering community and
-suitable for embedded applications \citep{ANA04} composed of concurrently
-running threads, synchronizing and exchanging data via standardized \ac{OS}
-mechanism, for example semaphores, mutexes or message queues. The threads
-specified by the system developer are transparent against their implementation
-and distributed across the \ac{CPU} and \ac{FPGA} resources, while having
-symmetrical access to all communication mechanisms. Figure
+leveraging the well-established multithreaded programming model and extending
+an existing \ac{OS} with hardware thread support \citep{AHK14}. The
+multithreaded programming model is highly accepted in the software engineering
+community and suitable for embedded applications \citep{ANA04} composed of
+concurrently running threads, synchronizing and exchanging data via
+standardized \ac{OS} mechanisms, for example semaphores, mutexes or message
+queues. The threads specified by the system developer are transparent against
+their implementation and distributed across the \ac{CPU} and \ac{FPGA}
+resources, while having symmetrical access to all communication mechanisms.
+Figure
 \ref{fig:reconos_model} illustrated the concept of hardware and software
 threads communicating via a standardized \ac{OS} interface.
 \begin{figure}[tb]
@@ -120,7 +121,7 @@ threads communicating via a standardized \ac{OS} interface.
 This approach reduces development costs since the application structure
 remains at a high level and the partitioning can be changed during development
 without additional effort. Furthermore, the applications are portable between
-different platforms, due to the defined \ac{OS} interface.
+different platforms due to the defined \ac{OS} interface.
 
 To illustrate the concept of a ReconOS thread, consider the example sketched
 in listing \ref{lst:swt}. It receives data via an incoming mailbox, processes
@@ -153,11 +154,11 @@ listing \ref{lst:hwt}. The \ac{OSFSM} handles all requests to \ac{OS}
 functions and controls the internal processing logic via handshaking signals.
 For seamless integration, the ReconOS runtime provides a \ac{VHDL} library
 wrapping all \ac{OS} functions as procedures with a guarding signal
-\lstinline{done} to condition the state transitions of the \ac{OSFSM}. This
+\lstinline{done}, to condition the state transitions of the \ac{OSFSM}. This
 signal allows blocking \ac{OS} calls to temporarily suspend the hardware
 thread. While the \ac{OSFSM} mimics the sequence of \ac{OS} calls of the
 software thread, the implementation of the internal processing may differ
-significantly. It can benefit from the advantages of a custom \ac{FPGA} design
+significantly. It can benefit from all advantages of a custom \ac{FPGA} design
 like fine-grained parallelism or specialized \ac{FPGA} resources.
 \begin{lstlisting}[
 	language=VHDL,
@@ -211,17 +212,17 @@ with the \ac{OS} as software libraries and device drivers and implements
 hardware components for communication and management.
 
 The software threads are executed on the main \ac{CPU} as regular threads, for
-example \ac{POSIX} threads -- and scheduled by the host \ac{OS}. To integrate the
-hardware threads transparently into this system, ReconOS introduces the
+example \ac{POSIX} threads -- and scheduled by the host \ac{OS}. To integrate
+the hardware threads transparently into this system, ReconOS introduces the
 concept of delegate threads. These lightweight software threads are connected
 via the \ac{OSIF} to the hardware threads and provide an interface to the
 \ac{OS}. Whenever a hardware thread needs to execute an \ac{OS} function, it
 passes this request through the \ac{OSIF} to its associated delegate thread,
 which executes the desired function and returns the result. From the \ac{OS}
 point of view, the hardware implementation is hidden behind the delegate
-thread and the \ac{OS} only handles regular software threads. On the other
+threads and the \ac{OS} only handles regular software threads. On the other
 hand, the management of delegate threads is performed by the ReconOS runtime
-and is completely hidden for the developer, seeing only the implemented
+and is completely hidden from the developer, seeing only the implemented
 hardware and software threads. Although the delegate mechanism introduces an
 overhead for executing \ac{OS} calls, it provides a exceptional transparency
 regarding the threads implementation and execution mode and simplifies the
@@ -249,12 +250,123 @@ To lower these entry barriers and open the technology to a broader range of
 developers, recent research explores \ac{HLS} to synthesize efficient hardware
 out of high-level languages like C \citep{SWL13}. A common description for
 both software and hardware implementations fits perfectly into the concept of
-transparent multi-core systems. A thread might be migrated at runtime from
-software to hardware or vice versa, to fulfill requirements in, for example,
-power consumption or performance. Such self-adaptive systems are also a hot
-topic in current research. \todo{maybe literature}
+transparent multi-core systems \citep{CBN11}. A thread might be migrated at
+runtime from software to hardware or vice versa, to fulfill requirements in,
+for example, power consumption or performance. Such self-adaptive systems are
+also a hot topic in current research \citep{AHL14,HLP09}.
 
-\section{High Level Synthesis}
+\section{\acl{HLS}}
+While the integration of hardware threads into the multithreaded programming
+model simplifies the design of hybrid multi-core systems at system level and
+presents a transparent model to the developer, the implementation of hardware
+threads is still challenging compared to that of software threads. Developing
+custom hardware is not only limited to a subset of developers capable of
+programming in low-level languages like \ac{VHDL}, but also time consuming and
+error prone \citep{SWL13}. Traditional design methods and flows make it
+difficult to debug and verify a system, resulting in increased costs and
+reduced productivity. Recently, new \ac{HLS} tools are emerging, which try to
+bridge the gap between hardware and software development. By synthesizing
+hardware descriptions from high-level languages like C or C++, these tools
+significantly lower the design time and make \ac{FPGA} designs accessible to a
+broader range of developers \citep{PeTh05}. Relying on a correct synthesis,
+\ac{HLS} induces fewer errors, less debugging and easier validation.
+
+The idea of generating hardware from high-level languages is rather old, but
+now state-of-the-art tools like Vivado HLS are sophisticated enough, to
+accelerate applications noticeably \citep{EcEc08,XSA10}. One of the first
+pioneering \ac{HLS} system was developed in the 1970s \citep{DPS81} by the
+Carnegie Mellon University, specifying a behavioural description in the
+\ac{ISPS} language. Although \ac{CMU-DA} was rather experimental, it generated
+considerable research interest in the following years. A variety of different
+prototypes emerged and many algorithms targeting scheduling and allocation
+problems were developed \citep{CBN11}. However, all these systems were not
+widely adopted by the developers, since they build up on, at that time,
+unreliable \ac{RTL} synthesis and uncommon languages. Since 2000, a new
+generation of tools, focusing on C-based languages, emerged. Although the use
+of C-based languages was doubted \citep{Edw06}, it enables hardware/software
+co-design, co-simulation and the use of newest technology in software
+compilers. To overcome the drawbacks of missing language constructs, modern
+\ac{HLS} tools have introduced additional directives to make C inputs more
+amenable to hardware synthesis \citep{CBN11}. Modern tools include commercial
+tools like Vivado HLS from Xilinx or Catapult C from Calypto, as well as
+academic prototypes like LegUp \citep{CCA11}. Due to its increasing
+popularity, Xilinx Vivado HLS seems to be a promising system.
+
+To synthesize an algorithm specified in an high-level language like C or C++,
+\ac{HLS} extracts the control logic and operations, applies several
+optimizations and generates an equivalent \ac{HDL} representation. Additional
+to the algorithmic synthesis, interfaces between different entities and the
+outside world are generated. To control this transformation process, most
+compilers support optimization directives to focus the \ac{HLS} on particular
+objectives, for example performance, area or power consumption. Typically, the
+algorithmic synthesis process includes the following steps \citep{OCC14}:
+\begin{itemize} 
+	\item Control and Datapath Extraction
+	\item Scheduling and Binding
+	\item Optimizations
+\end{itemize}
+At first, the control and datapath inferred by the code is extracted and
+transformed into an internal representation. Each program specifies a control
+path by its loops and conditional branches and a data path by its operations.
+Based on this information, \ac{HLS} performs scheduling and binding
+\citep{OCC14}. It determines, which operations are executed in a specific
+clock cycle and tries to find an optimal solution, based on clocking
+information, device technology specifications and user-defined directives.
+Binding then allocates hardware resources for each operation and decides on
+reuse of components.
+
+During these steps, several optimizations are performed to increase the
+performance of the generated \ac{RTL} representation. The most prominent
+examples are loop unrolling and pipelining. Loop unrolling describes the
+process of unfolding an iteration block into a sequence of statements,
+allowing parallel execution \citep{SWL13}. However, not all loops can be
+unrolled, since the number of iterations might be unknown at compile time.
+Pipelining inserts registers into combinational logic blocks to enable higher
+clock frequencies \citep{SWL13}. The automated generation of pipelined
+structures simplifies the design-space exploration and reduces development
+times dramatically. While hand-coded piplines are error prone and hard to
+adapt, the \ac{HLS} developer has full control over the generation via
+parameters specified in directives. Figure \ref{fig:hls} show an example
+schedule generated by Vivado HLS out of a loop adding 4 values. Each row
+indicates a single operation executed in one of the states. Without any user
+defined directives, no unrolling takes place and a regular loop is implemented
+as shown in figure \ref{fig:hls_n}, while the \lstinline{#pragma HLS UNROLL}
+directive forces \ac{HLS} to unroll the loop as shown in figure
+\ref{fig:hls_u}.
+%\begin{lstlisting}[
+%	language=C,
+%	caption={Exemplary HLS source},
+%	label={lst:hls},
+%	float=tb
+%]
+%#include "ap_cint.h"
+%
+%void top(uint32 d[4], uint32 *sum) {
+%	uint32 acc = 0;
+%
+%	for (int i = 0; i < 4; i++)
+%		acc += d[i];
+%
+%	*sum = acc;
+%}
+%\end{lstlisting}
+\begin{figure}[tb]
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.95\textwidth]{../figures/hls_n}
+		\caption{Inferred Schedule without Unrolling}
+		\label{fig:hls_n}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.95\textwidth]{../figures/hls_u}
+		\caption{Inferred Schedule with Unrolling}
+		\label{fig:hls_u}
+	\end{subfigure}
+	\caption{Scheduling in Vivado HLS}
+	\label{fig:hls}
+\end{figure}
 
 \section{Contribution of this Work}
 Due to the promising perspective for the use of reconfigurable device  in
@@ -263,3 +375,12 @@ tries to evaluate the feasibility of such an approach. Within the scope of its
 research on multi-core systems, the University of Paderborn is developing a
 multithreaded framework called ReconOS, abstracting the hardware/software
 boundary and providing a convenient programming model.
+
+\begin{itemize}
+\item ReconOS OS calls via processor bottleneck
+\item Especially problem for PAC
+\item $\Rightarrow$ speed up for HW/HW communication
+\item Reconfigurable interconnect and os elements in hardware
+\item Vivado HLS integration into ReconOS (OSFSM, Logic, ...)
+\item Demonstrator for PAC utilizing self-adaption
+\end{itemize}
