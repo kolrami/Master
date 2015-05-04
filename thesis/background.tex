@@ -369,20 +369,70 @@ directive forces \ac{HLS} to unroll the loop as shown in figure
 \end{figure}
 
 \section{Self-adaptive Hybrid Multi-Core Systems}
+Utilizing the potential of \ac{HLS} together with the multithreaded
+abstraction layer allows to generate hardware and software threads from a
+common specification \citep{CBN11}. This greatly simplifies system
+implementation and design-space exploration and allows to find an optimal
+configuration of threads. While a static configuration works perfectly for
+predictable systems, it cannot be optimal in a dynamic environment with
+rapidly changing demands, requiring an adaption at runtime.
+
+Self-aware computing focuses on those kind of systems facing unprecedented
+levels of system dynamics and requiring novel approaches to adaptivity. Recent
+research investigates systems with so-called self-* properties \citep{SMC11},
+which are capable of modifying their own behavior without external control in
+reaction to or in anticipation of its dynamics. To be self-aware, a system
+requires knowledge of phenomena internal and external to itself \citep{LCP11}.
+Internal phenomena are captured by sensors like performance counters or
+temperature sensors and external phenomena are recognized through the
+environment. Both are handled by a self-awareness engine, either private or
+public, which are interacting with models of the system and environment.
+Besides the self-awareness, requiring to gather data of the system and
+environment, self-expression describes the ability to adapt to changes through
+a self-expression engine and internal actuators. It is driven by objectives
+and constraints given at design-time or dynamically at runtime.
+
+With regard to hybrid multi-core systems, self-awareness and self-expression
+allows the system to adjust its partitioning \citep{AHL14}. For example, a
+thread might be migrated from software to hardware or additional threads might
+be created, based on the dynamically changing processing demands
+\citep{HLP09}. Utilizing dynamic reconfiguration features of modern \acp{FPGA}
+permit even further adaption by completely reconfiguring the entire structure
+and partitioning of the system.
 
 \section{Contribution of this Work}
-Due to the promising perspective for the use of reconfigurable device  in
+Due to the promising perspective for the use of reconfigurable devices in
 \acp{PAC} and the ongoing research in hybrid multi-core systems, this thesis
-tries to evaluate the feasibility of such an approach. Within the scope of its
-research on multi-core systems, the University of Paderborn is developing a
-multithreaded framework called ReconOS, abstracting the hardware/software
-boundary and providing a convenient programming model.
+evaluates the feasibility of such an approach. The ReconOS framework will be
+used and extended by a reconfigurable infrastructure and \ac{HLS} support.
+While the reconfigurable infrastructure allow direct communication between
+hardware threads and eliminate the communication overhead caused by the
+delegate threads, \ac{HLS} provides a 
 
+The following subtasks are included:
 \begin{itemize}
-\item ReconOS OS calls via processor bottleneck
-\item Especially problem for PAC
-\item $\Rightarrow$ speed up for HW/HW communication
-\item Reconfigurable interconnect and os elements in hardware
-\item Vivado HLS integration into ReconOS (OSFSM, Logic, ...)
-\item Demonstrator for PAC utilizing self-adaption
+\item Develop a reconfigurable infrastructure for direct communication
+between hardware threads. The new communication method should be integrated
+into the ReconOS programming model as a new or as an extension of an existing
+operating system abstraction. The choice of communication method should be
+made by the runtime system in a way that is transparent for the programmer of
+the hardeware thread.
+\item Develop a toolchain that enables the use of \ac{HLS} for the creation of
+ReconOS hardware threads. Investigate, how \ac{HLS} can be used to generate
+the processing logic of a thread as well as the \ac{OSFSM}.
+\item Implement a method to meassure the power consumption of the system.
+Investigate means to meassure the on-chip power usage in a fine-grained way.
+Investigate whether it is possible to meassure the power usage of individual
+hardware threads.
+\item Develop a \ac{PAC} that controlls a ball-on-plate application. The
+application should contain components for the tracking of the ball, inverse
+kinematics, and the required control algorithms. These components should be
+implemented as a combination of hardware and software threads.
+\item Use the previously developed application and components to meassure
+thread performance, resource utilization and power consumption. Make the
+application adapt to given goals and constraints by mechanisms like switching
+on and off hardware and software threads, or switching between different
+algorithms or implementations. Investigate different adaptation strategies
+ranging from simple heuristics to more sophisticated methods involving machine
+learning.
 \end{itemize}
