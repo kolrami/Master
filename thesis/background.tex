@@ -5,11 +5,12 @@
 \aclp{PAC} are a relatively new class of controllers emerged in the past years
 out of the discussion on advantages and disadvantages of \acp{PLC} compared to
 \acp{PC} \citep{bel05}. The acronym \ac{PAC} itself was introduced by the
-\ac{ARC} in 2001 \citep{pay13} to represent this next generation controllers.
-However, a strict definition to clearly identify a \ac{PAC} and differentiate
-it from other \acp{PLC} is missing. The term is used more as buzzword for the
-automation vendor's marketing, but still reflects the increasing demands by
-the modern industry and the evolution of automation controllers. 
+\ac{ARC} in 2001 \citep{pay13} to represent this next of generation
+controllers. However, a strict definition to clearly identify a \ac{PAC} and
+differentiate it from other \acp{PLC} is missing. The term is used more as
+buzzword for the automation vendor's marketing, but still reflects the
+increasing demands by the modern industry and the evolution of automation
+controllers.
 
 Since its origin in the 1960s \citep{par99}, the \ac{PLC} dominates the
 control and automation market by providing high reliability, a well-known
@@ -17,7 +18,7 @@ programming model and industrial I/O. It is used for various automation tasks
 in typically electromechanical processes, for example machinery or plant
 control. Inspired by the hand-wired relay logic systems and wire-diagrams, the
 ladder-logic programming eased the transition to the new technology. Figure
-\ref{fig:plc} shows the basic structure of a \ac{PLC} consisting out of input
+\ref{fig:plc} shows the basic structure of a \ac{PLC}, consisting out of input
 and output ports and a program, implementing the control logic.
 \begin{figure}[tb]
 	\centering
@@ -109,26 +110,25 @@ standardized \ac{OS} mechanisms, for example semaphores, mutexes or message
 queues. The threads specified by the system developer are transparent against
 their implementation and distributed across the \ac{CPU} and \ac{FPGA}
 resources, while having symmetrical access to all communication mechanisms.
-Figure
-\ref{fig:reconos_model} illustrated the concept of hardware and software
-threads communicating via a standardized \ac{OS} interface.
+Figure \ref{fig:reconos_model} illustrates the concept of hardware and
+software threads communicating via a standardized \ac{OS} interface.
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=8cm]{../figures/reconos_model}
 	\caption{The ReconOS programming model}
 	\label{fig:reconos_model}
 \end{figure}
-This approach reduces development costs since the application structure
-remains at a high level and the partitioning can be changed during development
-without additional effort. Furthermore, the applications are portable between
-different platforms due to the defined \ac{OS} interface.
+The application structure remains at a high level and the partitioning can be
+changed during development without additional effort. Furthermore, the
+applications are portable between different platforms due to the defined
+\ac{OS} interface.
 
 To illustrate the concept of a ReconOS thread, consider the example sketched
 in listing \ref{lst:swt}. It receives data via an incoming mailbox, processes
 this data internally and writes back the result to an outgoing mailbox. Using
 the predefined \ac{OS} functions for communication and synchronization, the
-thread description separates internal processing from the \ac{OS}
-interactions \citep{AHK14}.
+thread description separates internal processing from \ac{OS} interactions
+\citep{AHK14}.
 \begin{lstlisting}[
 	language=C,
 	caption={Exemplary ReconOS thread in C},
@@ -218,7 +218,7 @@ concept of delegate threads. These lightweight software threads are connected
 via the \ac{OSIF} to the hardware threads and provide an interface to the
 \ac{OS}. Whenever a hardware thread needs to execute an \ac{OS} function, it
 passes this request through the \ac{OSIF} to its associated delegate thread,
-which executes the desired function and returns the result. From the \ac{OS}
+which executes the desired function and returns the result. From the \ac{OS}'
 point of view, the hardware implementation is hidden behind the delegate
 threads and the \ac{OS} only handles regular software threads. On the other
 hand, the management of delegate threads is performed by the ReconOS runtime
@@ -243,29 +243,30 @@ ReconOS provides \ac{VHDL} procedures to perform single-word or burst accesses
 for convenient use.
 
 Providing complete transparency against the implementation and execution mode
-of threads simplifies the design process of hybrid multi-core systems.
-However, hardware implementations are still limited to developers familiar
-with \ac{FPGA} technology and low-level programming languages like \ac{VHDL}.
-To lower these entry barriers and open the technology to a broader range of
-developers, recent research explores \ac{HLS} to synthesize efficient hardware
-out of high-level languages like C \citep{SWL13}. A common description for
-both software and hardware implementations fits perfectly into the concept of
-transparent multi-core systems \citep{CBN11}. A thread might be migrated at
-runtime from software to hardware or vice versa, to fulfill requirements in,
-for example, power consumption or performance. Such self-adaptive systems are
-also a hot topic in current research \citep{AHL14,HLP09}.
+of threads, ReconOS simplifies the design process of hybrid multi-core
+systems. However, hardware implementations are still limited to developers
+familiar with \ac{FPGA} technology and low-level programming languages like
+\ac{VHDL}. To lower these entry barriers and open the technology to a broader
+range of developers, recent research explores \ac{HLS} to synthesize efficient
+hardware out of high-level languages like C \citep{SWL13}. A common
+description for both software and hardware implementations fits perfectly into
+the concept of transparent multi-core systems \citep{CBN11}. A thread might be
+migrated at runtime from software to hardware or vice versa, to fulfill
+requirements in, for example, power consumption or performance. Such so-called
+self-adaptive systems are also a hot topic in current research
+\citep{AHL14,HLP09}.
 
 \section{\acl{HLS}}
-While the integration of hardware threads into the multithreaded programming
-model simplifies the design of hybrid multi-core systems at system level and
-presents a transparent model to the developer, the implementation of hardware
-threads is still challenging compared to that of software threads. Developing
-custom hardware is not only limited to a subset of developers capable of
-programming in low-level languages like \ac{VHDL}, but also time consuming and
-error prone \citep{SWL13}. Traditional design methods and flows make it
-difficult to debug and verify a system, resulting in increased costs and
-reduced productivity. Recently, new \ac{HLS} tools are emerging, which try to
-bridge the gap between hardware and software development. By synthesizing
+%While the integration of hardware threads into the multithreaded programming
+%model simplifies the design of hybrid multi-core systems at system level and
+%presents a transparent model to the developer, the implementation of hardware
+%threads is still challenging compared to that of software threads.
+Developing custom hardware is not only limited to a subset of developers
+capable of programming in low-level languages like \ac{VHDL}, but also time
+consuming and error prone \citep{SWL13}. Traditional design methods and flows
+make it difficult to debug and verify a system, resulting in increased costs
+and reduced productivity. Recently, new \ac{HLS} tools are emerging, which try
+to bridge the gap between hardware and software development. By synthesizing
 hardware descriptions from high-level languages like C or C++, these tools
 significantly lower the design time and make \ac{FPGA} designs accessible to a
 broader range of developers \citep{PeTh05}. Relying on a correct synthesis,
@@ -385,7 +386,7 @@ reaction to or in anticipation of its dynamics. To be self-aware, a system
 requires knowledge of phenomena internal and external to itself \citep{LCP11}.
 Internal phenomena are captured by sensors like performance counters or
 temperature sensors and external phenomena are recognized through the
-environment. Both are handled by a self-awareness engine, either private or
+environment. Both are handled by self-awareness engines, either private or
 public, which are interacting with models of the system and environment.
 Besides the self-awareness, requiring to gather data of the system and
 environment, self-expression describes the ability to adapt to changes through
@@ -403,36 +404,32 @@ and partitioning of the system.
 \section{Contribution of this Work}
 Due to the promising perspective for the use of reconfigurable devices in
 \acp{PAC} and the ongoing research in hybrid multi-core systems, this thesis
-evaluates the feasibility of such an approach. The ReconOS framework will be
-used and extended by a reconfigurable infrastructure and \ac{HLS} support.
-While the reconfigurable infrastructure allow direct communication between
-hardware threads and eliminate the communication overhead caused by the
-delegate threads, \ac{HLS} provides a 
+evaluates the feasibility of such an approach. In a first step, the ReconOS
+framework will be extended to fit the needs for a \ac{PAC} device. While the
+current delegate mechanism provides exceptional transparency, it introduces a
+significant overhead for communication between hardware threads. Especially
+for low-latency and high-performance applications, this overhead lowers the
+overall performance and is not acceptable. To utilize the full performance of
+a custom hardware implementation, a reconfigurable interconnect will be
+developed, allowing direct communication between hardware threads through
+existing or new \ac{OS} objects. The new communication method will be
+integrated seamlessly into the ReconsOS programming model and should be
+completely transparent to the developer, automatically selecting the
+communication channel at runtime.
 
-The following subtasks are included:
-\begin{itemize}
-\item Develop a reconfigurable infrastructure for direct communication
-between hardware threads. The new communication method should be integrated
-into the ReconOS programming model as a new or as an extension of an existing
-operating system abstraction. The choice of communication method should be
-made by the runtime system in a way that is transparent for the programmer of
-the hardeware thread.
-\item Develop a toolchain that enables the use of \ac{HLS} for the creation of
-ReconOS hardware threads. Investigate, how \ac{HLS} can be used to generate
-the processing logic of a thread as well as the \ac{OSFSM}.
-\item Implement a method to meassure the power consumption of the system.
-Investigate means to meassure the on-chip power usage in a fine-grained way.
-Investigate whether it is possible to meassure the power usage of individual
-hardware threads.
-\item Develop a \ac{PAC} that controlls a ball-on-plate application. The
-application should contain components for the tracking of the ball, inverse
-kinematics, and the required control algorithms. These components should be
-implemented as a combination of hardware and software threads.
-\item Use the previously developed application and components to meassure
-thread performance, resource utilization and power consumption. Make the
-application adapt to given goals and constraints by mechanisms like switching
-on and off hardware and software threads, or switching between different
-algorithms or implementations. Investigate different adaptation strategies
-ranging from simple heuristics to more sophisticated methods involving machine
-learning.
-\end{itemize}
+To simplify the development of hardware threads and open the system to a
+broader range of users, the current toolchain will be extended to integrate
+the use of Vivado HLS for hardware threads. Since Vivado HLS synthesizes from
+C code, the possibility of a common description for hardware and software
+threads will be evaluated. Especially, the generation of the \ac{OSFSM} in
+Vivado HLS will be investigated.
+
+Utilizing the extended ReconOS framework, its feasibility for \acp{PAC} will
+be evaluated by implementing a ball-on-plate demonstrator, including image
+processing, inverse kinematics and control algorithms. Additionally, the
+system will be able to self-adapt to user constraints in power consumption or
+processing demand by reconfiguring itself autonomously, for example switching
+between hardware and software implementations or different algorithms.
+Building the demonstrator and utilizing the new interconnect and \ac{HLS}
+features, allows an extensive evaluation and comparison to the current ReconOS
+framework.
