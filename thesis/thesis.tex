@@ -1,6 +1,6 @@
 \documentclass[
 	a4paper,
-	11pt,
+	12pt,
 	twoside,
 	%openright,
 	DIV=12,
@@ -55,6 +55,7 @@
 	frame=tb,
 	captionpos=b,
 	breaklines=true,
+	prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\space\hookleftarrow}},
 	tabsize=3}
 \lstset{
 	basicstyle=\ttfamily\footnotesize,
@@ -140,6 +141,7 @@ published elsewhere.\\[27pt]
 
 \tableofcontents
 \listoffigures
+\todo{replace draft figures}
 \listoftables
 \lstlistoflistings
 \include{acronyms}
@@ -171,10 +173,7 @@ published elsewhere.\\[27pt]
 \item show speedup/speeddown
 \end{itemize}
 
-\chapter{Integration of HLS}
-\begin{itemize}
-\item Motivation of HLS
-\end{itemize}
+\include{hls}
 
 \chapter{Demonstrator}
 

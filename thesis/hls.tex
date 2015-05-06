@@ -1,0 +1,220 @@
+%!TEX root = thesis.tex
+\chapter{\acl{HLS}}
+While the benefits of \ac{HLS} in \ac{FPGA} development was already motivated,
+this chapter discusses the integration into the ReconOS framework and how it
+can be utilized for generating the \ac{OSFSM} and processing logic. Starting
+with a detailed introduction into Vivado HLS and its concepts, the resulting
+design and implementation decisions for its integration into ReconOS are
+discussed. Finally, an evaluation based on the SortDemo application is
+presented.
+
+\section{Xilinx Vivado HLS}
+Along with the launch of the Vivado tools in 2012, Xilinx releases its
+\ac{HLS} tool bought up from AutoESL, formerly known as AutoPilot. It supports
+specifications in C, C++ or SystemC and transforms them into synthesizable
+\ac{HDL} code. This allows the usage of Vivado \ac{HLS} together with both the
+Vivado and the ISE implementation tools and simplifies an integration into
+ReconOS, currently supporting only the ISE tools. The efficiency of the
+generated RTL design in terms of performance and resource utilization depends
+hardly on the implementation of the developer and its optimizations for
+\ac{HLS}. However, Vivado HLS is able to synthesize nearly every description
+into working \ac{HDL} code and several case studies \citep{SWL13,OCC14} have
+proven the feasibility for different applications.
+
+\subsection{Toolflow}
+While C-style languages are not made for representing hardware, they lack of
+according language constructs describing, for example I/O ports or arbitrary
+precision data types. Therefore, Vivado HLS introduces a set of conventions,
+directives and libraries to retrofit missing, but required features. The
+typical \ac{HLS} toolflow as illustrated in figure \ref{fig:hls_flow} takes
+the main input files for C-synthesis and C-simulation and generates a
+synthesizable \ac{RTL} implementation, together with a set of reports for
+analysis of the generated hardware.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=6cm]{../figures/hls_flow}
+	\caption{The typical Vivado HLS flow \citep[adapted from][]{ug902}}
+	\label{fig:hls_flow}
+\end{figure}
+
+The primary input for Vivado \ac{HLS} consists out of C functions implemented
+in C, C++ or SystemC. Each function synthesizes into a block in the \ac{RTL}
+implementation, resulting in a hierarchy of modules representing the hierarchy
+of original sub-functions in an one-to-one correspondence. Thereby, a single
+function must be specified as the top-level function. Its arguments are
+synthesized into \ac{RTL} I/O ports, including automatically generates clock
+and control signals. While \ac{HLS} tries to generate an optimal
+implementation based on the default behavior, constraints and directives can
+be used to control the translation process and to generate different variants
+of the same C code. For example \lstinline{HLS UNROLL} directly influences the
+synthesis of loops, while clock constraints or target hardware settings
+indirectly influence the scheduling and binding phase. Directives can either
+be specified in a dedicated file or inline using the the \lstinline{#pragma}
+syntax.
+
+Out of the C specifications, directives and constraints, Vivado \ac{HLS}
+generates the final \ac{RTL} logic in \ac{VHDL} or Verilog and packs it into
+an \ac{IP} for later use with other tools in the Xilinx design flow. To verify
+the design and correctness of the implementation, a tesbench allows to execute
+and debug the code in a C simulation before synthesis and provides a C/RTL
+cosimulation to compare the results of the software and hardware simulation.
+
+\subsection{Fundamentals}
+To write efficient C code for hardware synthesis, understanding the principles
+of \ac{HLS} and how the C code is translated into an equivalent \ac{RTL}
+implementation is fundamental. Vivado \ac{HLS} follows several phases, namely
+scheduling, binding and control logic extraction. Firstly, the control- and
+datapaths specified by the program's operations and conditional statements are
+extracted and translated into an internal representation. Based on these
+information, Vivado HLS performs scheduling, binding and control logic
+extraction. Scheduling determines, based on the length of a clock cycle and
+timing information for the targeted \ac{FPGA}, which operations are scheduled
+in a specific clock cycle. For example, a slower clock frequency allows to
+complete more operations in a single clock cycle, while a slower \ac{FPGA}
+causes operations to be implemented as multicycle resources. Each of the
+scheduled operations is then assigned to a hardware resource in the binding
+phase. Finally, the required interfaces for the different \ac{RTL} entities
+are synthesized and the control logic is implemented by an \ac{FSM} that
+sequences the operations in the \ac{RTL} design.
+
+To illustrate the different phases, listing \ref{lst:hls_code} sketches an
+algorithm implemented in C. 
+\begin{lstlisting}[
+	language=C,
+	caption={Scheduling and binding example},
+	label={lst:hls_code},
+	morekeywords={uint32,uint8},
+	float=tb
+]
+void foo(int in[3], char a, char b, char c, int out[3]) {
+	int x,y;
+	for(int i = 0; i < 3; i++) {
+		x = in[i];
+		y = a*x + b + c;
+		out[i] = y;
+	}
+}
+\end{lstlisting}
+It calculates a sum of operands out of an array and stores the results back in
+memory. To simplify the example for the scheduling and binding phase, consider
+only line 5, containing a multiplication and two additions. Figure
+\ref{fig:hls_sb} shows the corresponding scheduling generated by Vivado
+\ac{HLS}.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=10cm]{../figures/hls_sb}
+	\caption{Scheduled operations for \lstinline{a*x + b + c}}
+	\label{fig:hls_sb}
+\end{figure}
+Since all three operations cannot be finished within a single clock cycle,
+they are split up and executed sequentially. The multiplication and first
+addition is scheduled in the first clock cycle, while the second addition is
+postponed to the second clock cycle, processing the result of the previous
+calculation stored in a register, indicated by the gray square. After
+scheduled all operations, each one is assigned to a hardware resource during
+binding. In the initial phase, each operation is implemented as combinational
+logic, while the target phase optimizes the initial binding by utilizing
+special resources available on the target \ac{FPGA}. In this example, instead
+of implementing the multiplication and first addition in combinational logic,
+a \ac{DSP} resources is instantiated.
+
+After the operations are scheduled and assigned to specific hardware
+resources, the control logic needs to be extracted and implemented. Figure
+\ref{fig:hls_c} shows the necessary control logic for the example code in
+listing \ref{lst:hls_code}.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=10cm]{../figures/hls_c}
+	\caption{Extracted control logic for example algorithm}
+	\label{fig:hls_c}
+\end{figure}
+It executes the scheduled operations of the loop body three times, controls
+when registers store data and setups the appropriate control signals. Since
+the addition of \lstinline{b} and \lstinline{c} needs to be executed only
+once, Vivado \ac{HLS} automatically moves it outside of the loop into state C0
+and stores the result in a register, reused in state C3. To execute the loop
+exactly three times, the \ac{FSM} also manages a counter, incremented each
+time it reaches state C1. Since the interface synthesis, explained later,
+implements the top-level arguments \lstinline{in} and \lstinline{out} as block
+\ac{RAM} interfaces, the control logic generates the according address and
+enable signals and respects the required timing by introducing the delay state
+C2. During execution the full sequence of states results in C0, C1, C2, C3, C1, C2, C3, C1, C2, C3, C0.
+
+
+%A the example code in listing \ref{lst:hls_if}, including two inputs
+%\lstinline{in0} and \lstinline{in1}, a pointer \lstinline{sum} and a return
+%value.
+%\begin{lstlisting}[
+%	language=C,
+%	caption={Interface specification example},
+%	label={lst:hls_if},
+%	morekeywords={uint32},
+%	float=tb
+%]
+%uint32 sum(uint32 in0, uint32 in1, uint32 *sum) {
+%	*sum = in0 + in1 + *sum;
+%	return in0 + in1;
+%}
+%\end{lstlisting}
+Besides the control logic itself, the last synthesis phase also includes the
+interface synthesis, generating I/O ports for the top-level entity and
+internal ports for communication between the different sub-blocks. Applying
+the default interface synthesis settings to the example in listing
+\ref{lst:hls_code} results in an interface as shown in figure
+\ref{fig:hls_if}. It consists out of clock and reset ports
+\lstinline{ap_clk} and \lstinline{ap_rst}, block-level interfaces
+\lstinline{ap_start}, \lstinline{ap_done}, \lstinline{ap_idle} and
+\lstinline{ap_ready}, and port-level interfaces for the top-level arguments
+\lstinline{a}, \lstinline{b}, \lstinline{c}, \lstinline{in} and
+\lstinline{out}.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=10cm]{../figures/hls_if}
+	\caption{Generated interface with default settings}
+	\label{fig:hls_if}
+\end{figure}
+The block-level interfaces control the \ac{IP} by allowing the block to start
+processing or indicating, whether it is ready to accept data, is idle or
+completed operation. Besides the block-level interfaces generated
+independently from any arguments specified by the user, the port-level
+interfaces are generated depending on the type of the argument and its usage.
+Input pass-by-value arguments and pointers are synthesized as wire ports
+without any handshaking signals and must be held valid during operation until
+they are read. Arrays are assumed to be modeled as block \acp{RAM} and are
+implemented accordingly. When used as top-level arguments, synthesis does not
+infer a block \ac{RAM} directly, but generates ports to access a block ram
+outside of the top-level entity. While the example code does note specify a
+return type, Vivado HLS is capable of synthesizing non-pointer types as
+regular out wire ports with \lstinline{ap_done} replacing the typically
+implemented valid signal.
+
+While the default settings generate basic block-level ports sufficient for
+many applications, Vivado HLS also supports more sophisticated protocols like
+\ac{FIFO} or \ac{AXI} interfaces. Since a ReconOS thread is connected via
+the \ac{FIFO} based \ac{OSIF} and \ac{MEMIF} interfaces, these advanced port
+protocols are highly relevant for an \ac{HLS} integration. However, more
+complex protocols do not map sufficiently to primitive datatypes. A pointer
+dereferenced sequentially can be used to model a \ac{FIFO} interface, but
+reaches its limits for infinite streaming data. For these kind of
+applications, Xilinx provides a streaming library, implementing the template
+class \lstinline{hls::stream<>}. It guarantees sequential access via blocking
+and non-blocking \lstinline{read} and \lstinline{write} methods and, by
+default, maps to a \ac{FIFO} interface when used as a top-level argument.
+Unfortunately, the cosimulation feature of Vivado HLS does not support
+streaming datatypes as arguments of the top-level function, making an external
+\ac{RTL}-simulator and a user-created \ac{HDL} testbench necessary.
+
+\section{ReconOS Integration}
+\begin{itemize}
+\item Difference between OSFSM and processing logic
+\item External interfaces of hardware thread only FIFO based
+\item No integration of external VHDL packages
+\item Implementation of ReconOS package in HLS
+\item 
+\end{itemize}
+\subsection{Implementation Details}
+\subsection{Toolchain Integration}
+\section{Evaluation}
+\begin{itemize}
+\item Sort demo comparison
+\end{itemize}
