@@ -272,8 +272,7 @@ void thread_entry(hls::stream<uint32> osif_sw2hw,
 	// hardware thread body
 }
 \end{lstlisting}
-The four
-streaming parameters \lstinline{osif_sw2hw}, \lstinline{osif_hw2sw},
+The four streaming parameters \lstinline{osif_sw2hw}, \lstinline{osif_hw2sw},
 \lstinline{memif_hwt2mem}, \lstinline{memif_mem2hwt} model the \ac{OSIF} and
 \ac{MEMIF} interfaces and are forced by the directives in lines 6-9 to be
 implemented as \acp{FIFO}. Since the hardware thread does not need the, by
@@ -290,16 +289,108 @@ and left unconnected in the wrapper model. Hardware threads generated using
 Vivado HLS does not support pausing and resuming right now.
 
 \subsection{\ac{OSFSM} Specification}
+Having the external interfaces modeled using the \lstinline{hls::stream<>}
+class sets out the basis for a hardware thread description in Vivado HLS. A
+ReconOS thread is separated into the \ac{OSFSM} and the internal processing
+logic as motivated in the introductory chapter. Since the processing logic is
+completely application specific and does not use any ReconOS specific
+functionality, it is the developers task to implement the desired algorithm
+correctly and to interface with the \ac{OSFSM}. However, it is unclear, how
+the \ac{OSFSM} can be modeled inside of Vivado HLS. Many \ac{OS} functions
+imply a blocking semantic and the ordering of several calls must be preserved.
+Since the C code itself has a strongly sequential meaning, it seems to fit
+perfectly to model the \ac{OSFSM} structure. Furthermore, all sequential calls
+contain access to \ac{FIFO} interfaces, which are inherently sequential and
+synthesized accordingly by Vivado HLS. Further data dependencies are also
+respected by the synthesis, while independent processing might be executed in
+parallel to \ac{OS} calls, speeding up the design.
 
+Listing \ref{lst:osfsm_hls} shows an exemplary ReconOS thread implementing the
+\ac{OSFSM} for the SortDemom application.
+\begin{lstlisting}[
+	language=C,
+	caption={Exemplary ReconOS thread in Vivado HLS},
+	label={lst:osfsm_hls},
+	morekeywords={uint32},
+	float=tb
+]
+#include "reconos_calls.h"
+#include "reconos_thread.h"
 
-\begin{itemize}
-\item Difference between OSFSM and processing logic
-\item External interfaces of hardware thread only FIFO based
-\item No integration of external VHDL packages
-\item Implementation of ReconOS package in HLS
-\item 
-\end{itemize}
-\subsection{Implementation Details}
+#include "ap_cint.h"
+
+#define BLOCK_SIZE 2048
+
+THREAD_ENTRY() {
+	RAM(uint32, BLOCK_SIZE, ram);
+
+	THREAD_INIT();
+
+	while(1) {
+		uint32 addr = MBOX_GET(resources_address);
+		MEM_READ(addr, ram, BLOCK_SIZE * 4);
+
+		bubble_sort(ram);
+
+		MEM_WRITE(ram, addr, BLOCK_SIZE * 4);
+		MBOX_PUT(resources_acknowledge, addr);
+	}
+}
+\end{lstlisting}
+It executes several \ac{OS} calls, accesses the memory and calls the internal
+processing logic. While the ReconOS \ac{VHDL} package includes procedures
+implementing a nested state machine to access the external interfaces and
+emulate blocking calls, Vivado HLS does not allow to interface with external
+\ac{HDL} libraries. Therefore, all ReconOS functions were implemented inside
+of Vivado HLS, for example \lstinline{MBOX_GET} or \lstinline{MEM_READ}. Even
+if these calls look like regular function calls, they are implemented as
+preprocessor macros due to the semantics of C functions in Vivado HLS. A
+function represents a separate module in the synthesized \ac{RTL} design,
+which is reasonable for processing logic like the \lstinline{bubble_sort}
+function, but not meaningful here. Listing \ref{lst:call_mbox} shows exemplary the implementation of \lstinline{MBOX_GET}.
+\begin{lstlisting}[
+	language=C,
+	caption={Implementation of \lstinline{MBOX_GET}},
+	label={lst:call_mbox},
+	morekeywords={uint32},
+	float=tb
+]
+#define MBOX_GET(p_handle)(\
+	stream_write(osif_hw2sw, OSIF_CMD_MBOX_GET),\
+	stream_write(osif_hw2sw, p_handle),\
+	stream_read(osif_sw2hw))
+\end{lstlisting}
+It consists out of two writes to the outgoing \ac{OSIF}, followed by a read
+from the incoming \ac{OSIF} and corresponds directly to the \ac{VHDL}
+implementation. It should be noted, that all \ac{FIFO} accesses are performed
+in a blocking manner and synthesized by Vivado HLS accordingly. When analyzing
+the design as shown in figure \ref{fig:osfsm_a}, the sequential execution
+becomes apparent. Rows 5, 7 and 9 represent the \ac{FIFO} access, scheduled in
+three different states sequentially executed after each other.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=10cm]{../figures/osfsm_a}
+	\caption{Analysis of synthesized \ac{OSFSM}}
+	\label{fig:osfsm_a}
+\end{figure}
+
+Besides the ReconOS calls itself, the header files include several macros to
+reduce the complexity and provide a convenient \ac{API} to the developer. For
+example, the macro \lstinline{THREAD_ENTRY} expands to the function prototype
+sketched in listing \ref{lst:hwt_if_h}, defining the \ac{OSIF} and \ac{MEMIF}
+interfaces as top-level arguments and the \lstinline{RAM} macro wraps the
+instantiation of an on-chip \ac{RAM}.
+
+Utilizing the inherently sequential meaning of C code allows a convenient
+specification of the \ac{OSFSM} in Vivado HLS, similar to a software
+implementation. In fact, the same C code used to synthesize custom hardware
+can also be executed on the \ac{CPU}. Having all hardware specific
+functionality wrapped inside of the ReconOS macros allows to generate a
+corresponding implementation in software. Instead of writing into the
+\acp{FIFO} and delegating the \ac{OS} calls to the delegate threads, the
+appropriate system calls are executed directly and memory accesses are mapped
+to pointer operations.
+
 \subsection{Toolchain Integration}
 \section{Evaluation}
 \begin{itemize}
