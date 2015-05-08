@@ -205,18 +205,22 @@ streaming datatypes as arguments of the top-level function, making an external
 \ac{RTL}-simulator and a user-created \ac{HDL} testbench necessary.
 
 \section{ReconOS Integration}
-Integrating Vivado HLS into ReconOS to specify hardware threads more
-conveniently includes several challenges. While the processing logic itself is
-completely user defined and only limited by general restrictions of Vivado
-\ac{HLS}, the structure of the \ac{OSFSM} and the thread's external interfaces
-are prescribed by the ReconOS framework. For convenient use, the existing
-package functions for \ac{OS} calls and memory access should be adapted, to
-provide a unified programming interface for all thread descriptions.
-Especially, the blocking semantics must be expressed and correctly
-synthesized, to guarantee functional correctness. Besides these mandatory
-requirements, an automatically generated software implementation out of the
-\ac{HLS} description would be desirable, especially against the background of
-self-adaptive, reconfigurable systems.
+Knowing Vivado HLS' fundamental concepts and design flows allows to
+investigate an integration into ReconOS, to simplify the development of
+hardware threads and open the framework to a broader range of developers. This
+includes a way to specify the thread's implementation, including the
+processing logic and \ac{OSFSM}, as well as a seamless integration into the
+existing toolchain. While the processing logic itself is completely user
+defined and only limited by general restrictions of Vivado HLS, the structure
+of the \ac{OSFSM} and the thread's external interfaces are prescribed by the
+ReconOS framework. These specifications must be preserved and generated
+accordingly. For convenient use, the existing package functions for
+\ac{OS} calls and memory access should be adapted, to provide a unified
+programming interface for all thread descriptions. Especially, the blocking
+semantics must be preserved and correctly synthesized. Additionally, an
+automatically generated software implementation out of the \ac{HLS}
+description would be desirable, especially against the background of self-
+adaptive, reconfigurable systems.
 
 \subsection{Interface Description}
 A ReconOS hardware thread must implement a fixed set of interfaces to be
@@ -278,9 +282,9 @@ The four streaming parameters \lstinline{osif_sw2hw}, \lstinline{osif_hw2sw},
 implemented as \acp{FIFO}. Since the hardware thread does not need the, by
 default, generated control signals \lstinline{ap_start}, \lstinline{ap_done},
 \lstinline{ap_idle} and \lstinline{ap_ready}, the directive in line 5
-instructs Vivado HLS to generate a mandatory clock and reset signals, but omit
-the default control ports. Synthesizing this top-level function results in an
-interface as shown in figure \ref{fig:hwt_if_h}. Comparing both interfaces
+instructs Vivado HLS to generate the mandatory clock and reset signals, but
+omit the default control ports. Synthesizing the top-level function results in
+an interface as shown in figure \ref{fig:hwt_if_h}. Comparing both interfaces
 reveals an improper naming of the generated ports. Since Vivado HLS does not
 support to specify user defined names, the synthesized top-level model is
 wrapped by another entity providing the correct port names. It should be
@@ -330,7 +334,7 @@ THREAD_ENTRY() {
 		uint32 addr = MBOX_GET(resources_address);
 		MEM_READ(addr, ram, BLOCK_SIZE * 4);
 
-		bubble_sort(ram);
+		sort_bubble(ram);
 
 		MEM_WRITE(ram, addr, BLOCK_SIZE * 4);
 		MBOX_PUT(resources_acknowledge, addr);
@@ -343,11 +347,12 @@ implementing a nested state machine to access the external interfaces and
 emulate blocking calls, Vivado HLS does not allow to interface with external
 \ac{HDL} libraries. Therefore, all ReconOS functions were implemented inside
 of Vivado HLS, for example \lstinline{MBOX_GET} or \lstinline{MEM_READ}. Even
-if these calls look like regular function calls, they are implemented as
+if these calls look like regular function calls, they are realized as
 preprocessor macros due to the semantics of C functions in Vivado HLS. A
 function represents a separate module in the synthesized \ac{RTL} design,
-which is reasonable for processing logic like the \lstinline{bubble_sort}
-function, but not meaningful here. Listing \ref{lst:call_mbox} shows exemplary the implementation of \lstinline{MBOX_GET}.
+which is reasonable for processing logic like the \lstinline{sort_bubble}
+function, but not meaningful here. Listing \ref{lst:call_mbox} shows exemplary
+the implementation of \lstinline{MBOX_GET}.
 \begin{lstlisting}[
 	language=C,
 	caption={Implementation of \lstinline{MBOX_GET}},
@@ -373,8 +378,14 @@ three different states sequentially executed after each other.
 	\caption{Analysis of synthesized \ac{OSFSM}}
 	\label{fig:osfsm_a}
 \end{figure}
+Furthermore, data dependency introduced by the \ac{OS} calls are preserved.
+For example, the internal processing logic accesses the on-chip ram after the
+initialization by \lstinline{MEM_READ} with the unsorted data. Vivado HLS
+schedules these accesses to guarantee the right order of execution. However,
+unlike in a hand-coded implementation, the processing logic might interleave
+with the \ac{OS} calls whenever possible.
 
-Besides the ReconOS calls itself, the header files include several macros to
+Besides the ReconOS calls itself, the library files include several macros to
 reduce the complexity and provide a convenient \ac{API} to the developer. For
 example, the macro \lstinline{THREAD_ENTRY} expands to the function prototype
 sketched in listing \ref{lst:hwt_if_h}, defining the \ac{OSIF} and \ac{MEMIF}
@@ -383,16 +394,152 @@ instantiation of an on-chip \ac{RAM}.
 
 Utilizing the inherently sequential meaning of C code allows a convenient
 specification of the \ac{OSFSM} in Vivado HLS, similar to a software
-implementation. In fact, the same C code used to synthesize custom hardware
-can also be executed on the \ac{CPU}. Having all hardware specific
-functionality wrapped inside of the ReconOS macros allows to generate a
-corresponding implementation in software. Instead of writing into the
+specification. In fact, the same C code used to synthesize custom hardware can
+also be executed on the \ac{CPU}. Having all hardware specific functionality
+wrapped inside of the ReconOS macros allows to generate a corresponding
+implementation in software. Instead of writing into the
 \acp{FIFO} and delegating the \ac{OS} calls to the delegate threads, the
 appropriate system calls are executed directly and memory accesses are mapped
 to pointer operations.
 
 \subsection{Toolchain Integration}
+To provide a convenient development flow, the Vivado HLS tool needs to be
+integrated into the existing ReconOS toolflow sketched in figure
+\ref{fig:rdk_o}.
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[height=3cm]{../figures/rdk_o}
+		\caption{Tradition toolflow}
+		\label{fig:rdk_o}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[height=3cm]{../figures/rdk_h}
+		\caption{Interface inferred by Vivado HLS}
+		\label{fig:rdk_h}
+	\end{subfigure}
+	\caption{Adopted toolflow for Vivado HLS}
+	\label{fig:rdk}
+\end{figure}
+It takes the \ac{VHDL} implementation provided by the developer and packs it
+into an \ac{IP} core using a predefined template. The \ac{IP} core itself is
+then integrated into the reference design template, resulting in a ready-to-
+build EDK project. All these steps are automated in the \ac{RDK}, providing an
+extendable and loosely coupled architecture implemented in Python. Each
+functionality is encapsulated into an independent script, utilizing runtime
+functionality like a template generator or methods for file operations.
+
+Since Vivado HLS synthesizes an \ac{RTL} representation in \ac{VHDL}, it can
+be integrated into the existing toolflow seamlessly, by prepending the
+additional \ac{HLS} step before the \ac{IP} packaging as illustrated in figure
+\ref{fig:rdk_h}. To automate the process of executing Vivado HLS and
+generating the \ac{RTL} implementation, Xilinx includes a \ac{Tcl} interpreter
+combined with a batch operation mode. Listing \ref{lst:hls_tcl} shows the
+\ac{Tcl} template used for synthesizing the developer's source code.
+\begin{lstlisting}[
+	language=TCL,
+	caption={\acs{Tcl} template for Vivado HLS},
+	label={lst:hls_tcl},
+	float=tb
+]
+<<reconos_preproc>>
+
+open_project hls
+set_top rt_imp
+add_files reconos_calls.h
+add_files reconos_thread.h
+add_files [ glob *.cpp ]
+open_solution sol
+set_part {<<PART>>}
+create_clock -period <<CLKPRD>> -name default
+source directives.tcl
+csynth_design
+exit
+\end{lstlisting}
+It adds the source code and directive files to the project, configures the
+appropriate target \ac{FPGA} and clock settings, synthesizes the design and
+exits Vivado HLS. The resulting \ac{VHDL} implementation is then processed
+similarly to a regular \ac{VHDL} specification provided by the user, except
+that the generated top-level module is wrapped by an additional entity to
+compensate the improper port naming.
+
+Beside the generation of a hardware description, the toolchain also
+supports the generation of a software implementation out of the \ac{HLS}
+specification. As stated earlier, it represents valid C code and can be
+compiled without any changes by using the adopted header file
+\lstinline{reconos_calls_c.h}, defining the ReconOS macros for usage in
+software.
+
+The seamless integration of Vivado HLS into the ReconOS toolflow provides a
+convenient development environment. Implementing a thread in Vivado HLS
+requires the developer to setup the source files in the \lstinline{hls}
+directory of the thread's sources, specify the appropriate option
+\lstinline{hls} as \lstinline{HwSource} or \lstinline{SwSource} in the project
+file and export the design, resulting in the read-to-build software and
+hardware projects.
+
 \section{Evaluation}
-\begin{itemize}
-\item Sort demo comparison
-\end{itemize}
+Since many case studies in the literature demonstrated the advantages of
+Vivado HLS in terms of design time and performance, the integration into
+ReconOS promises similar results, combined with a programming model for hybrid
+multi-core systems. To evaluate the particular benefits and drawbacks, the
+well-known SortDemo was implemented in Vivado HLS with different optimizations
+and compared to the classical, hand-coded \ac{VHDL} implementation in terms of
+performance and area-consumption.
+
+Before considering the hard performance metrics, development and contributed
+effort should be taken into account. The SortDemo threads implement a rather
+inefficient bubble sort algorithm. While the custom \ac{VHDL} speification was
+developed previously within weeks by experienced hardware designers, the
+\ac{HLS} implementation required significantly less effort, especially no
+debugging was necessary. A bubble sort algorithm in C can be realized in
+several minutes by even unpracticed developers and verified very easily.
+Compiling and executing the \ac{HLS} implementation on a \ac{CPU} allows
+dramatically simplified testing and debugging without complex \ac{RTL}
+simulations or synthesis and implementation delays. Already for this uncomplex
+application, Vivado HLS offered a significant advantage in terms of error
+rate, development time and required programmer skills. Together with the
+highly accepted multithread programming model, this lowers the entry barrier
+and allows even programmers totally unfamiliar with \acp{HDL} to benefit from
+a hardware accelerated application.
+
+Table \ref{tab:hls_util} shows the resource utilization of the two
+implementations on a ZedBoard evaluation board.
+%+-----------------------------------------------------------+--------------+
+%| Impl  | Slices* | Slice Reg | LUTs  | LUTRAM | BRAM | DSP | Time         |
+%+-----------------------------------------------------------+--------------+
+%| VHDL  | 0/182   | 0/352     | 0/501 | 0/0    | 0/2  | 0/0 | 104.940117ms |
+%| HLS   | 0/271   | 0/539     | 0/723 | 0/0    | 0/2  | 0/0 | 84.062141ms  |
+%+-----------------------------------------------------------+--------------+
+\begin{table}
+	\centering
+	\captionabove{Resource utilization}
+	\label{tab:hls_util}
+	\begin{tabular}{lcccc}
+	\hline
+	\textbf{Type} & \textbf{Slices} & \textbf{Slice Reg} & \textbf{LUTs} & \textbf{BRAM}\\
+	\hline
+	\ac{VHDL} & 182 & 352 & 501 & 2\\
+	\ac{HLS} & 271 & 539 & 723 & 2\\
+	\hline
+	\end{tabular}
+\end{table}
+The thread written in \ac{VHDL} has an overall lower resource utilization.
+However, it is noticeable slower in terms of execution time. While the
+\ac{HLS} implementation takes $\SI{84.06}{\milli\second}$ in average over 1024
+iterations to sort a block of 2048 words, the hand-coded variant needs
+$\SI{104.94}{\milli\second}$ in the same average and is, therefore, around
+20\% slower. Insofar, the higher resource utilization is acceptable and not
+necessarily a drawback, in particular when considering the implementation
+effort taken. Note, that both implementations are significantly faster than
+the according software implementation taking $\SI{216.32}{\milli\second}$ in
+average for a single block.
+
+Applying further optimizations like loop unrolling is not possible, since the
+overall performance is restricted by the \ac{RAM}, providing only limited
+parallel access. Implementing the \ac{RAM} distributed would allow parallel
+access but is not feasible due to resource limitations. For example, with a
+reduced block size of 128 word, a distributed \ac{RAM} would consume around
+75\% of the Zedboard's \acp{LUT}.
