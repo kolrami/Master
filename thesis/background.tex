@@ -407,26 +407,26 @@ current delegate mechanism provides exceptional transparency, it introduces a
 significant overhead for communication between hardware threads. Especially
 for low-latency and high-performance applications, this overhead lowers the
 overall performance and is not acceptable. To utilize the full performance of
-a custom hardware implementation, a reconfigurable interconnect will be
-developed, allowing direct communication between hardware threads through
-existing or new \ac{OS} objects. The new communication method will be
-integrated seamlessly into the ReconsOS programming model and should be
-completely transparent to the developer, automatically selecting the
+a custom hardware implementation, chapter \ref{sec:interconnect} presents a
+reconfigurable interconnect, allowing direct communication between hardware
+threads through existing or new \ac{OS} objects. The new communication method
+will be integrated seamlessly into the ReconsOS programming model and provides
+completely transparency to the developer, automatically selecting the right
 communication channel at runtime.
 
 To simplify the development of hardware threads and open the system to a
-broader range of users, the current toolchain will be extended to integrate
-the use of Vivado HLS for hardware threads. Since Vivado HLS synthesizes from
-C code, the possibility of a common description for hardware and software
-threads will be evaluated. Especially, the generation of the \ac{OSFSM} in
-will be investigated.
+broader range of users, chapter \ref{sec:hls} discusses the integration of
+Vivado HLS into the current toolchain to implement hardware threads. Since
+Vivado HLS synthesizes from C code, the possibility of a common description
+for hardware and software threads will be evaluated. Especially, the
+generation of the \ac{OSFSM} in will be investigated.
 
 Utilizing the extended ReconOS framework, its feasibility for \acp{PAC} will
-be evaluated by implementing a ball-on-plate demonstrator, including image
-processing, inverse kinematics and control algorithms. Additionally, the
-system will be able to self-adapt to user constraints in power consumption or
-processing demand by reconfiguring itself autonomously, for example switching
-between hardware and software implementations or different algorithms.
-Building the demonstrator and utilizing the new interconnect and \ac{HLS}
-features, allows an extensive evaluation and comparison to the current ReconOS
-framework.
+be evaluated in chapter \ref{sec:demo} by implementing a ball-on-plate
+demonstrator, including ball tracking, inverse kinematics and control
+algorithms. Additionally, the system will be able to self-adapt to user
+constraints in power consumption or processing demand by reconfiguring itself
+autonomously, for example switching between hardware and software
+implementations or different algorithms. Building the demonstrator and
+utilizing the new interconnect and \ac{HLS} features, allows an extensive
+evaluation and comparison to the current ReconOS framework.

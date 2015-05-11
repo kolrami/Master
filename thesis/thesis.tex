@@ -1,6 +1,6 @@
 \documentclass[
 	a4paper,
-	11pt,
+	12pt,
 	twoside,
 	%openright,
 	DIV=12,
@@ -153,29 +153,11 @@ published elsewhere.\\[27pt]
 
 \include{introduction}
 \include{background}
-
-\chapter{Interconnect}
-\begin{itemize}
-\item Motivation for interconnect (experiments, other projects, ...)
-\item Always via software to slow
-\item Consideration (resource limitations, ...)
-\item Reconfigurable later on?
-\end{itemize}
-\section{Architectural Considerations}
-\begin{itemize}
-\item Comparison of different approaches
-\item HThreads, ...?
-\end{itemize}
-\section{Implementation}
-\section{Evaluation}
-\begin{itemize}
-\item measure time differences for old/new
-\item show speedup/speeddown
-\end{itemize}
-
+\include{interconnect}
 \include{hls}
 
 \chapter{Demonstrator}
+\label{sec:demo}
 
 \cleardoublepage
 

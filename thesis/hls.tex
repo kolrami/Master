@@ -1,5 +1,6 @@
 %!TEX root = thesis.tex
 \chapter{\acl{HLS}}
+\label{sec:hls}
 While the benefits of \ac{HLS} in \ac{FPGA} development was already motivated,
 this chapter discusses the integration into the ReconOS framework and how it
 can be utilized for generating the \ac{OSFSM} and processing logic. Starting
@@ -292,7 +293,7 @@ noted, that the interrupt signal \lstinline{HWT_SIGNAL} is not considered here
 and left unconnected in the wrapper model. Hardware threads generated using
 Vivado HLS does not support pausing and resuming right now.
 
-\subsection{\ac{OSFSM} Specification}
+\subsection{\acs{OSFSM} Specification}
 Having the external interfaces modeled using the \lstinline{hls::stream<>}
 class sets out the basis for a hardware thread description in Vivado HLS. A
 ReconOS thread is separated into the \ac{OSFSM} and the internal processing
