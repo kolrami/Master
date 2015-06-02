@@ -140,11 +140,61 @@ also allows internal reconfiguration at runtime without effecting the
 connected components.
 
 The following subsections describe the interconnect in detail and illustrate
-its principles. Starting with an introduction of the extended \ac{OSIF}
-protocol and its consequences for the software implementation, the software
-delegate mechanism is explained and to what extend it allows transparent
-access to the hardware resources. Finally, the integration into the existing
-ReconOS toolchain will be considered.
+its principles. Starting with an introduction of the interconnect interface
+and the extended \ac{OSIF} protocol including its consequences for the
+software implementation, the software delegate mechanism is explained and to
+what extend it allows transparent access to the hardware resources. Finally,
+the integration into the existing ReconOS toolchain will be considered.
+
+\subsection{Interconnect Interface}
+While the internal structure of the interconnect can be arbitrarily defined,
+its external interface presented to the different ReconOS components is fixed.
+This allows to develop a range of interconnect structures for different
+requiremens of the applications. Furthermore, considering self-adaptive
+features of the application and partial reconfiguration capabilities of the
+\ac{FPGA}, the fixed external interface allows reconfiguration of the
+interconnect during runtime. Figure \ref{fig:interconnect_if} presents the
+interface, consisiting out of bidirectional \ac{FIFO} ports for each connected
+component, namely the hardware threads, the hardware resources and the
+processor.
+\begin{figure}
+	\centering
+	\includegraphics[width=12cm]{../figures/interconnect}
+	\caption{Interface of rconfigurable interconnect}
+	\label{fig:interconnect_if}
+\end{figure}
+Obviously, the interface depends on the number of hardware resources and
+hardware threads and is generated accordingly. Therefore, an implemented
+interconnect structure must also respect the variying number of ports. Note,
+that all \ac{FIFO} interfaces are implemented as target ports, i.e. the
+components connect their master or slave interfaces directly to the
+interconnect, without a dedicated \ac{FIFO} core in between. This leaves the
+decision where and when to buffer words to the interconnect, allowing more
+flexible and optimized structures. For example, the interconnect might be
+implemented using asynchronous multiplexers without the overhead of a
+dedicated buffering \ac{FIFO}.
+
+Introducing an addressing scheme with source and destination addresses, as
+discussed in the next section, allows to simplify the interface to the
+processor. Originally, each of the \acp{OSIF} were attached individually
+through a set of memory mapped registers to the processor. However, since the
+kernel driver and system bus supports only sequential access, the parallel
+mapping could not be utilized for parallel access and provides no performance
+benefits. Therefore, the interconnect provides only a single \ac{FIFO}
+interface to the processor and is responsible to arbitrate the different
+requests from the hardware components. In software, the driver module provides
+an interface to wait for and receive messages based on a filter, specifying a
+mask (\lstinline{MASK}) and a reference value \lstinline{BITS}. Whenever the
+driver module reads a message, it routes it to the appropriate user-space
+process satisfying \lstinline{CTRL & MASK == BITS}. To specify the filter, a
+process issues the \lstinline{RECONOS_OSIF_SET_MASK} and
+\lstinline{RECONOS_OSIF_SET_BITS} system-calls after opening the appropriate
+device file. For example, a delegate thread associated to slot 1 needs to
+receive all messages originating from the associated hardware thread and
+specifies a mask of \lstinline{0xFF000000}, together with a reference value of
+\lstinline{0x01000000}. It only filters the source address, since the
+destination address does not represent the delegate thread, but a specific
+resource.
 
 \subsection{Interconnect Protocol}
 The interconnect routes \ac{OSIF} messages between the different components,
@@ -175,6 +225,13 @@ allows messages with a maximum number of 65,535 words, which, again, seems to
 be sufficient for typical applications. However, it does not allow an endless
 streaming of data, which must be split up into messages of fixed size.
 
+Based on the control words, the internal interconnect structure is responsible
+for routing the messages to the right destinations. Therefore, it must respect
+the system's configuration, for example which resources are implemented in
+hard- or software and which threads are currently running. Generally, the
+software interface should always act as a fallback and, therefore, be able to
+address all resources of the system.
+
 For the hardware thread interface, the addressing scheme implies only marginal
 changes. The \ac{OSIF} protocol itself remains unchanged, but is preceded by
 the additional control word. However, it should be stated, how the control
@@ -193,28 +250,8 @@ scheduled slot determined at runtime. Consequently, an appropriate mechanism
 is needed, allowing a thread to receive its runtime id. Querying the id
 through a traditional \ac{OSIF} command is not possible, since the request
 itself would require an id. Therefore, the ReconOS runtime sends, initially on
-thread creation, the runtime id to the thread, which is responsible for storing it.
-
-Introducing an addressing scheme for the different threads allows to simplify
-the interface to the processor. Originally, each of the \acp{OSIF} were
-attached individually through a set of memory mapped registers to the
-processor. However, since the kernel driver and system bus supports only
-sequential access, the parallel mapping could not be utilized for parallel
-access and provides no performance benefits. Therefore, the interconnect
-provides only a single \ac{FIFO} interface to the processor and is responsible
-to arbitrate the different requests from the hardware components. In software,
-the driver module provides an interface to wait for and receive messages based
-on a filter, specifying a mask (\lstinline{MASK}) and a reference value
-\lstinline{BITS}. Whenever the driver module reads a message, it routes it to
-the appropriate user-space process satisfying \lstinline{CTRL & MASK == BITS}.
-To specify the filter, a process issues the \lstinline{RECONOS_OSIF_SET_MASK}
-and \lstinline{RECONOS_OSIF_SET_BITS} system-calls after opening the
-appropriate device file. For example, a delegate thread associated to slot 1
-needs to receive all messages originating from the associated hardware thread
-and specifies a mask of \lstinline{0xFF000000}, together with a reference
-value of \lstinline{0x01000000}. It only filters the source address, since the
-destination address does not represent the delegate thread, but a specific
-resource.
+thread creation, the runtime id to the thread, which is responsible for
+storing it.
 
 \subsection{Software Delegate Mechanism}
 
