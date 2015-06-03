@@ -368,11 +368,63 @@ toolchain could implement algorithms to determine automatically the best
 implementation mode. For example, by considering the implementation modes of
 threads using a specific resource, an optimized mode could be determined.
 However, when considering self-adapting systems reconfiguring the execution
-modes of threads at runtime, the toolchain cannot decide on an optimal
+modes of threads at run time, the toolchain cannot decide on an optimal
 solution.
 
 \section{Evaluation}
+To prove the feasibility of the proposed interconnect design and illustrate
+the benefits of a direct hardware communication, an extensive evaluation is
+presented in this chapter. The interconnect details discussed so far
+emphasized only the external interface and disregarded its internal structure.
+However, for an evaluation of the system an actual implementation is required.
+Therefore, a crossbar based interconnect consisting of routing and arbitration
+components will be presented. Based on this interconnect, two different
+hardware resources are evaluated in a prototypical application and compared to
+the original design.
+
+\subsection{Crossbar Interconnect}
+The interconnect interface specifies only the external interface and
+functionality of the interconnect, but not the internal implementation. This
+allows to realize different structures ranging from bus structures to ring
+based protocols. Obviously, every structure provides unique benefits and
+drawbacks in terms of performance, parallelism or resource utilization, making
+the choice highly depended on the application's demands. For this evaluation,
+a high-performance crossbar interconnect was implemented, providing
+parallelism and short delays at a cost of a higher resource utilization.
+
+Figure \ref{fig:crossbar} shows the structure of the crossbar interconnect,
+consisting out of arbitration and routing components, as well as \ac{FIFO}
+buffers. 
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=12cm]{../figures/crossbar}
+	\caption{Crossbar interconnect}
+	\label{fig:crossbar}
+\end{figure}
+
+\subsubsection{Arbitration Component}
+\subsubsection{Routing Component}
+
 \begin{itemize}
-\item measure time differences for old/new
-\item show speedup/speeddown
+\item Router/Arbiter
+\item unknown ids routed to software
+\item Combinational multiplexer
+\item Buffering FIFO on inputs
+\item Register on output (FIFO of depth one)
+\end{itemize}
+\subsection{Propagation Time}
+\subsubsection{Mailbox}
+\subsubsection{Results}
+\subsection{Image Streaming}
+\subsubsection{Pipe}
+\subsubsection{Results}
+
+
+\begin{itemize}
+\item Two FIFO buffers for requests
+\item Data FIFO buffer
+\end{itemize}
+\begin{itemize}
+\item Initialization/Synchronization via centralized resource
+\item no buffering, direct stream of data from one thread to other
 \end{itemize}
