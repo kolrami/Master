@@ -22,7 +22,7 @@ the background section, a detailed knowledge of its implementation and
 performance limitations is required. Consider figure \ref{fig:delegate},
 showing a detailed view of the delegate implementation, consisting out of
 communication interfaces, interrupt lines and drivers.
-\begin{figure}
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=12cm]{../figures/delegate}
 	\caption{ReconOS delegate mechanism in detail}
@@ -86,7 +86,7 @@ most important and comparable framework is the hthreads project, focusing on
 low-jitter hardware implementations of \ac{OS} functions \citep{AHK14}. It
 provides similar functionality but follows a different approach as illustrated
 by the block diagram in figure \ref{fig:hthreads}.
-\begin{figure}
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=12cm]{../figures/hthreads}
 	\caption{Hthreads system block diagram \citep{ASA08}}
@@ -111,14 +111,15 @@ bus structure, again, limits parallel access and performance. Choosing an
 appropriate interconnect, just like the implementation mode of the resources,
 seems to be a crucial step, highly dependent on the application and its
 structure. Furthermore, since the system might be able to adapt itself to
-upcoming requirements during runtime, the needs for the interconnect structure
-might change after design time. Consequently, an interconnect architecture
-should provide a flexible way of utilizing different structures specified at
-design time and, additionally, allow a reconfiguration at runtime.
+upcoming requirements during run time, the needs for the interconnect
+structure might change after design time. Consequently, an interconnect
+architecture should provide a flexible way of utilizing different structures
+specified at design time and, additionally, allow a reconfiguration at run
+time.
 
 Figure \ref{fig:interconnect} illustrates the reconfigurable interconnect
 architecture developed and presented in this thesis.
-\begin{figure}
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=12cm]{../figures/interconnect}
 	\caption{Reconfigurable interconnect}
@@ -136,7 +137,7 @@ allowing them to interface with the system the same way a hardware threads
 does. While the interconnect presents a fixed interface to the outside world,
 its internal structure is hidden completely. This allows to implement
 different structures, for example buses, rings, or crossbar interconnects, and
-also allows internal reconfiguration at runtime without effecting the
+also allows internal reconfiguration at run time without effecting the
 connected components.
 
 The following subsections describe the interconnect in detail and illustrate
@@ -145,56 +146,6 @@ and the extended \ac{OSIF} protocol including its consequences for the
 software implementation, the software delegate mechanism is explained and to
 what extend it allows transparent access to the hardware resources. Finally,
 the integration into the existing ReconOS toolchain will be considered.
-
-\subsection{Interconnect Interface}
-While the internal structure of the interconnect can be arbitrarily defined,
-its external interface presented to the different ReconOS components is fixed.
-This allows to develop a range of interconnect structures for different
-requiremens of the applications. Furthermore, considering self-adaptive
-features of the application and partial reconfiguration capabilities of the
-\ac{FPGA}, the fixed external interface allows reconfiguration of the
-interconnect during runtime. Figure \ref{fig:interconnect_if} presents the
-interface, consisiting out of bidirectional \ac{FIFO} ports for each connected
-component, namely the hardware threads, the hardware resources and the
-processor.
-\begin{figure}
-	\centering
-	\includegraphics[width=12cm]{../figures/interconnect}
-	\caption{Interface of rconfigurable interconnect}
-	\label{fig:interconnect_if}
-\end{figure}
-Obviously, the interface depends on the number of hardware resources and
-hardware threads and is generated accordingly. Therefore, an implemented
-interconnect structure must also respect the variying number of ports. Note,
-that all \ac{FIFO} interfaces are implemented as target ports, i.e. the
-components connect their master or slave interfaces directly to the
-interconnect, without a dedicated \ac{FIFO} core in between. This leaves the
-decision where and when to buffer words to the interconnect, allowing more
-flexible and optimized structures. For example, the interconnect might be
-implemented using asynchronous multiplexers without the overhead of a
-dedicated buffering \ac{FIFO}.
-
-Introducing an addressing scheme with source and destination addresses, as
-discussed in the next section, allows to simplify the interface to the
-processor. Originally, each of the \acp{OSIF} were attached individually
-through a set of memory mapped registers to the processor. However, since the
-kernel driver and system bus supports only sequential access, the parallel
-mapping could not be utilized for parallel access and provides no performance
-benefits. Therefore, the interconnect provides only a single \ac{FIFO}
-interface to the processor and is responsible to arbitrate the different
-requests from the hardware components. In software, the driver module provides
-an interface to wait for and receive messages based on a filter, specifying a
-mask (\lstinline{MASK}) and a reference value \lstinline{BITS}. Whenever the
-driver module reads a message, it routes it to the appropriate user-space
-process satisfying \lstinline{CTRL & MASK == BITS}. To specify the filter, a
-process issues the \lstinline{RECONOS_OSIF_SET_MASK} and
-\lstinline{RECONOS_OSIF_SET_BITS} system-calls after opening the appropriate
-device file. For example, a delegate thread associated to slot 1 needs to
-receive all messages originating from the associated hardware thread and
-specifies a mask of \lstinline{0xFF000000}, together with a reference value of
-\lstinline{0x01000000}. It only filters the source address, since the
-destination address does not represent the delegate thread, but a specific
-resource.
 
 \subsection{Interconnect Protocol}
 The interconnect routes \ac{OSIF} messages between the different components,
@@ -209,7 +160,7 @@ Figure \ref{fig:proto} shows the structure of a control word introduced for
 the interconnect and send before the start of a message. To minimize the
 changes of the hardware thread interface, they are not indicated by a separate
 control flag.
-\begin{figure}
+\begin{figure}[tb]
 	\centering
 	\includegraphics[width=12cm]{../figures/proto}
 	\caption{Control message preceding each message}
@@ -228,9 +179,10 @@ streaming of data, which must be split up into messages of fixed size.
 Based on the control words, the internal interconnect structure is responsible
 for routing the messages to the right destinations. Therefore, it must respect
 the system's configuration, for example which resources are implemented in
-hard- or software and which threads are currently running. Generally, the
-software interface should always act as a fallback and, therefore, be able to
-address all resources of the system.
+hard- or software and which threads are currently running. It might allow
+routing of messages between threads and resources, but also between threads
+for direct communication. Generally, the software interface should always act
+as a fallback and, therefore, be able to address all resources of the system.
 
 For the hardware thread interface, the addressing scheme implies only marginal
 changes. The \ac{OSIF} protocol itself remains unchanged, but is preceded by
@@ -246,18 +198,179 @@ response to the hardware thread's request, the receiver must know the source
 address, the request is originating from. Therefore, a hardware thread needs
 to specify its own id as the source of the request. However, a thread does not
 know its own id implicitly, since it depends on the execution mode and
-scheduled slot determined at runtime. Consequently, an appropriate mechanism
-is needed, allowing a thread to receive its runtime id. Querying the id
+scheduled slot determined at run time. Consequently, an appropriate mechanism
+is needed, allowing a thread to receive its run time id. Querying the id
 through a traditional \ac{OSIF} command is not possible, since the request
-itself would require an id. Therefore, the ReconOS runtime sends, initially on
-thread creation, the runtime id to the thread, which is responsible for
+itself would require an id. Therefore, the ReconOS run time sends, initially on
+thread creation, the run time id to the thread, which is responsible for
 storing it.
+
+\subsection{Interconnect Interface}
+While the internal structure of the interconnect can be arbitrarily defined,
+its external interface presented to the different ReconOS components is fixed.
+This allows to develop a range of interconnect structures for different
+requiremens of the applications. Furthermore, considering self-adaptive
+features of the application and partial reconfiguration capabilities of the
+\ac{FPGA}, the fixed external interface allows reconfiguration of the
+interconnect during run time. Figure \ref{fig:interconnect_if} presents the
+interface, consisiting out of bidirectional \ac{FIFO} ports for each connected
+component, namely the hardware threads, the hardware resources and the
+processor.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=12cm]{../figures/interconnect}
+	\caption{Interface of rconfigurable interconnect}
+	\label{fig:interconnect_if}
+\end{figure}
+Obviously, the interface depends on the number of hardware resources and
+hardware threads and is generated accordingly. Therefore, an implemented
+interconnect structure must also respect the variying number of ports. Note,
+that all \ac{FIFO} interfaces are implemented as target ports, i.e. the
+components connect their master or slave interfaces directly to the
+interconnect, without a dedicated \ac{FIFO} core in between. This leaves the
+decision where and when to buffer words to the interconnect, allowing more
+flexible and optimized structures. For example, the interconnect might be
+implemented using asynchronous multiplexers without the overhead of a
+dedicated buffering \ac{FIFO}.
+
+Introducing an addressing scheme with source and destination addresses, as
+discussed in the previous section, allows to simplify the interface to the
+processor. Originally, each of the \acp{OSIF} were attached individually
+through a set of memory mapped registers to the processor. However, since the
+kernel driver and system bus support only sequential access, the parallel
+mapping could not be utilized for parallel access and provides no performance
+benefits. Therefore, the interconnect provides only a single \ac{FIFO}
+interface to the processor and is responsible to arbitrate the different
+requests from the hardware components. In software, the driver module provides
+an interface to wait for and receive messages based on a filter, specifying a
+mask (\lstinline{MASK}) and a reference value (\lstinline{BITS}). Whenever the
+driver module reads a message, it routes it to the appropriate user-space
+process satisfying \lstinline{CTRL & MASK == BITS}. To specify the filter, a
+process issues the \lstinline{RECONOS_OSIF_SET_MASK} and
+\lstinline{RECONOS_OSIF_SET_BITS} system calls after opening the appropriate
+device file. For example, a delegate thread associated to slot 1 needs to
+receive all messages originating from the associated hardware thread and
+specifies a mask of \lstinline{0xFF000000}, together with a reference value of
+\lstinline{0x01000000}. It only filters the source address, since the
+destination address does not represent the delegate thread, but a specific
+resource.
 
 \subsection{Software Delegate Mechanism}
 
-\subsection{Toolchain Integration}
+While hardware threads have direct access to the hardware resources, they use
+a delegate mechanism to access resources implemented in software. Adopting
+this approach for software threads, which have direct access to resources
+managed on the processor but no access to the resources in hardware, enables
+them a transparent access to all resources, independent from their
+implementation mode. However, software threads are much more flexible in terms
+of instances and termination, and a fixed concept of slots for software
+threads would be unsuitable. Furthermore, additional hardware for each
+software thread is not desirable. Since the processor itself is connected to
+the interconnect via the single \ac{OSIF} interface, the software application
+is able to send messages in the same way a hardware thread does. A resource
+utilizing delegate thread with a dedicated interface becomes unnecessary and
+all software threads can share the same \ac{OSIF} arbitrated by the driver
+module.
 
-\section{Implementation}
+Utilizing the \ac{OSIF} interface enables software threads to access hardware
+resources, but provide no transparent abstraction. To hide the underlying
+implementation of a resource request from the software thread, the run time
+needs to know the implementation mode of each resource, enabling it to execute
+the appropriate call or interface with the hardware. Since every resource is
+represented by a data structure during run time, it can be easily extended by a
+flag indicating the implementation mode. Listing \ref{lst:mbox_get}
+illustrates the concept by presenting a part of the \lstinline{mbox_get}
+implementation.
+\begin{lstlisting}[
+	language=C,
+	caption={Excerp from the \lstinline{mbox_get} implementation},
+	label={lst:mbox_get},
+	float=tb
+]
+if (res->mode == RECONOS_RESOURCE_MODE_SW) {
+	return mbox_get(res->ptr);
+} else if (res->mode == RECONOS_RESOURCE_MODE_HW) {
+	msg[0] = (run_id << 24) | (res->id << 16) | 0x00000001;
+	msg[1] = OSIF_CMD_MBOX_GET;
+	reconos_thread_swslot_write(rt, msg, 2);
+	reconos_thread_swslot_read(rt, msg, 2);
+	return msg[1];
+}
+\end{lstlisting}
+Originally, the software threads directly issue the system call as in line 2.
+To hide the different implementation modes, ReconOS provides an abstraction
+for each operation. Based on the current mode of the resource determined
+during run time, it either issues a regular system call (line 2) or sends a
+request to the hardware resource (line 4-6) followed by a wait for the
+response (line 8). Note, that the thread sends request as described in the
+previous section, including control word with a thread id \lstinline{run_id}
+determined at run time. The driver handles the underlying access to the
+\ac{OSIF}, arbitrates parallel request and routes the response back to the
+appropriate thread.
+
+Introducing an abstraction for all resource operations also provides a unified
+interface for all implementation modes of a thread. Independently from the
+language used to implement a ReconOS thread, the same \ac{API} can be
+utilized. For example, originally, the \ac{VHDL} implementation called
+\lstinline{osif_mbox_get}, while the software directly called
+\lstinline{mbox_get}. Together with the support for \ac{HLS}, all thread
+descriptions are now able to perform the operation by calling
+\lstinline{MBOX_GET} together with an automatically generated identifier
+available in all descriptions.
+
+\subsection{Hardware resources}
+As already covered in the protocol section, a request to a resource, either
+handled via a delegate thread in software or directly in hardware, consists
+out of the control word followed by the original \ac{OSIF} command, i.e. the
+encoding of the command followed by additional arguments. While the delegate
+thread translate the encoding into the appropriate system call executed by the
+operating system, a hardware resource must implement all logic independently
+of any \ac{OS} features. Thereby, since many system calls are performed in a
+blocking manner, the implementation of the resources incorporates scheduling
+components circumventing the scheduling of the operating system. Since the
+resources have no access to any scheduling components, they can only implement
+basic algorithms, for example \acl{FIFO}. However, for hardware threads,
+scheduling has only limited influence, since all thread can always be executed
+in parallel. Since hardware resources are mainly targeting hardware to
+hardware communication, the limited scheduling capabilities are acceptable.
+
+Considering self-adapting systems with changing execution modes of threads
+suggests to reconfigure the mode of a resource analogously. For example, if
+threads are migrated from hardware to software, it might be reasonable to also
+migrate an appropriate resource used by the threads. While the infrastructure
+itself is design in a flexible way and could support such migrations, it
+includes similar challenges as arising from thread migration. Although this
+self-adaptiveness constitute a relevant research topic, it is not targeted in
+this thesis, assuming a fixed configuration of resources, specified at design
+time.
+
+\subsection{Toolchain Integration}
+To make hardware resources available to the developer, the toolchain must
+provide a way to specify the implementation mode of a resource and handle the
+generation of an appropriate interconnect. Listing \ref{lst:hwres_cfg} shows
+an example of two mailboxes, one implemented in software, the other one
+implemented in hardware.
+\begin{lstlisting}[
+	caption={Excerp from the ReconOS configuration},
+	label={lst:hwres_cfg},
+	float=tb
+]
+[ResourceGroup@Eval]
+MboxSw = sw,mbox,2
+MboxHw = hw,mbox,2
+\end{lstlisting}
+As the listing indicates, changing the implementation mode of a resource can
+be achieved by adding a flag to the configuration file and, therefore, is
+totally transparent to the developer.
+
+Additionally to the manual specification of implementation modes, the
+toolchain could implement algorithms to determine automatically the best
+implementation mode. For example, by considering the implementation modes of
+threads using a specific resource, an optimized mode could be determined.
+However, when considering self-adapting systems reconfiguring the execution
+modes of threads at runtime, the toolchain cannot decide on an optimal
+solution.
+
 \section{Evaluation}
 \begin{itemize}
 \item measure time differences for old/new

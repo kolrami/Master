@@ -153,7 +153,7 @@ THREAD_ENTRY() {
 This separation becomes even more apparent in the VHDL implementation shown in
 listing \ref{lst:hwt}. The \ac{OSFSM} handles all requests to \ac{OS}
 functions and controls the internal processing logic via handshaking signals.
-For seamless integration, the ReconOS runtime provides a \ac{VHDL} library
+For seamless integration, the ReconOS run time provides a \ac{VHDL} library
 wrapping all \ac{OS} functions as procedures with a guarding signal
 \lstinline{done}, to condition the state transitions of the \ac{OSFSM}. This
 signal allows blocking \ac{OS} calls to temporarily suspend the hardware
@@ -196,19 +196,19 @@ end process OSFSM;
 \end{lstlisting}
 
 To support the transparent multithreading across the hardware/software
-boundary, ReconOS implements a runtime architecture as shown in figure
-\ref{fig:reconos_runtime}.
+boundary, ReconOS implements a run time architecture as shown in figure
+\ref{fig:reconos_run time}.
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=10cm]{../figures/reconos_hwt}
-	\caption{The ReconOS runtime}
-	\label{fig:reconos_runtime}
+	\caption{The ReconOS run time}
+	\label{fig:reconos_run time}
 \end{figure}
 It consists out of the application specific threads implemented either in
 hardware or software, the \ac{OS} kernel executed on the main \ac{CPU}, and the
-ReconOS runtime components. While the host \ac{OS} provides scheduling, memory
+ReconOS run time components. While the host \ac{OS} provides scheduling, memory
 management, low-level hardware access and the different programming model
-objects published through the \ac{POSIX} API, the ReconOS runtime interfaces
+objects published through the \ac{POSIX} API, the ReconOS run time interfaces
 with the \ac{OS} as software libraries and device drivers and implements
 hardware components for communication and management.
 
@@ -222,7 +222,7 @@ passes this request through the \ac{OSIF} to its associated delegate thread,
 which executes the desired function and returns the result. From the \ac{OS}'
 point of view, the hardware implementation is hidden behind the delegate
 threads and the \ac{OS} only handles regular software threads. On the other
-hand, the management of delegate threads is performed by the ReconOS runtime
+hand, the management of delegate threads is performed by the ReconOS run time
 and is completely hidden from the developer, seeing only the implemented
 hardware and software threads. Although the delegate mechanism introduces an
 overhead for executing \ac{OS} calls, it provides a exceptional transparency
@@ -252,7 +252,7 @@ range of developers, recent research explores \ac{HLS} to synthesize efficient
 hardware out of high-level languages like C \citep{SWL13}. A common
 description for both software and hardware implementations fits perfectly into
 the concept of transparent multi-core systems \citep{CBN11}. A thread might be
-migrated at runtime from software to hardware or vice versa, to fulfill
+migrated at run time from software to hardware or vice versa, to fulfill
 requirements in, for example, power consumption or performance. Such so-called
 self-adaptive systems are also a hot topic in current research
 \citep{AHL14,HLP09}.
@@ -373,7 +373,7 @@ common specification \citep{CBN11}. This greatly simplifies system
 implementation and design-space exploration and allows to find an optimal
 configuration of threads. While a static configuration works perfectly for
 predictable systems, it cannot be optimal in a dynamic environment with
-rapidly changing demands, requiring an adaption at runtime.
+rapidly changing demands, requiring an adaption at run time.
 
 Self-aware computing focuses on those kind of systems facing unprecedented
 levels of system dynamics and requiring novel approaches to adaptivity. Recent
@@ -388,7 +388,7 @@ public, which are interacting with models of the system and environment.
 Besides the self-awareness, requiring to gather data of the system and
 environment, self-expression describes the ability to adapt to changes through
 a self-expression engine and internal actuators. It is driven by objectives
-and constraints given at design-time or dynamically at runtime.
+and constraints given at design-time or dynamically at run time.
 
 With regard to hybrid multi-core systems, self-awareness and self-expression
 allows the system to adjust its partitioning \citep{AHL14}. For example, a
@@ -412,7 +412,7 @@ reconfigurable interconnect, allowing direct communication between hardware
 threads through existing or new \ac{OS} objects. The new communication method
 will be integrated seamlessly into the ReconsOS programming model and provides
 completely transparency to the developer, automatically selecting the right
-communication channel at runtime.
+communication channel at run time.
 
 To simplify the development of hardware threads and open the system to a
 broader range of users, chapter \ref{sec:hls} discusses the integration of
