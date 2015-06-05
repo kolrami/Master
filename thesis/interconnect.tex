@@ -383,35 +383,140 @@ hardware resources are evaluated in a prototypical application and compared to
 the original design.
 
 \subsection{Crossbar Interconnect}
-The interconnect interface specifies only the external interface and
-functionality of the interconnect, but not the internal implementation. This
-allows to realize different structures ranging from bus structures to ring
-based protocols. Obviously, every structure provides unique benefits and
-drawbacks in terms of performance, parallelism or resource utilization, making
-the choice highly depended on the application's demands. For this evaluation,
-a high-performance crossbar interconnect was implemented, providing
-parallelism and short delays at a cost of a higher resource utilization.
+The interconnect specifies only the external interface and functionality, but
+not its internal implementation. This allows to realize different
+architectures, ranging from bus structures to ring based protocols. Obviously,
+every structure provides unique benefits and drawbacks in terms of
+performance, parallelism or resource utilization, making the choice highly
+depended on the application's demands. For this evaluation, a high-performance
+crossbar interconnect was implemented, providing parallelism and short delays
+at a cost of a higher resource utilization.
 
 Figure \ref{fig:crossbar} shows the structure of the crossbar interconnect,
 consisting out of arbitration and routing components, as well as \ac{FIFO}
-buffers. 
+buffers. Note, that the number of ports depends on the number of threads and
+resources and are generated accordingly during implementation.
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=12cm]{../figures/crossbar}
 	\caption{Crossbar interconnect}
 	\label{fig:crossbar}
 \end{figure}
+The procedure of routing a message from a master port to the appropriate
+output slave includes three major steps. At first, the sending component
+writes its data to the associated master port, connected to a buffering
+\ac{FIFO} temporarily storing the message data. Whenever this data is
+available at the slave port connected to the routing component, it reads the
+control word and routes the entire message to the destination arbiter. Since
+no delay introducing buffering is present in between the routing and
+arbitration components, the term routing might be misleading. Rather writing
+messages, the router asynchronously multiplexes the slave interface of the
+incoming \ac{FIFO} the the appropriate output ports. Similarly, the
+arbitration components demultiplexes all incoming ports to the outgoing
+buffering \ac{FIFO}. Since the internal connections between routing and
+arbitration components are asynchronous, the external ports are buffered by
+additional \acp{FIFO}. While the incoming buffers are essential, the outgoing
+ones could be omitted. However, as it turned out during the implementation of
+different slave components connecting the interconnect signals asynchronously,
+timing becomes a heavily limiting factor and even a small interconnect does
+not meet the required timing constraints. Therefore, the outgoing buffers shorten the critical path significantly and eliminating timing issues.
+
+\subsubsection{Routing Component}
+As illustrated in figure \ref{fig:crossbar}, the routing component multiplexes
+the single slave input to multiple output ports based on the control word.
+Therefore, it implements an asynchronous multiplexer controlled by a bit
+vector indicating the targeted output port and controlled by a state machine
+as illustrated in figure \ref{fig:router_fsm}.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=12cm]{../figures/router_fsm}
+	\caption{\acs{FSM} of router}
+	\label{fig:router_fsm}
+\end{figure}
+In its initial state \emph{W} the router waits for a message becoming
+available at the incoming slave port and reads the first control word. States
+\emph{RO} and \emph{RD} then perform the routing by considering the
+destination address of the message and setting the appropriate select bit for
+the multiplexer. While \emph{RO} compares the destination address to the known
+ids of the output ports, \emph{RD} represent the default routing target. After
+determining the destination port for the message, the control word is written
+to the output in state \emph{C}, followed by the payload data in state
+\emph{P}. After the entire message is transferred, the router returns to its
+initial state \emph{W} and waits for the next message.
+
+Considering this procedure, it takes only three clock cycles until the first
+word of the message is present at the output port. Assuming, that all messages
+can be handled by \emph{RD}, the state \emph{RD} can be eliminated, resulting
+in a delay of two clock cycles.
 
 \subsubsection{Arbitration Component}
-\subsubsection{Routing Component}
+While the router multiplexes a single input \ac{FIFO} to the appropriate
+output port, the arbiter demultiplexes multiple inputs to a single output
+\ac{FIFO}. Therefore, it implements a round-robin scheduler, processing the
+incoming messages one after another. Note, that the implemented scheduler does
+not cycle through all inputs sequentially, i.e. a single request is processed
+immediately without a delay proportional to the number of input ports. Again,
+a bit vector is used as a selection for the demultiplexer and controlled by
+the state machine implementing the roud-robin algorithm as illustrated in
+figure \ref{fig:arbiter_fsm}.
+\begin{figure}[tb]
+	\centering
+	\includegraphics[width=12cm]{../figures/arbiter_fsm}
+	\caption{\acs{FSM} of arbiter}
+	\label{fig:arbiter_fsm}
+\end{figure}
+Initially in state \emph{W} the arbiter waits for a message being present in
+one of the input \acp{FIFO}. Whenever data is available, it processes the
+request in a round-robin fashion in state \emph{ARB}, by determining the
+\ac{LSB} of the input requests by
+\lstinline{req and std_logic_vector(unsigned(not(req)) + 1)} and masking it
+out for the next turn. This procedure introduces no delay for single request
+compared to an iterative approach looping through the inputs. After
+determining the next message to arbitrate, the control word is written to the
+output in state \emph{C}, followed by the rest of the message's data in state
+\emph{P}. When all words are read, the arbiter return to state \emph{W} and
+processes the next message.
 
-\begin{itemize}
-\item Router/Arbiter
-\item unknown ids routed to software
-\item Combinational multiplexer
-\item Buffering FIFO on inputs
-\item Register on output (FIFO of depth one)
-\end{itemize}
+\subsubsection{Resource Utilization}
+While the crossbar interconnect allows parallel transaction between different
+ports and a low delay of a few clock cycles, it consumes a relatively high
+amount of resources. As stated, the interconnect mainly consists out of the
+routing and arbitration components, growing with increasing number of output
+or input ports, respectively. Figure \ref{fig:crossbar_computil} shows the
+resource utilization of the router and arbiter for different numbers of ports.
+
+Additionally to the routing and arbitration components, the entire
+interconnect also includes several \acp{FIFO} for buffering of the external
+interfaces. Table \ref{tab:crossbar_util} shows the resource utilization for
+an entire interconnect for a single hardware resource and three hardware
+threads.
+%+---------------------------------------------------------------+
+%| Module      | Slices* | Slice Reg | LUTs | LUTRAM | BRAM/FIFO |
+%+---------------------------------------------------------------+
+%| FIFOs       | 124     | 65        | 358  | 240    | 0         |
+%| Routing     | 212     | 266       | 359  | 0      | 0         |
+%| Arbitration | 167     | 114       | 452  | 0      | 0         |
+%+---------------------------------------------------------------+
+%| Total       | 503     | 445       | 1169 | 240    | 0         |
+%+---------------------------------------------------------------+
+\begin{table}
+	\centering
+	\captionabove{Resource utilization of crossbar interconnect}
+	\label{tab:crossbar_util}
+	\begin{tabular}{lcccc}
+	\hline
+	\textbf{Type} & \textbf{Slices} & \textbf{Slice Reg} & \textbf{LUTs} & \textbf{LUTRAM}\\
+	\hline
+	\acp{FIFO} & 124 (24.7\%) & 65 (14.6\%) & 358 (30.6\%) & 240 (100.0\%)\\
+	Routing & 212 (42,1\%) & 266 (59.8\%) & 359 (30.7\%) & 0 (0.0\%)\\
+	Arbitration & 167 (30.2\%) & 114 (25.6\%) & 452 (38.7\%) & 0 (0.0\%)\\
+	\hline
+	Total & 503 (100.0\%) & 445 (100.0\%) & 1169 (100.0\%) & 240 (100.0\%)\\
+	\hline
+	\end{tabular}
+\end{table}
+
+
 \subsection{Propagation Time}
 \subsubsection{Mailbox}
 \subsubsection{Results}
