@@ -615,20 +615,45 @@ While implementing this structure using Vivado HLS simplified the handling of
 language to model parallel structures. Since the \emph{REQ} state only writes
 to the request \acp{FIFO} and the \emph{PUT} and \emph{GET} states only read
 from them, both could be implemented in parallel and independently from each
-other. However, C does not allow to specify concurrent blocks, but only a
-sequential sequence.
+other. However, C does not allow to specify concurrent blocks.
 
 \subsubsection{Results}
+To measure the performance of the mailbox, table \ref{tab:mbox_turn} shows the
+turnaround times for combinations of different resource implementations,
+thread execution modes and processor loads.
+\begin{table}
+	\centering
+	\captionabove{Turnaround times for mailbox in clock cycles of $\SI{100}{\mega\hertz}$}
+	\label{tab:mbox_turn}
+	\begin{tabular}{llcccc}
+	\hline
+	\textbf{Mode} & \textbf{Load} & \textbf{Hw-Sw} & \textbf{Hw-Hw} & \textbf{Sw-Sw} & \textbf{Sw-Hw}\\
+	\hline
+	Hardware & Low & ? & ? & ? & ?\\
+	Hardware & High & 6146 & 7 & 10924 & 1543\\
+	Software & Low & ? & ? & ? & ?\\
+	Software & High & 3091 & 7857 & 1140 & 3778\\
+	\hline
+	\end{tabular}
+\end{table}
+The turnaround time represents the period between the execution of the put
+operation and the return of get operation. The destination thread performs an
+\lstinline{MBOX_GET} and, since the targeted mailbox is empty, blocks in this
+call. After that, the source thread performs an \lstinline{MBOX_PUT} and, in
+consequence, the blocking get operation of the destination thread returns.
+Before the put operation and after the return of the get operation, both
+threads save a time stamp, used to calculate the turnaround time as its
+difference. Since an application typically puts some load on the processor,
+the measurements were performed for both low and high system loads. While for
+low load situations only the evaluation threads were executed, processor load
+was created for the high load measurements by soft- and hardware worker
+threads, executing arbitrary operations and communicating frequently.
+
+Independent from the system load, the hardware resource outperforms its
+software counterparts for communication between hardware threads by providing
+low-latency access without any jitter. However, for communication involving
+software threads, it ...
+
 \subsection{Image Streaming}
 \subsubsection{Pipe}
 \subsubsection{Results}
-
-
-\begin{itemize}
-\item Two FIFO buffers for requests
-\item Data FIFO buffer
-\end{itemize}
-\begin{itemize}
-\item Initialization/Synchronization via centralized resource
-\item no buffering, direct stream of data from one thread to other
-\end{itemize}
