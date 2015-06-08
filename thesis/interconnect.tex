@@ -481,15 +481,40 @@ processes the next message.
 While the crossbar interconnect allows parallel transaction between different
 ports and a low delay of a few clock cycles, it consumes a relatively high
 amount of resources. As stated, the interconnect mainly consists out of the
-routing and arbitration components, growing with increasing number of output
-or input ports, respectively. Figure \ref{fig:crossbar_computil} shows the
-resource utilization of the router and arbiter for different numbers of ports.
+routing and arbitration components. Figure \ref{fig:crossbar_util} shows their
+resource utilization, increasing with the number of ports.
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics{../figures/eval_router}
+		\caption{Routing component}
+		\label{fig:crossbar_util_router}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics{../figures/eval_arbiter}
+		\caption{Arbitration component}
+		\label{fig:crossbar_util_arbiter}
+	\end{subfigure}
+	\caption{Resource utilization for different number of ports}
+	\label{fig:crossbar_util}
+\end{figure}
+Thereby, the number of \acp{LUT} shows a stronger growth than the number of
+registers, since most of the resources are consumed by the combinatorial
+multiplexers, heavily influenced by the number of ports. Furthermore, the
+arbiter's multiplexers need significantly more resources compared to the
+router's counterparts, since they multiplex the 32-bit wide data ports, while
+the router connects the incoming data port directly to all outgoing ports.
 
-Additionally to the routing and arbitration components, the entire
-interconnect also includes several \acp{FIFO} for buffering of the external
-interfaces. Table \ref{tab:crossbar_util} shows the resource utilization for
-an entire interconnect for a single hardware resource and three hardware
-threads.
+In total, even a rather unrealistic high number of ports results in an
+acceptable resource utilization without timing issues.
+
+%Additionally to the routing and arbitration components, the entire
+%interconnect also includes several \acp{FIFO} for buffering of the external
+%interfaces. Table \ref{tab:crossbar_util} shows the resource utilization for
+%an entire interconnect for a single hardware resource and three hardware
+%threads.
 %+---------------------------------------------------------------+
 %| Module      | Slices* | Slice Reg | LUTs | LUTRAM | BRAM/FIFO |
 %+---------------------------------------------------------------+
@@ -499,22 +524,43 @@ threads.
 %+---------------------------------------------------------------+
 %| Total       | 503     | 445       | 1169 | 240    | 0         |
 %+---------------------------------------------------------------+
-\begin{table}
-	\centering
-	\captionabove{Resource utilization of crossbar interconnect}
-	\label{tab:crossbar_util}
-	\begin{tabular}{lcccc}
-	\hline
-	\textbf{Type} & \textbf{Slices} & \textbf{Slice Reg} & \textbf{LUTs} & \textbf{LUTRAM}\\
-	\hline
-	\acp{FIFO} & 124 (24.7\%) & 65 (14.6\%) & 358 (30.6\%) & 240 (100.0\%)\\
-	Routing & 212 (42,1\%) & 266 (59.8\%) & 359 (30.7\%) & 0 (0.0\%)\\
-	Arbitration & 167 (30.2\%) & 114 (25.6\%) & 452 (38.7\%) & 0 (0.0\%)\\
-	\hline
-	Total & 503 (100.0\%) & 445 (100.0\%) & 1169 (100.0\%) & 240 (100.0\%)\\
-	\hline
-	\end{tabular}
-\end{table}
+%\begin{table}
+%	\centering
+%	\captionabove{Resource utilization of crossbar interconnect}
+%	\label{tab:crossbar_util}
+%	\begin{tabular}{lcccc}
+%	\hline
+%	\textbf{Type} & \textbf{Slices} & \textbf{Slice Reg} & \textbf{LUTs} & \textbf{LUTRAM}\\
+%	\hline
+%	\acp{FIFO} & 124 (24.7\%) & 65 (14.6\%) & 358 (30.6\%) & 240 (100.0\%)\\
+%	Routing & 212 (42,1\%) & 266 (59.8\%) & 359 (30.7\%) & 0 (0.0\%)\\
+%	Arbitration & 167 (30.2\%) & 114 (25.6\%) & 452 (38.7\%) & 0 (0.0\%)\\
+%	\hline
+%	Total & 503 (100.0\%) & 445 (100.0\%) & 1169 (100.0\%) & 240 (100.0\%)\\
+%	\hline
+%	\end{tabular}
+%\end{table}
+
+%+------+---------+---------+-----------+-----------+
+%| #Res | Module  | Slices* | Slice Reg | LUTs      |
+%+------+---------+---------+-----------+-----------+
+%| 1    | arbiter | 31      | 56        | 82        |
+%| 1    | router  | 17      | 22        | 102       |
+%| 2    | arbiter | 45      | 54        | 77        |
+%| 2    | router  | 21      | 24        | 92        |
+%| 3    | arbiter | 51      | 55        | 81        |
+%| 3    | router  | 63      | 26        | 152       |
+%| 4    | arbiter | 46      | 56        | 82        |
+%| 4    | router  | 61      | 28        | 156       |
+%| 5    | arbiter | 50      | 57        | 85        |
+%| 5    | router  | 48      | 30        | 180       |
+%| 6    | arbiter | 55      | 59        | 91        |
+%| 6    | router  | 55      | 34        | 206       |
+%| 7    | arbiter | 55      | 59        | 91        |
+%| 7    | router  | 55      | 34        | 206       |
+%| 8    | arbiter | 52      | 62        | 93        |
+%| 8    | router  | 64      | 36        | 229       |
+%+------+---------+---------+-----------+-----------+
 
 
 \subsection{Propagation Time}
