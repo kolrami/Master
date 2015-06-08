@@ -508,7 +508,8 @@ router's counterparts, since they multiplex the 32-bit wide data ports, while
 the router connects the incoming data port directly to all outgoing ports.
 
 In total, even a rather unrealistic high number of ports results in an
-acceptable resource utilization without timing issues.
+acceptable resource utilization without timing issues cause by the
+interconnect.
 
 %Additionally to the routing and arbitration components, the entire
 %interconnect also includes several \acp{FIFO} for buffering of the external
@@ -564,7 +565,59 @@ acceptable resource utilization without timing issues.
 
 
 \subsection{Propagation Time}
+To evaluate the performance of a hardware resource compared to its
+implementation in software, the commonly used mailbox was chosen as a
+representative synchronization object. The following subsections present a
+short explanation of the hardware implementation using \ac{HLS}, followed by
+an evaluation of several turnaround times.
 \subsubsection{Mailbox}
+A mailbox constitute a basic synchronization primitive allowing to exchange
+single data words by providing thread safe put and get methods. In software,
+the mailbox is implemented as a memory area with protected access through a
+semaphore, counting the number of available words and handling blocking calls.
+Figure \ref{fig:mbox_hw_struct} presents an equivalent hardware
+implementation, utilizing multiple \ac{FIFO} buffers for data words and
+pending requests.
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.97\textwidth]{../figures/mbox_hw_struct}
+		\caption{Overall structure}
+		\label{fig:mbox_hw_struct}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.97\textwidth]{../figures/mbox_hw_fsm}
+		\caption{Control logic}
+		\label{fig:mbox_hw_fsm}
+	\end{subfigure}
+	\caption{Mailbox implementation in hardware}
+	\label{fig:mbox_hw}
+\end{figure}
+Each request is enqueued into the corresponding \ac{FIFO} to free the input
+\ac{FIFO} in case of a blocking call, for example an \lstinline{mbox_get} on
+an empty mailbox. Besides the request \acp{FIFO}, a single data buffer models
+the memory area used in software, to store the putted data words until the
+next get request. Access to the different \acp{FIFO} is handled by a state
+machine as illustrated in figure \ref{fig:mbox_hw_fsm}. The state machine
+cycles between three main states \emph{REQ}, \emph{PUT} and \emph{GET},
+consisting out of multiple sub-states. \emph{REQ} handles the incoming request
+from the hardware threads, decodes them and enqueues them into the appropriate
+request buffers. Afterwards, \emph{PUT} and \emph{GET} check the queues for
+pending requests and process them. While put requests store the transmitted
+data words in the data buffer, get requests read out the stored words and
+sends them back to the issuing threads. Therefore, the request buffers,
+additionally, store the thread ids for each request.
+
+While implementing this structure using Vivado HLS simplified the handling of
+\ac{FIFO} buffers dramatically, it also pointed out the limitations of the C
+language to model parallel structures. Since the \emph{REQ} state only writes
+to the request \acp{FIFO} and the \emph{PUT} and \emph{GET} states only read
+from them, both could be implemented in parallel and independently from each
+other. However, C does not allow to specify concurrent blocks, but only a
+sequential sequence.
+
 \subsubsection{Results}
 \subsection{Image Streaming}
 \subsubsection{Pipe}
