@@ -380,7 +380,8 @@ However, for an evaluation of the system an actual implementation is required.
 Therefore, a crossbar based interconnect consisting of routing and arbitration
 components will be presented. Based on this interconnect, two different
 hardware resources are evaluated in a prototypical application and compared to
-the original design.
+the original design. All evaluation is performed using the Zedboard, featuring
+a Zynq XC7Z020-CLG484.
 
 \subsection{Crossbar Interconnect}
 The interconnect specifies only the external interface and functionality, but
@@ -620,7 +621,23 @@ other. However, C does not allow to specify concurrent blocks.
 \subsubsection{Results}
 To measure the performance of the mailbox, table \ref{tab:mbox_turn} shows the
 turnaround times for combinations of different resource implementations,
-thread execution modes and processor loads.
+thread execution modes and processor loads. The turnaround time represents the
+period between the execution of the put operation and the return of get
+operation. The destination thread performs an \lstinline{MBOX_GET} and, since
+the targeted mailbox is empty, blocks in this call. After that, the source
+thread performs an \lstinline{MBOX_PUT} and, in consequence, the blocking get
+operation of the destination thread returns. Before the put operation and
+after the return of the get operation, both threads save a time stamp, used to
+calculate the turnaround time as its difference. Since an application
+typically puts some load on the processor, the measurements were performed for
+both low and high system loads. While for low load situations only the
+evaluation threads were executed, processor load was created for the high load
+measurements by soft- and hardware worker threads, executing arbitrary
+operations and communicating frequently. To eliminate uncertainty, the
+measurements were performed on a single processor system, disabling the second
+core using the kernel parameter
+\lstinline{maxcpus=1}.
+
 \begin{table}
 	\centering
 	\captionabove{Turnaround times for mailbox in clock cycles of $\SI{100}{\mega\hertz}$}
@@ -629,30 +646,33 @@ thread execution modes and processor loads.
 	\hline
 	\textbf{Mode} & \textbf{Load} & \textbf{Hw-Sw} & \textbf{Hw-Hw} & \textbf{Sw-Sw} & \textbf{Sw-Hw}\\
 	\hline
-	Hardware & Low & ? & ? & ? & ?\\
-	Hardware & High & 6146 & 7 & 10924 & 1543\\
-	Software & Low & ? & ? & ? & ?\\
-	Software & High & 3091 & 7857 & 1140 & 3778\\
+	Hardware & Low & 6138 & 7 & 10937 & 1538\\
+	Hardware & High & 15365 & 7 & 10560 & 1482\\
+	Software & Low & 3115 & 7807 & 1136 & 3796\\
+	Software & High & 11904 & 12944 & 1484 & 3435\\
 	\hline
 	\end{tabular}
 \end{table}
-The turnaround time represents the period between the execution of the put
-operation and the return of get operation. The destination thread performs an
-\lstinline{MBOX_GET} and, since the targeted mailbox is empty, blocks in this
-call. After that, the source thread performs an \lstinline{MBOX_PUT} and, in
-consequence, the blocking get operation of the destination thread returns.
-Before the put operation and after the return of the get operation, both
-threads save a time stamp, used to calculate the turnaround time as its
-difference. Since an application typically puts some load on the processor,
-the measurements were performed for both low and high system loads. While for
-low load situations only the evaluation threads were executed, processor load
-was created for the high load measurements by soft- and hardware worker
-threads, executing arbitrary operations and communicating frequently.
+As table \ref{tab:mbox_turn} indicates, a mailbox implemented in hardware
+provides a significant speedup of around 1000 for hardware to hardware
+communication. Furthermore, the communication is performed offside the
+processor and, therefore, not influenced by the system's load and rather
+jitter-free. Besides a speedup for hardware to hardware communication, a
+hardware resources also provides speedup for software to hardware
+communication. While for a software resource, the delegate blocks in the
+appropriate system call and needs to be scheduled to send the result to the
+hardware thread, the hardware resource is directly interfaced by the source
+thread, avoiding an additional thread switch.
 
-Independent from the system load, the hardware resource outperforms its
-software counterparts for communication between hardware threads by providing
-low-latency access without any jitter. However, for communication involving
-software threads, it ...
+For both hardware to software and software to software, a resource managed by
+the operating system provides better results. The significant impact of the
+load on the turnaround times of the hardware resources results from the
+interrupt handling of the operating system. Under load, a long running thread
+is, with high probability, executed when the interrupt occurs and scheduled
+again, afterwards. Therefore, it needs additional time to schedule the
+delegate thread and execute the appropriate get command. In contrary, for
+software resources, the long running tasks are not interrupted and the blocked
+evaluation threads gain a higher priority during waiting.
 
 \subsection{Image Streaming}
 \subsubsection{Pipe}
