@@ -755,11 +755,34 @@ bytes from that address to a local ram and writes the data to the pipe
 \lstinline{s0_out}.
 
 In software the ReconOS pipe is implemented by, basically, two semaphores,
-indicating read and write operations. Reading from the pipe stores a pointer
-to the destination buffer in an internal data structure, posts the read
-semaphore and waits for the write semaphore. In contrast, the write waits for
-the read semaphore, copies the data from the source to the destination buffer
-and posts the write semaphore.
+indicating read and write operations as sketched in listing \ref{lst:pipe_sw}.
+\begin{lstlisting}[
+	language=C,
+	caption={Software implementation of ReconOS pipe},
+	label={lst:pipe_sw},
+	morekeywords={ssize_t},
+	float=tb
+]
+ssize_t pipe_write(...) {
+	sem_wait(&pipe->read);
+	pipe->len = min(pipe->len, len);
+	memcpy(pipe->buf, buf, pipe->len);
+	sem_post(&pipe->write);
+	return pipe->len;
+}
+
+ssize_t pipe_read(...) {
+	pipe->len = len;
+	pipe->buf = buf;
+	sem_post(&pipe->read);
+	sem_wait(&pipe->write);
+	return pipe->len;
+}
+\end{lstlisting}
+Reading from the pipe stores a pointer to the destination buffer in an
+internal data structure, posts the read semaphore and waits for the write
+semaphore. In contrast, the write waits for the read semaphore, copies the
+data from the source to the destination buffer and posts the write semaphore.
 
 For its hardware implementation, the ReconOS pipe specifies an appropriate
 \ac{OSIF} protocol as illustrated in figure \ref{fig:pipe_hw_osif}.
