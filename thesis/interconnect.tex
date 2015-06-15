@@ -687,19 +687,18 @@ line based filters in multiple threads.
 \subsubsection{Pipe}
 The pipe originates from the field of inter-process communication and provides
 a \ac{FIFO} based interface for exchanging data. It seems to be suitable to
-abstract a stream between different threads by providing a read and write
-method. While traditional pipes in software provide a buffer storing the
-written data until it is read, restricted on-chip memory on the
-\ac{FPGA} limits buffering for a hardware implementation. Therefore, the
-ReconOS pipe implementation does not utilize a dedicated buffer but directly
-forwards the data to the destination thread. The write method blocks until a
-corresponding read method is called and writes directly to the destination
-buffer. Analogously, the read method blocks until a write request occurs and
-finishes. Note, that a pipe represents a direct connection between two threads
-and does not provide any support for concurrently occurring reads or writes on
-the same pipe. This must be handled by the developer by introducing
-appropriate synchronization mechanisms, serializing access and preventing
-concurrent access.
+abstract a unidirectional stream between different threads. While traditional
+pipes in software provide a buffer storing the written data until it is read,
+restricted on-chip memory on the \ac{FPGA} limits buffering for a hardware
+implementation. Therefore, the ReconOS pipe implementation does not utilize a
+dedicated buffer but directly forwards the data to the destination thread. The
+write method blocks until a corresponding read method is called and writes
+directly to the destination buffer. Analogously, the read method blocks until
+a write request occurs and finishes. Note, that a pipe represents a direct
+connection between two threads and does not provide any support for
+concurrently occurring reads or writes on the same pipe. This must be handled
+by the developer by introducing appropriate synchronization mechanisms,
+serializing access and preventing concurrent access.
 
 Table \ref{tab:pipe_api} show the \ac{API} of the ReconOS pipe for C,
 \ac{VHDL} and \ac{HLS} implementations of threads.
@@ -779,7 +778,7 @@ For its hardware implementation, the ReconOS pipe specifies an appropriate
 		\label{fig:pipe_hw_fsm}
 	\end{subfigure}
 	\caption{Hardware implementation of ReconOS pipe}
-	\label{fig:mbox_hw}
+	\label{fig:pipe_hw}
 \end{figure}
 For both writing and reading, the hardware thread sends an encoding of the
 command, followed by the number of bytes to write or read, respectively. In
@@ -788,10 +787,18 @@ indicating the number of actual bytes, i.e. the minimum of the read and write
 request's lengths. Through that mechanism, the pipe mimics the blocking calls
 to the semaphore in the software implementation. While the synchronization is
 handled by the centralized resource, the data transfer can be processed via
-direct thread interconnects. However, in this implementation, the data is
-transferred to the pipe and then send back to the destination thread. While
-this design introduces a delay of a few clock cycles, it eliminates the need
-for additional interconnect links, resulting in lower resource utilization and
-improved timing.
+direct thread interconnects. However, the data is transferred to the pipe
+resource and then send back to the destination thread. While this design
+introduces a delay of a few clock cycles, it eliminates the need for
+additional interconnect links, resulting in lower resource utilization and
+improved timing. Based on this protocol, figure \ref{fig:pipe_hw_fsm} shows
+the appropriate control logic of the hardware implementation. In its states
+\emph{INIT}, \emph{RReq} and \emph{WReq} it waits for a read and write request.
+Thereby, the order in which both request arrive does not matter. After both
+request are received, the pipe outputs the responses in states \emph{RRes} and
+\emph{WRes}. Since the response to the reading thread must arrive before the
+data, it is send before the write request. Finally, in state \emph{Data} the
+resource forwards the data received from the writing thread and returns to its
+initial state.
 
 \subsubsection{Results}
