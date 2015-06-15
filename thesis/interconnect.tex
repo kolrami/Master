@@ -589,7 +589,7 @@ pending requests.
 	\end{subfigure}
 	\begin{subfigure}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.97\textwidth]{../figures/mbox_hw_fsm}
+		%\includegraphics[width=0.97\textwidth]{../figures/mbox_hw_fsm}
 		\caption{Control logic}
 		\label{fig:mbox_hw_fsm}
 	\end{subfigure}
@@ -646,34 +646,152 @@ core using the kernel parameter
 	\hline
 	\textbf{Mode} & \textbf{Load} & \textbf{Hw-Sw} & \textbf{Hw-Hw} & \textbf{Sw-Sw} & \textbf{Sw-Hw}\\
 	\hline
-	Hardware & Low & 6138 & 7 & 10937 & 1538\\
-	Hardware & High & 15365 & 7 & 10560 & 1482\\
-	Software & Low & 3115 & 7807 & 1136 & 3796\\
-	Software & High & 11904 & 12944 & 1484 & 3435\\
+	Hardware & Low & 3343 & 7 & 2550 & 306\\
+	Hardware & High & 3881 & 7 & 2797 & 283\\
+	Software & Low & 1927 & 2550 & 1129 & 1749\\
+	Software & High & 3189 & 2903 & 1419 & 2009\\
 	\hline
 	\end{tabular}
 \end{table}
 As table \ref{tab:mbox_turn} indicates, a mailbox implemented in hardware
-provides a significant speedup of around 1000 for hardware to hardware
-communication. Furthermore, the communication is performed offside the
-processor and, therefore, not influenced by the system's load and rather
-jitter-free. Besides a speedup for hardware to hardware communication, a
-hardware resources also provides speedup for software to hardware
-communication. While for a software resource, the delegate blocks in the
-appropriate system call and needs to be scheduled to send the result to the
-hardware thread, the hardware resource is directly interfaced by the source
-thread, avoiding an additional thread switch.
+provides a significant speedup for hardware to hardware communication.
+Furthermore, the communication is performed offside the processor and,
+therefore, not influenced by the system's load free of any jitter. Besides a
+speedup for hardware to hardware communication, a hardware resources also
+provides speedup for software to hardware communication. While for a software
+resource the delegate blocks in the appropriate system call and needs to be
+scheduled to send the result to the hardware thread, the hardware resource is
+directly interfaced by the source thread, avoiding an additional thread
+switch.
 
 For both hardware to software and software to software, a resource managed by
-the operating system provides better results. The significant impact of the
-load on the turnaround times of the hardware resources results from the
-interrupt handling of the operating system. Under load, a long running thread
-is, with high probability, executed when the interrupt occurs and scheduled
-again, afterwards. Therefore, it needs additional time to schedule the
-delegate thread and execute the appropriate get command. In contrary, for
-software resources, the long running tasks are not interrupted and the blocked
-evaluation threads gain a higher priority during waiting.
+the operating system provides slightly better results. However, the difference
+is not as large as expected and, especially in high load situations,
+negligible.
 
 \subsection{Image Streaming}
+While the synchronization of hardware threads benefits significantly from an
+implementation of resources in hardware, data exchange is still limited by the
+performance of the shared memory interface. The currently implemented
+communication primitives does not provide an abstraction for data streaming
+from one thread to another. Even though the memory interface provides fast
+access to the main memory, it does not support parallel access for multiple
+threads. Instead, all requests are serialized and processed sequentially. For
+multiple threads exchanging data concurrently, this enforced sentimentality
+limits the performance and puts significant load on the memory interface.
+
+The following sections introduce the pipe as a new abstraction for streaming
+data and evaluate it by means of an image processing application, applying
+line based filters in multiple threads.
+
 \subsubsection{Pipe}
+The pipe originates from the field of inter-process communication and provides
+a \ac{FIFO} based interface for exchanging data. It seems to be suitable to
+abstract a stream between different threads by providing a read and write
+method. While traditional pipes in software provide a buffer storing the
+written data until it is read, restricted on-chip memory on the
+\ac{FPGA} limits buffering for a hardware implementation. Therefore, the
+ReconOS pipe implementation does not utilize a dedicated buffer but directly
+forwards the data to the destination thread. The write method blocks until a
+corresponding read method is called and writes directly to the destination
+buffer. Analogously, the read method blocks until a write request occurs and
+finishes. Note, that a pipe represents a direct connection between two threads
+and does not provide any support for concurrently occurring reads or writes on
+the same pipe. This must be handled by the developer by introducing
+appropriate synchronization mechanisms, serializing access and preventing
+concurrent access.
+
+Table \ref{tab:pipe_api} show the \ac{API} of the ReconOS pipe for C,
+\ac{VHDL} and \ac{HLS} implementations of threads.
+\begin{table}
+	\centering
+	\captionabove{\acs{API} of the ReconOS pipe}
+	\label{tab:pipe_api}
+	\begin{tabular}{ll}
+	\hline
+	\textbf{Command} & \textbf{Function (C, \acs{VHDL}, \acs{HLS})}\\
+	\hline
+	Write & \lstinline{int PIPE_WRITE(res, buf, len)}\\
+	& \lstinline{PIPE_WRITE(i_osif, o_osif, i_ram, o_ram, res, len, lenrt)}\\
+	& \lstinline{int PIPE_WRITE(res, buf, len)}\\
+	\hline
+	Read & \lstinline{int PIPE_READ(res, buf, len)}\\
+	& \lstinline{PIPE_READ(i_osif, o_osif, i_ram, o_ram, res, len, lenrt)}\\
+	& \lstinline{int PIPE_READ(res, buf, len)}\\
+	\hline
+	\end{tabular}
+\end{table}
+In the function definitions illustrated as pseudo-code, \lstinline{res}
+represents the resource handle generated automatically during the build
+process, \lstinline{buf} points to a data buffer and \lstinline{len} indicates
+the number of bytes to read or write. Both functions return the number of
+handled bytes, which might differ from the requested length. In that case, the
+caller is responsible to handle missing data. Note, that the \ac{HLS} and C
+functions have the same signature, allowing to compile an \ac{HLS} description
+without modifications for software execution. The \ac{VHDL} function,
+additionally, include the \lstinline{i_osif}, \lstinline{o_osif},
+\lstinline{i_ram} and \lstinline{o_ram} records and provide the
+\lstinline{lenrt} output signal instead of a return value. To illustrate the
+usage of the pipe implementation, listing \ref{lst:pipe_exmpl} show an
+exemplary hardware thread written in Vivado HLS, reading data from the main
+memory and writing it to an outgoing pipe.
+\begin{lstlisting}[
+	language=C,
+	caption={Exemplary hardware thread using the ReconOS pipe},
+	label={lst:pipe_exmpl},
+	float=tb
+]
+THREAD_ENTRY() {
+	THREAD_INIT();
+	RAM(uint32, 128, line);
+
+	uint32 addr = MBOX_GET(read_cmd);
+
+	MEM_READ(addr, line, 512);
+	PIPE_WRITE(s0_out, line, 512);
+}
+\end{lstlisting}
+Therefore, it receives an address via a mailbox, reads a specified number of
+bytes from that address to a local ram and writes the data to the pipe
+\lstinline{s0_out}.
+
+In software the ReconOS pipe is implemented by, basically, two semaphores,
+indicating read and write operations. Reading from the pipe stores a pointer
+to the destination buffer in an internal data structure, posts the read
+semaphore and waits for the write semaphore. In contrast, the write waits for
+the read semaphore, copies the data from the source to the destination buffer
+and posts the write semaphore.
+
+For its hardware implementation, the ReconOS pipe specifies an appropriate
+\ac{OSIF} protocol as illustrated in figure \ref{fig:pipe_hw_osif}.
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.97\textwidth]{../figures/pipe_osif}
+		\caption{\acs{OSIF} protocol}
+		\label{fig:pipe_hw_osif}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		%\includegraphics[width=0.97\textwidth]{../figures/mbox_hw_fsm}
+		\caption{Control logic}
+		\label{fig:pipe_hw_fsm}
+	\end{subfigure}
+	\caption{Hardware implementation of ReconOS pipe}
+	\label{fig:mbox_hw}
+\end{figure}
+For both writing and reading, the hardware thread sends an encoding of the
+command, followed by the number of bytes to write or read, respectively. In
+response to both requests, the pipe sends back an acknowledge to the threads,
+indicating the number of actual bytes, i.e. the minimum of the read and write
+request's lengths. Through that mechanism, the pipe mimics the blocking calls
+to the semaphore in the software implementation. While the synchronization is
+handled by the centralized resource, the data transfer can be processed via
+direct thread interconnects. However, in this implementation, the data is
+transferred to the pipe and then send back to the destination thread. While
+this design introduces a delay of a few clock cycles, it eliminates the need
+for additional interconnect links, resulting in lower resource utilization and
+improved timing.
+
 \subsubsection{Results}
