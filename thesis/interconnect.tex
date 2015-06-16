@@ -621,21 +621,21 @@ other. However, C does not allow to specify concurrent blocks.
 \subsubsection{Results}
 To measure the performance of the mailbox, table \ref{tab:mbox_turn} shows the
 turnaround times for combinations of different resource implementations,
-thread execution modes and processor loads. The turnaround time represents the
-period between the execution of the put operation and the return of get
-operation. The destination thread performs an \lstinline{MBOX_GET} and, since
-the targeted mailbox is empty, blocks in this call. After that, the source
-thread performs an \lstinline{MBOX_PUT} and, in consequence, the blocking get
-operation of the destination thread returns. Before the put operation and
-after the return of the get operation, both threads save a time stamp, used to
-calculate the turnaround time as its difference. Since an application
-typically puts some load on the processor, the measurements were performed for
-both low and high system loads. While for low load situations only the
-evaluation threads were executed, processor load was created for the high load
-measurements by soft- and hardware worker threads, executing arbitrary
-operations and communicating frequently. To eliminate uncertainty, the
-measurements were performed on a single processor system, disabling the second
-core using the kernel parameter
+thread execution modes and processor loads averaged over 10000 measurements.
+The turnaround time represents the period between the execution of the put
+operation and the return of get operation. The destination thread performs an
+\lstinline{MBOX_GET} and, since the targeted mailbox is empty, blocks in this
+call. After that, the source thread performs an \lstinline{MBOX_PUT} and, in
+consequence, the blocking get operation of the destination thread returns.
+Before the put operation and after the return of the get operation, both
+threads save a time stamp, used to calculate the turnaround time as its
+difference. Since an application typically puts some load on the processor,
+the measurements were performed for both low and high system loads. While for
+low load situations only the evaluation threads were executed, processor load
+was created for the high load measurements by soft- and hardware worker
+threads, executing arbitrary operations and communicating frequently. To
+eliminate uncertainty, the measurements were performed on a single processor
+system, disabling the second core using the kernel parameter
 \lstinline{maxcpus=1}.
 
 \begin{table}
@@ -646,28 +646,32 @@ core using the kernel parameter
 	\hline
 	\textbf{Mode} & \textbf{Load} & \textbf{Hw-Sw} & \textbf{Hw-Hw} & \textbf{Sw-Sw} & \textbf{Sw-Hw}\\
 	\hline
-	Hardware & Low & 3343 & 7 & 2550 & 306\\
-	Hardware & High & 3881 & 7 & 2797 & 283\\
-	Software & Low & 1927 & 2550 & 1129 & 1749\\
-	Software & High & 3189 & 2903 & 1419 & 2009\\
+	Hardware & Low & 3311 & 33 & 2485 & 301\\
+	Hardware & High & 3912 & 33 & 2730 & 286\\
+	Software & Low & 4093 & 3821 & 1094 & 1710\\
+	Software & High & 4769 & 4591 & 1364 & 1935\\
 	\hline
 	\end{tabular}
 \end{table}
 As table \ref{tab:mbox_turn} indicates, a mailbox implemented in hardware
 provides a significant speedup for hardware to hardware communication.
 Furthermore, the communication is performed offside the processor and,
-therefore, not influenced by the system's load free of any jitter. Besides a
-speedup for hardware to hardware communication, a hardware resources also
-provides speedup for software to hardware communication. While for a software
-resource the delegate blocks in the appropriate system call and needs to be
-scheduled to send the result to the hardware thread, the hardware resource is
-directly interfaced by the source thread, avoiding an additional thread
-switch.
+therefore, not influenced by the system's load and free of any jitter. Besides
+the expected speedup for hardware to hardware communication, a hardware
+resources also provides significant speedup for software to hardware
+communication. While for a software resource the delegate blocks in the
+appropriate system call and needs to be scheduled to send the result to the
+hardware thread, the hardware resource is directly interfaced by the source
+thread, avoiding an additional thread switch. The same reason applies for the
+hardware to software processing, since no thread switch from the delegate to
+the user thread is necessary.
 
-For both hardware to software and software to software, a resource managed by
-the operating system provides slightly better results. However, the difference
-is not as large as expected and, especially in high load situations,
-negligible.
+Alltogether, a hardware resources outperforms its software counterpart in
+every case a hardware thread is involved. However, it circumvents the
+scheduling of software threads by the operating system, which should be
+considered when selecting the implementation mode. Furhtermode, additional
+hardware resources are required and many hardware resources may lead to timing
+issues.
 
 \subsection{Image Streaming}
 While the synchronization of hardware threads benefits significantly from an
@@ -816,12 +820,29 @@ introduces a delay of a few clock cycles, it eliminates the need for
 additional interconnect links, resulting in lower resource utilization and
 improved timing. Based on this protocol, figure \ref{fig:pipe_hw_fsm} shows
 the appropriate control logic of the hardware implementation. In its states
-\emph{INIT}, \emph{RReq} and \emph{WReq} it waits for a read and write request.
-Thereby, the order in which both request arrive does not matter. After both
-request are received, the pipe outputs the responses in states \emph{RRes} and
-\emph{WRes}. Since the response to the reading thread must arrive before the
-data, it is send before the write request. Finally, in state \emph{Data} the
-resource forwards the data received from the writing thread and returns to its
-initial state.
+\emph{INIT}, \emph{RReq} and \emph{WReq} it waits for a read and write
+request. Thereby, the order in which the request arrive does not matter. After
+both request are received, the pipe outputs the responses in states
+\emph{RRes} and \emph{WRes}. Since the response to the reading thread must
+arrive before the payload data, it is send before the write response. Finally,
+in state \emph{Data} the resource forwards the data received from the writing
+thread and returns to its initial state afterwards.
 
 \subsubsection{Results}
+\begin{table}
+	\centering
+	\captionabove{Turnaround times for pipe in clock cycles of $\SI{100}{\mega\hertz}$}
+	\label{tab:pipe_turn}
+	\begin{tabular}{llcccc}
+	\hline
+	\textbf{Mode} & \textbf{Load} & \textbf{Hw-Sw} & \textbf{Hw-Hw} & \textbf{Sw-Sw} & \textbf{Sw-Hw}\\
+	\hline
+	Hardware & Low & 7434 & 172 & 33701 & 5857\\
+	Hardware & High & 8996 & 172 & 33524 & 5738\\
+	Software & Low & 7620 & 13619 & 1242 & 7208\\
+	Software & High & 9820 & 14339 & 1534 & 6744\\
+	\hline
+	\end{tabular}
+\end{table}
+
+Memory Implementation: 24.44ms vs Pipe implementation: 3.09ms
