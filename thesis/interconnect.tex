@@ -34,30 +34,29 @@ bidirectional \ac{FIFO} interface and allows message based communication. The
 \ac{AXI} bus via an interface bridge. It provides access from the \ac{CPU} by
 a set of memory mapped register and allows to read status bits or data words.
 Furthermore, the \ac{OSIF} is attached to the interrupt input of the processor
-to avoid busy waiting in the delegate threads. They are waiting for requests
-from the hardware threads and consume no processing time on the processor
-while being blocked in a system call. The driver module provides access to the
-\ac{OSIF} via a message based protocol accessing the memory mapped register
-and handling interrupts.
+to avoid busy waiting in the delegate threads, waiting for requests from the
+hardware threads and consuming no processing time on the processor while being
+blocked in a system call. The driver module provides blocking access to the
+\ac{OSIF} by handling interrupts and accessing the memory mapped registers.
 
 To illustrate the procedure of delegating an \ac{OS} call, figure
 \ref{fig:delegate} sketches an exemplary \lstinline{MBOX_GET}. At first, the
-hardware thread issues the request by writing messages into the \ac{OSIF},
-namely an internal encoding of the command followed by an identification of
-the appropriate \ac{OS} resource and additional arguments. The interrupt
-causes the delegate thread to wake up, read the messages from the \ac{OSIF}
-and decode the commands. After executing the appropriate \ac{OS} call, the
-delegate thread writes back an acknowledge into the \ac{OSIF} and, optionally,
-the result of the system call. Following this process, the exchange of a
-single message between two hardware threads via a mailbox includes two
-interrupts implying context switches into the kernel space, the handling of
-the mailbox by the kernel and the access of the \ac{OSIF}. All these
-operations introduce a significantly delay of thousands of clock cycles and
-burden the processor with additional tasks. Furthermore, since the benefits of
-a custom hardware implementation originate from its highly parallel
-structures, the sequential execution enforced by the communication via the
-central processor results in a bottleneck, limiting the full potential of all
-hardware threads.
+hardware thread issues the request by writing the appropriate messages into
+the \ac{OSIF}, namely an internal encoding of the command, followed by an
+identification of the appropriate \ac{OS} resource and additional arguments.
+The interrupt causes the delegate thread to wake up, read the messages from
+the \ac{OSIF} and decode the commands. After executing the appropriate \ac{OS}
+call, the delegate thread writes back an acknowledge into the \ac{OSIF} and,
+optionally, the result of the system call. Following this process, the
+exchange of a single message between two hardware threads via a mailbox
+includes two interrupts implying context switches into the kernel space, the
+handling of the mailbox by the kernel and the access of the \ac{OSIF} itself.
+All these operations introduce a significant delay of thousands of clock
+cycles and burden the processor with additional tasks. Furthermore, since the
+benefits of a custom hardware implementation originate from its highly
+parallel structures, the sequential execution enforced by the communication
+via the central processor results in a bottleneck, limiting the full potential
+of all hardware threads.
 
 Besides the communication via system calls and synchronization primitives
 handled by the delegate mechanism, the threads are also allowed to exchange
@@ -98,11 +97,11 @@ components in the reconfigurable fabric \citep{ASA08}. While this guarantees a
 low-latency access to all components, the central system bus limits the
 overall performance in high-load situation and the architecture is rather
 unportable to standard \ac{OS} kernels or other platforms. However,
-implementing  \ac{OS} functions on the \ac{FPGA}, seems to be the best
-approach to utilize the full potential of a parallel hardware design in a
-hybrid multi-core system. Adopting this idea for the ReconOS framework
-promises significant speedups for many applications and seems to be crucial to
-utilize ReconOS in modern \ac{PAC} designs.
+implementing  \ac{OS} functions on the \ac{FPGA} seems to be the best approach
+to utilize the full potential of a hardware design in a hybrid multi-core
+system. Adopting this idea for the ReconOS framework promises significant
+speedups for many applications and seems to be crucial to utilize ReconOS in
+modern \ac{PAC} designs.
 
 Besides the implementation of \ac{OS} functions in hardware, both software and
 hardware threads must be able to access these functions transparently through
@@ -193,7 +192,7 @@ regular request should be routed to the delegate thread, the request itself
 must be addressed to the targeted resource. This allows to transparently route
 the request not to the delegate thread, but to a resource implemented in
 hardware. Addressing such a request with the address of a delegate thread
-would prevent such a transparent rerouting. To send back an acknowledge or
+would prevent such a transparent rerouting. To send back an acknowledge as
 response to the hardware thread's request, the receiver must know the source
 address, the request is originating from. Therefore, a hardware thread needs
 to specify its own id as the source of the request. However, a thread does not
@@ -201,8 +200,8 @@ know its own id implicitly, since it depends on the execution mode and
 scheduled slot determined at run time. Consequently, an appropriate mechanism
 is needed, allowing a thread to receive its run time id. Querying the id
 through a traditional \ac{OSIF} command is not possible, since the request
-itself would require an id. Therefore, the ReconOS run time sends, initially on
-thread creation, the run time id to the thread, which is responsible for
+itself would require an id. Therefore, the ReconOS run time sends, initially
+on thread creation, the run time id to the thread, which is responsible for
 storing it.
 
 \subsection{Interconnect Interface}
@@ -276,11 +275,11 @@ Utilizing the \ac{OSIF} interface enables software threads to access hardware
 resources, but provide no transparent abstraction. To hide the underlying
 implementation of a resource request from the software thread, the run time
 needs to know the implementation mode of each resource, enabling it to execute
-the appropriate call or interface with the hardware. Since every resource is
-represented by a data structure during run time, it can be easily extended by a
-flag indicating the implementation mode. Listing \ref{lst:mbox_get}
-illustrates the concept by presenting a part of the \lstinline{mbox_get}
-implementation.
+the appropriate system call or interface with the hardware. Since every
+resource is represented by a data structure during run time, it can be easily
+extended by a flag indicating the implementation mode. Listing
+\ref{lst:mbox_get} illustrates the concept by presenting a part of the
+\lstinline{mbox_get} implementation.
 \begin{lstlisting}[
 	language=C,
 	caption={Excerp from the \lstinline{mbox_get} implementation},
@@ -488,13 +487,13 @@ resource utilization, increasing with the number of ports.
 	\centering
 	\begin{subfigure}{0.49\textwidth}
 		\centering
-		\includegraphics{../figures/eval_router}
+		\includegraphics[width=\textwidth]{../figures/eval_router}
 		\caption{Routing component}
 		\label{fig:crossbar_util_router}
 	\end{subfigure}
 	\begin{subfigure}{0.49\textwidth}
 		\centering
-		\includegraphics{../figures/eval_arbiter}
+		\includegraphics[width=\textwidth]{../figures/eval_arbiter}
 		\caption{Arbitration component}
 		\label{fig:crossbar_util_arbiter}
 	\end{subfigure}
