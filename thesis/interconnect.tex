@@ -24,7 +24,7 @@ showing a detailed view of the delegate implementation, consisting out of
 communication interfaces, interrupt lines and drivers.
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=12cm]{../figures/delegate}
+	\includegraphics{../figures/delegate}
 	\caption{ReconOS delegate mechanism in detail}
 	\label{fig:delegate}
 \end{figure}
@@ -87,7 +87,7 @@ provides similar functionality but follows a different approach as illustrated
 by the block diagram in figure \ref{fig:hthreads}.
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=12cm]{../figures/hthreads}
+	\includegraphics[width=10cm]{../figures/hthreads}
 	\caption{Hthreads system block diagram \citep{ASA08}}
 	\label{fig:hthreads}
 \end{figure}
@@ -120,7 +120,7 @@ Figure \ref{fig:interconnect} illustrates the reconfigurable interconnect
 architecture developed and presented in this thesis.
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=12cm]{../figures/interconnect}
+	\includegraphics{../figures/interconnect}
 	\caption{Reconfigurable interconnect}
 	\label{fig:interconnect}
 \end{figure}
@@ -161,7 +161,7 @@ changes of the hardware thread interface, they are not indicated by a separate
 control flag.
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=12cm]{../figures/proto}
+	\includegraphics{../figures/proto}
 	\caption{Control message preceding each message}
 	\label{fig:proto}
 \end{figure}
@@ -217,8 +217,8 @@ component, namely the hardware threads, the hardware resources and the
 processor.
 \begin{figure}[tb]
 	\centering
-	\includegraphics[width=12cm]{../figures/interconnect}
-	\caption{Interface of rconfigurable interconnect}
+	\includegraphics[width=12cm]{../figures/interconnect_if}
+	\caption{Interface of reconfigurable interconnect}
 	\label{fig:interconnect_if}
 \end{figure}
 Obviously, the interface depends on the number of hardware resources and
@@ -419,7 +419,8 @@ additional \acp{FIFO}. While the incoming buffers are essential, the outgoing
 ones could be omitted. However, as it turned out during the implementation of
 different slave components connecting the interconnect signals asynchronously,
 timing becomes a heavily limiting factor and even a small interconnect does
-not meet the required timing constraints. Therefore, the outgoing buffers shorten the critical path significantly and eliminating timing issues.
+not meet the required timing constraints. Therefore, the outgoing buffers
+shorten the critical path significantly and eliminating timing issues.
 
 \subsubsection{Routing Component}
 As illustrated in figure \ref{fig:crossbar}, the routing component multiplexes
