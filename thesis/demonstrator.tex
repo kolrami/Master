@@ -139,3 +139,34 @@ Finally, the origin is translated to match the servo positions by adding and
 subtracting $C_{sx}$ and $C_{sy}$ to the x and y coordinates, respectively.
 
 \subsection{Inverse Kinematics}
+Taking the basic notations of the previous section as a basis, the inverse
+kinematic calculates the required servo positions for a desired angle of the
+platform. Unlike for serial manipulators, the inverse kinematics of a Stewart
+platform has a unique analytic solution, while the forward kinematics problem
+is highly nonlinear and requires iterative approaches. However, the low-cost
+variant utilizing rotary instead of linear actuators introduces additional
+calculations to calculate the required angles from the desired leg lengths.
+
+Assuming, that the desired angle of the platform is given by a rotation axis
+$r$ and a rotation angle $r_a$, equation \ref{eq:platform_rot} shows the
+calculation of the required platform joint's positions.
+\begin{equation}
+J'_i = 
+\begin{pmatrix}
+\left[\left(1 - \cos(r_a)\right) r_x r_x + \cos(r_a)\right] J_ix + \left[\left(1 - \cos(r_a)\right) r_x r_y\right] J_iy\\
+\left[\left(1 - \cos(r_a)\right) r_x r_y\right] J_ix + \left[\left(1 - \cos(r_a)\right) r_y r_y + \cos(r_a)\right] J_iy\\
+\left[-r_y \sin(r_a)\right] J_ix + \left[r_x \sin(r_a)\right] J_iy\\
+\end{pmatrix}
+\label{eq:platform_rot}
+\end{equation}
+Transforming these position to the appropriate servo coordinate systems as
+described in the previous section allows to calculate the distance between the
+servo joint and the platform joint. While for a linear actuator this would be
+the solution, rotary actuators can not vary the length of the legs directly.
+Therefore, the angle $\alpha$ must be adjusted in a way, that the distance
+between its joint and the platform joint is equal to the fixed leg length
+$C_l$. While there exist an analytic solution for this problem, it includes
+terms of higher degree and complex operations like $\arctan$ and square roots.
+Therefore, an iterative approach was chosen to find the appropriate angle.
+More details on the concrete implementation of this iterative approach will be
+covered in a following sections.
