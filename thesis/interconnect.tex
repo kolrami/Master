@@ -639,6 +639,7 @@ system, disabling the second core using the kernel parameter
 \lstinline{maxcpus=1}.
 
 \begin{table}
+	\scriptsize
 	\centering
 	\captionabove{Turnaround times for mailbox in clock cycles of $\SI{100}{\mega\hertz}$}
 	\label{tab:mbox_turn}
@@ -707,6 +708,7 @@ serializing access and preventing concurrent access.
 Table \ref{tab:pipe_api} show the \ac{API} of the ReconOS pipe for C,
 \ac{VHDL} and \ac{HLS} implementations of threads.
 \begin{table}
+	\scriptsize
 	\centering
 	\captionabove{\acs{API} of the ReconOS pipe}
 	\label{tab:pipe_api}
@@ -834,6 +836,7 @@ to the mailbox evaluation, the turnaround times for different thread
 combinations and load situations. Measured by subtracting time stamps taken at
 the start of the read command and after the completion of the write command, they represent the time needed for transferring a number of bytes from the source thread to the destination thread.
 \begin{table}
+	\scriptsize
 	\centering
 	\captionabove{Turnaround times for pipe with 512 bytes in clock cycles of $\SI{100}{\mega\hertz}$}
 	\label{tab:pipe_turn}
