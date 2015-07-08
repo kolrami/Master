@@ -59,14 +59,14 @@ via the central processor results in a bottleneck, limiting the full potential
 of all hardware threads.
 
 Besides the communication via system calls and synchronization primitives
-handled by the delegate mechanism, the threads are also allowed to exchange
-data via the shared memory interface. It provides access to the main memory
-but introduces the same bottleneck of enforcing access in a sequential manner.
-Again, the benefits of parallel execution are narrowed and performance is
-decreased. In particular, streaming-like applications passing data from one
-thread to the other cannot be modeled efficiently by applying a shared memory
-model. Instead, a method of exchanging data directly from one thread to the
-other is required.
+handled by the delegate mechanism, the threads can also exchange data via the
+shared memory interface. It provides access to the main memory but introduces
+the same bottleneck of enforcing access in a sequential manner. Again, the
+benefits of parallel execution are narrowed and performance is decreased. In
+particular, streaming-like applications passing data from one thread to
+another cannot be modeled efficiently by applying a shared memory model.
+Instead, a method of exchanging data directly from one thread to another is
+required.
 
 \section{Interconnect Architecture}
 
@@ -337,7 +337,7 @@ Considering self-adapting systems with changing execution modes of threads
 suggests to reconfigure the mode of a resource analogously. For example, if
 threads are migrated from hardware to software, it might be reasonable to also
 migrate an appropriate resource used by the threads. While the infrastructure
-itself is design in a flexible way and could support such migrations, it
+itself is designed in a flexible way and could support such migrations, it
 includes similar challenges as arising from thread migration. Although this
 self-adaptiveness constitute a relevant research topic, it is not targeted in
 this thesis, assuming a fixed configuration of resources, specified at design
@@ -373,13 +373,13 @@ solution.
 \section{Evaluation}
 To prove the feasibility of the proposed interconnect design and illustrate
 the benefits of a direct hardware communication, an extensive evaluation is
-presented in this chapter. The interconnect details discussed so far
+presented in this section. The interconnect details discussed so far
 emphasized only the external interface and disregarded its internal structure.
 However, for an evaluation of the system an actual implementation is required.
 Therefore, a crossbar based interconnect consisting of routing and arbitration
 components will be presented. Based on this interconnect, two different
 hardware resources are evaluated in a prototypical application and compared to
-the original design. All evaluation is performed using the Zedboard, featuring
+the original design. All evaluation is performed using the ZedBoard, featuring
 a Zynq XC7Z020-CLG484.
 
 \subsection{Crossbar Interconnect}
@@ -447,7 +447,7 @@ initial state \emph{W} and waits for the next message.
 
 Considering this procedure, it takes only three clock cycles until the first
 word of the message is present at the output port. Assuming, that all messages
-can be handled by \emph{RD}, the state \emph{RD} can be eliminated, resulting
+can be handled by \emph{RO}, the state \emph{RD} can be eliminated, resulting
 in a delay of two clock cycles.
 
 \subsubsection{Arbitration Component}
@@ -458,7 +458,7 @@ incoming messages one after another. Note, that the implemented scheduler does
 not cycle through all inputs sequentially, i.e. a single request is processed
 immediately without a delay proportional to the number of input ports. Again,
 a bit vector is used as a selection for the demultiplexer and controlled by
-the state machine implementing the roud-robin algorithm as illustrated in
+the state machine implementing the round-robin algorithm as illustrated in
 figure \ref{fig:arbiter_fsm}.
 \begin{figure}[tb]
 	\centering
@@ -466,7 +466,7 @@ figure \ref{fig:arbiter_fsm}.
 	\caption{\acs{FSM} of arbiter}
 	\label{fig:arbiter_fsm}
 \end{figure}
-Initially in state \emph{W} the arbiter waits for a message being present in
+Initially in state \emph{W}, the arbiter waits for a message being present at
 one of the input \acp{FIFO}. Whenever data is available, it processes the
 request in a round-robin fashion in state \emph{ARB}, by determining the
 \ac{LSB} of the input requests by
@@ -502,14 +502,14 @@ resource utilization, increasing with the number of ports.
 	\label{fig:crossbar_util}
 \end{figure}
 Thereby, the number of \acp{LUT} shows a stronger growth than the number of
-registers, since most of the resources are consumed by the combinatorial
+registers, since most of the resources are consumed by the combination
 multiplexers, heavily influenced by the number of ports. Furthermore, the
 arbiter's multiplexers need significantly more resources compared to the
 router's counterparts, since they multiplex the 32-bit wide data ports, while
 the router connects the incoming data port directly to all outgoing ports.
 
 In total, even a rather unrealistic high number of ports results in an
-acceptable resource utilization without timing issues cause by the
+acceptable resource utilization without timing issues caused by the
 interconnect.
 
 %Additionally to the routing and arbitration components, the entire
@@ -703,7 +703,7 @@ a write request occurs and finishes. Note, that a pipe represents a direct
 connection between two threads and does not provide any support for
 concurrently occurring reads or writes on the same pipe. This must be handled
 by the developer by introducing appropriate synchronization mechanisms,
-serializing access and preventing concurrent access.
+serializing access and preventing concurrent requests.
 
 Table \ref{tab:pipe_api} show the \ac{API} of the ReconOS pipe for C,
 \ac{VHDL} and \ac{HLS} implementations of threads.
@@ -815,7 +815,7 @@ response to both requests, the pipe sends back an acknowledge to the threads,
 indicating the number of actual bytes, i.e. the minimum of the read and write
 request's lengths. Through that mechanism, the pipe mimics the blocking calls
 to the semaphore in the software implementation. While the synchronization is
-handled by the centralized resource, the data transfer can be processed via
+handled by the centralized resource, the data transfer could be processed via
 direct thread interconnects. However, the data is transferred to the pipe
 resource and then send back to the destination thread. While this design
 introduces a delay of a few clock cycles, it eliminates the need for
@@ -885,9 +885,9 @@ image and exchanging its lines in a pipeline like in figure
 	\end{subfigure}
 	\caption{Image processing application}
 	\label{fig:img_proc}
-\end{figure}It consist out of to filter threads, the first one
+\end{figure}It consist out of two filter threads, the first one
 brightening up the image by multiplying each pixel with $1.2$ and the second
-one mirroring the image horizontally. In both cases the original and modified
+one mirroring the image horizontally. In both cases, the original and modified
 images are read from and written to the shared memory to make them accessible
 from the processor. Therefore, the read and write threads receive an address
 via mailbox and the write thread sends an acknowledge back when finished
@@ -898,14 +898,14 @@ combination with mailboxes for synchronization as sketched in figure
 memory and propagate the appropriate addresses to the next thread. Both
 versions were implemented with a hardware and software implementation of the
 used resources, namely the pipe and mailbox, and evaluated by measuring the
-processing time for a single image of 128 times 205 pixels. They are measured
+processing time for a single image of 128x205 pixels. They are measured
 by subtracting the time stamps captured when sending the initial command to
 the read thread and after receiving the acknowledge from the write thread. As
 the turnaround times already suggest, the software implementation of the pipes
 leads to the slowest execution time of $\SI{88.60}{\milli\second}$, followed
 by the software implementation of the mboxes requiring
-$\SI{24.44}{\milli\second}$. The communication involving the processor slow
-downs the system dramatically, especially the transfer of data via the
+$\SI{24.44}{\milli\second}$. The communication involving the processor slows
+down the system dramatically, especially the transfer of data via the
 \ac{OSIF} is significantly slower than via shared memory. Consequently, the
 hardware implementations of the synchronization primitives provide better
 results, namely $\SI{7.12}{\milli\second}$ for the classical shared memory
@@ -915,3 +915,6 @@ hardware versions are limited by the processing time of the image. This also
 explains the marginal difference between the pipe and shared memory
 implementation, since during processing the memory interface is free and both
 threads can share it efficiently.
+
+
+\todo{conclusion?}
