@@ -1,11 +1,19 @@
 %!TEX root = thesis.tex
-\chapter{Motivation and Backgroud}
+\chapter{Motivation and Background}
 \label{chap:motivation}
+This chapter gives an introduction into the main topics and motivates several
+problems addressed in the rest of the thesis. It also includes references to
+related work representing current research topics and points out possible
+links. Beginning with an introduction into \acp{PAC} and their history, the
+ReconOS framework is introduced, including a discussion on shortcomings and
+opportunities. Subsequently, modern \ac{HLS} approaches are presented and the
+concept of self-adaptive systems is covered. Finally, the contribution of this
+work is presented and motivated.
 
 \section{\aclp{PAC}}
 \aclp{PAC} are a relatively new class of controllers emerged in the past years
-out of the discussion on advantages and disadvantages of \acp{PLC} compared to
-\acp{PC} \citep{bel05}. The acronym \ac{PAC} itself was introduced by the
+out of the discussions on advantages and disadvantages of \acp{PLC} compared
+to \acp{PC} \citep{bel05}. The acronym \ac{PAC} itself was introduced by the
 \ac{ARC} in 2001 \citep{pay13} to represent this next of generation
 controllers. However, a strict definition to clearly identify a \ac{PAC} and
 differentiate it from other \acp{PLC} is missing. The term is used more as
@@ -47,10 +55,10 @@ industrial control, offering advanced software capabilities, utilization of
 \ac{COTS} components and graphical environments \citep{bel05}. However,
 standard \acp{PC} are not ideal for industrial control applications due to
 missing robustness in rugged environments, stable operating systems and common
-programming. Finally, the engineers either omitted advanced functionalities or
-deployed a coupled \ac{PC}/\ac{PLC} system. Without any satisfactory solution,
-hardware vendors tried to fill up the gap by developing a new class of
-controller, the so-called \acp{PAC}.
+programming models. Finally, the engineers either omitted advanced
+functionalities or deployed a coupled \ac{PC}/\ac{PLC} system. Without any
+satisfactory solution, hardware vendors tried to fill up the gap by developing
+a new class of controller, the so-called \acp{PAC}.
 
 The \ac{PAC} combines the best features of \acp{PLC} and \acp{PC} in a single
 device by incorporating robustness and reliability with advanced software
@@ -78,19 +86,19 @@ The flexible software architecture introduced for the \acp{PAC} enables
 engineers to implement complex applications, without being restricted to a
 fixed device structure. However, software implementations reach their limits
 for high-performance or low-latency applications. These demands typically
-result in custom hardware design utilizing direct I/O connections and parallel
-processing. While \acp{ASIC} are often not financially viable, \acp{FPGA} are
-getting more and more ubiquitous \citep{VMB13}. \acp{FPGA} consist out of
-configurable logic, interconnect and I/O blocks, which can be programmed to
-implement arbitrary logic. While this technology seems to perfectly fit into
-the concept of \acp{PAC}, especially with upcoming integrated \acp{SoC}, it is
-limited to hardware designers capable of programming in low-level languages
-like \ac{VHDL} and understanding the architecture of the underlying system.
-Efficiently programming such a hybrid system requires a high-level abstraction
-of hardware and software resources \citep{ANA04} and a unified programming
-environment. Both topics are part of ongoing research including programming
-models for hybrid multi-core systems and high-level specifications of hardware
-logic.
+result in custom hardware design, utilizing direct I/O connections and
+parallel processing. While \acp{ASIC} are often not financially viable,
+\acp{FPGA} are getting more and more ubiquitous \citep{VMB13}. \acp{FPGA}
+consist out of configurable logic, interconnect and I/O blocks, which can be
+programmed to implement arbitrary logic. While this technology seems to
+perfectly fit into the concept of \acp{PAC}, especially with upcoming
+integrated \acp{SoC}, it is limited to hardware designers capable of
+programming in low-level languages like \ac{VHDL} and understanding the
+architecture of the underlying system. Efficiently programming such a hybrid
+system requires a high-level abstraction of hardware and software resources
+\citep{ANA04} and a unified programming environment. Both topics are part of
+ongoing research including programming models for hybrid multi-core systems
+and high-level specifications of hardware logic.
 
 \section{ReconOS for Hybrid Multi-Core Systems}
 With increasing demand for high-performance embedded systems and upcoming
@@ -105,7 +113,7 @@ ReconOS addresses this problem and provides a unified execution environment
 leveraging the well-established multithreaded programming model and extending
 an existing \ac{OS} with hardware thread support \citep{AHK14}. The
 multithreaded programming model is highly accepted in the software engineering
-community and suitable for embedded applications \citep{ANA04} composed of
+community and suitable for embedded applications \citep{ANA04} composed out of
 concurrently running threads, synchronizing and exchanging data via
 standardized \ac{OS} mechanisms, for example semaphores, mutexes or message
 queues. The threads specified by the system developer are transparent against
@@ -153,7 +161,7 @@ THREAD_ENTRY() {
 This separation becomes even more apparent in the VHDL implementation shown in
 listing \ref{lst:hwt}. The \ac{OSFSM} handles all requests to \ac{OS}
 functions and controls the internal processing logic via handshaking signals.
-For seamless integration, the ReconOS run time provides a \ac{VHDL} library
+For seamless integration, the ReconOS runtime provides a \ac{VHDL} library
 wrapping all \ac{OS} functions as procedures with a guarding signal
 \lstinline{done}, to condition the state transitions of the \ac{OSFSM}. This
 signal allows blocking \ac{OS} calls to temporarily suspend the hardware
@@ -196,19 +204,19 @@ end process OSFSM;
 \end{lstlisting}
 
 To support the transparent multithreading across the hardware/software
-boundary, ReconOS implements a run time architecture as shown in figure
-\ref{fig:reconos_run time}.
+boundary, ReconOS implements a runtime architecture as shown in figure
+\ref{fig:reconos_runtime}.
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/reconos_hwt}
-	\caption{The ReconOS run time}
-	\label{fig:reconos_run time}
+	\caption{The ReconOS runtime}
+	\label{fig:reconos_runtime}
 \end{figure}
 It consists out of the application specific threads implemented either in
-hardware or software, the \ac{OS} kernel executed on the main \ac{CPU}, and the
-ReconOS run time components. While the host \ac{OS} provides scheduling, memory
+hardware or software, the \ac{OS} kernel executed on the main \ac{CPU} and the
+ReconOS runtime components. While the host \ac{OS} provides scheduling, memory
 management, low-level hardware access and the different programming model
-objects published through the \ac{POSIX} API, the ReconOS run time interfaces
+objects published through the \ac{POSIX} API, the ReconOS runtime interfaces
 with the \ac{OS} as software libraries and device drivers and implements
 hardware components for communication and management.
 
@@ -222,10 +230,10 @@ passes this request through the \ac{OSIF} to its associated delegate thread,
 which executes the desired function and returns the result. From the \ac{OS}'
 point of view, the hardware implementation is hidden behind the delegate
 threads and the \ac{OS} only handles regular software threads. On the other
-hand, the management of delegate threads is performed by the ReconOS run time
+hand, the management of delegate threads is performed by the ReconOS runtime
 and is completely hidden from the developer, seeing only the implemented
 hardware and software threads. Although the delegate mechanism introduces an
-overhead for executing \ac{OS} calls, it provides a exceptional transparency
+overhead for executing \ac{OS} calls, it provides an exceptional transparency
 regarding the threads implementation and execution mode and simplifies the
 system design.
 
@@ -238,7 +246,7 @@ connected through a separate \ac{MEMIF} to the ReconOS memory subsystem. The
 memory subsystem arbitrates the hardware thread's requests and performs the
 memory access via the system bus. To support operating systems, like Linux,
 providing virtual addressing, ReconOS implements a full-featured \ac{MMU}. It
-translates virtual addresses by accessing the \ac{OS}' page table directly and
+translates virtual addresses by accessing the \ac{OS}' page tables and
 accelerates translation by a \ac{TLB}. Similar to the \ac{OS} functions,
 ReconOS provides \ac{VHDL} procedures to perform single-word or burst accesses
 for convenient use.
@@ -252,7 +260,7 @@ range of developers, recent research explores \ac{HLS} to synthesize efficient
 hardware out of high-level languages like C \citep{SWL13}. A common
 description for both software and hardware implementations fits perfectly into
 the concept of transparent multi-core systems \citep{CBN11}. A thread might be
-migrated at run time from software to hardware or vice versa, to fulfill
+migrated at runtime from software to hardware or vice versa, to fulfill
 requirements in, for example, power consumption or performance. Such so-called
 self-adaptive systems are also a hot topic in current research
 \citep{AHL14,HLP09}.
@@ -274,7 +282,7 @@ broader range of developers \citep{PeTh05}. Relying on a correct synthesis,
 \ac{HLS} induces fewer errors, less debugging and easier validation.
 
 The idea of generating hardware from high-level languages is rather old, but
-now state-of-the-art tools like Vivado HLS are sophisticated enough, to
+only state-of-the-art tools like Vivado HLS are sophisticated enough to
 accelerate applications noticeably \citep{EcEc08,XSA10}. One of the first
 pioneering \ac{HLS} system was developed in the 1970s \citep{DPS81} by the
 Carnegie Mellon University, specifying a behavioural description in the
@@ -290,18 +298,17 @@ co-design, co-simulation and the use of newest technology in software
 compilers. To overcome the drawbacks of missing language constructs, modern
 \ac{HLS} tools have introduced additional directives to make C inputs more
 amenable to hardware synthesis \citep{CBN11}. Modern tools include commercial
-tools like Vivado HLS from Xilinx or Catapult C from Calypto, as well as
+programs like Vivado HLS from Xilinx or Catapult C from Calypto, as well as
 academic prototypes like LegUp \citep{CCA11}. Due to its increasing
 popularity, Xilinx Vivado HLS seems to be a promising system.
 
-To synthesize an algorithm specified in an high-level language like C or C++,
+To synthesize an algorithm specified in a high-level language like C or C++,
 \ac{HLS} extracts the control logic and operations, applies several
-optimizations and generates an equivalent \ac{HDL} representation. Additional
-to the algorithmic synthesis, interfaces between different entities and the
-outside world are generated. To control this transformation process, most
-compilers support optimization directives to focus the \ac{HLS} on particular
-objectives, for example performance, area or power consumption.
-%Typically, the algorithmic synthesis process includes scheduling, binding and
+optimizations and generates an equivalent \ac{HDL} representation.
+Additionally to the algorithmic synthesis, interfaces between different
+entities and the outside world are generated. To control this transformation
+process, the compilers support optimization directives to focus the \ac{HLS}
+on particular objectives, for example performance, area or power consumption.%Typically, the algorithmic synthesis process includes scheduling, binding and
 %control logic extraction. \citep{OCC14} At first, the control- and datapaths
 %inferred by the code are extracted and transformed into an internal
 %representation. Each program specifies a control path by its loops and
@@ -373,7 +380,7 @@ common specification \citep{CBN11}. This greatly simplifies system
 implementation and design-space exploration and allows to find an optimal
 configuration of threads. While a static configuration works perfectly for
 predictable systems, it cannot be optimal in a dynamic environment with
-rapidly changing demands, requiring an adaption at run time.
+rapidly changing demands, requiring an adaption at runtime.
 
 Self-aware computing focuses on those kind of systems facing unprecedented
 levels of system dynamics and requiring novel approaches to adaptivity. Recent
@@ -388,7 +395,7 @@ public, which are interacting with models of the system and environment.
 Besides the self-awareness, requiring to gather data of the system and
 environment, self-expression describes the ability to adapt to changes through
 a self-expression engine and internal actuators. It is driven by objectives
-and constraints given at design-time or dynamically at run time.
+and constraints given at design-time or dynamically at runtime.
 
 With regard to hybrid multi-core systems, self-awareness and self-expression
 allows the system to adjust its partitioning \citep{AHL14}. For example, a
@@ -401,25 +408,27 @@ and partitioning of the system.
 \section{Contribution of this Work}
 Due to the promising perspective for the use of reconfigurable devices in
 \acp{PAC} and the ongoing research in hybrid multi-core systems, this thesis
-evaluates the feasibility of such an approach. In a first step, the ReconOS
-framework will be extended to fit the needs for a \ac{PAC} device. While the
-current delegate mechanism provides exceptional transparency, it introduces a
-significant overhead for communication between hardware threads. Especially
-for low-latency and high-performance applications, this overhead lowers the
-overall performance and is not acceptable. To utilize the full performance of
-a custom hardware implementation, chapter \ref{sec:interconnect} presents a
-reconfigurable interconnect, allowing direct communication between hardware
-threads through existing or new \ac{OS} objects. The new communication method
-will be integrated seamlessly into the ReconsOS programming model and provides
-completely transparency to the developer, automatically selecting the right
-communication channel at run time.
+evaluates the feasibility of such an approach.
 
 To simplify the development of hardware threads and open the system to a
 broader range of users, chapter \ref{sec:hls} discusses the integration of
 Vivado HLS into the current toolchain to implement hardware threads. Since
 Vivado HLS synthesizes from C code, the possibility of a common description
 for hardware and software threads will be evaluated. Especially, the
-generation of the \ac{OSFSM} in will be investigated.
+generation of the \ac{OSFSM} will be investigated.
+
+Following, the ReconOS framework will be extended to fit the needs for a
+\ac{PAC} device. While the current delegate mechanism provides exceptional
+transparency, it introduces a significant overhead for communication between
+hardware threads. Especially for low-latency and high-performance
+applications, this overhead lowers the overall performance and is not
+acceptable. To utilize the full performance of a custom hardware
+implementation, chapter \ref{sec:interconnect} presents a reconfigurable
+interconnect, allowing direct communication between hardware threads through
+existing or new \ac{OS} objects. The new communication method will be
+integrated seamlessly into the ReconsOS programming model and provides
+complete transparency to the developer, automatically selecting the
+communication channel at runtime.
 
 Utilizing the extended ReconOS framework, its feasibility for \acp{PAC} will
 be evaluated in chapter \ref{sec:demo} by implementing a ball-on-plate
@@ -428,5 +437,5 @@ algorithms. Additionally, the system will be able to self-adapt to user
 constraints in power consumption or processing demand by reconfiguring itself
 autonomously, for example switching between hardware and software
 implementations or different algorithms. Building the demonstrator and
-utilizing the new interconnect and \ac{HLS} features, allows an extensive
+utilizing the new interconnect and \ac{HLS} features allows an extensive
 evaluation and comparison to the current ReconOS framework.

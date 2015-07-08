@@ -110,7 +110,7 @@ bus structure, again, limits parallel access and performance. Choosing an
 appropriate interconnect, just like the implementation mode of the resources,
 seems to be a crucial step, highly dependent on the application and its
 structure. Furthermore, since the system might be able to adapt itself to
-upcoming requirements during run time, the needs for the interconnect
+upcoming requirements during runtime, the needs for the interconnect
 structure might change after design time. Consequently, an interconnect
 architecture should provide a flexible way of utilizing different structures
 specified at design time and, additionally, allow a reconfiguration at run
@@ -136,7 +136,7 @@ allowing them to interface with the system the same way a hardware threads
 does. While the interconnect presents a fixed interface to the outside world,
 its internal structure is hidden completely. This allows to implement
 different structures, for example buses, rings, or crossbar interconnects, and
-also allows internal reconfiguration at run time without effecting the
+also allows internal reconfiguration at runtime without effecting the
 connected components.
 
 The following subsections describe the interconnect in detail and illustrate
@@ -197,11 +197,11 @@ response to the hardware thread's request, the receiver must know the source
 address, the request is originating from. Therefore, a hardware thread needs
 to specify its own id as the source of the request. However, a thread does not
 know its own id implicitly, since it depends on the execution mode and
-scheduled slot determined at run time. Consequently, an appropriate mechanism
-is needed, allowing a thread to receive its run time id. Querying the id
+scheduled slot determined at runtime. Consequently, an appropriate mechanism
+is needed, allowing a thread to receive its runtime id. Querying the id
 through a traditional \ac{OSIF} command is not possible, since the request
-itself would require an id. Therefore, the ReconOS run time sends, initially
-on thread creation, the run time id to the thread, which is responsible for
+itself would require an id. Therefore, the ReconOS runtime sends, initially
+on thread creation, the runtime id to the thread, which is responsible for
 storing it.
 
 \subsection{Interconnect Interface}
@@ -211,7 +211,7 @@ This allows to develop a range of interconnect structures for different
 requiremens of the applications. Furthermore, considering self-adaptive
 features of the application and partial reconfiguration capabilities of the
 \ac{FPGA}, the fixed external interface allows reconfiguration of the
-interconnect during run time. Figure \ref{fig:interconnect_if} presents the
+interconnect during runtime. Figure \ref{fig:interconnect_if} presents the
 interface, consisiting out of bidirectional \ac{FIFO} ports for each connected
 component, namely the hardware threads, the hardware resources and the
 processor.
@@ -273,10 +273,10 @@ module.
 
 Utilizing the \ac{OSIF} interface enables software threads to access hardware
 resources, but provide no transparent abstraction. To hide the underlying
-implementation of a resource request from the software thread, the run time
+implementation of a resource request from the software thread, the runtime
 needs to know the implementation mode of each resource, enabling it to execute
 the appropriate system call or interface with the hardware. Since every
-resource is represented by a data structure during run time, it can be easily
+resource is represented by a data structure during runtime, it can be easily
 extended by a flag indicating the implementation mode. Listing
 \ref{lst:mbox_get} illustrates the concept by presenting a part of the
 \lstinline{mbox_get} implementation.
@@ -299,11 +299,11 @@ if (res->mode == RECONOS_RESOURCE_MODE_SW) {
 Originally, the software threads directly issue the system call as in line 2.
 To hide the different implementation modes, ReconOS provides an abstraction
 for each operation. Based on the current mode of the resource determined
-during run time, it either issues a regular system call (line 2) or sends a
+during runtime, it either issues a regular system call (line 2) or sends a
 request to the hardware resource (line 4-6) followed by a wait for the
 response (line 8). Note, that the thread sends request as described in the
 previous section, including control word with a thread id \lstinline{run_id}
-determined at run time. The driver handles the underlying access to the
+determined at runtime. The driver handles the underlying access to the
 \ac{OSIF}, arbitrates parallel request and routes the response back to the
 appropriate thread.
 
@@ -367,7 +367,7 @@ toolchain could implement algorithms to determine automatically the best
 implementation mode. For example, by considering the implementation modes of
 threads using a specific resource, an optimized mode could be determined.
 However, when considering self-adapting systems reconfiguring the execution
-modes of threads at run time, the toolchain cannot decide on an optimal
+modes of threads at runtime, the toolchain cannot decide on an optimal
 solution.
 
 \section{Evaluation}

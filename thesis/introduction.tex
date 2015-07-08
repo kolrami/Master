@@ -12,25 +12,23 @@ like network connectivity, integration into enterprise systems or device
 interoperability. To accommodate these new challenges and, since the nowadays
 dominating \ac{PLC} reaches its limits, the \ac{PAC} was introduced as the
 next generation of control. It combines the reliability and robustness of a
-\ac{PLC} with the advanced software capabilities of a \ac{PC}. By
-incorporating state-of-the-art embedded technology like \acp{FPGA} and its
-integration with general purpose processors on a single chip, these devices
-eliminate the need for an expensive custom hardware design and allow  the use
-of \ac{CTOS} components, without loosing the benefits of executing time
-critical control functions directly in silicon.
+\ac{PLC} with the advanced software capabilities of a \ac{PC}. Incorporating
+state-of-the-art embedded technology like \acp{FPGA} eliminate the need for
+expensive custom hardware designs without loosing the benefits of executing
+time critical control functions directly in silicon.
 
 Unfortunately, the increasing complexity of such systems introduces new
-challenges and demand convenient programming methods, abstracting the
-underlying low-level components, to make these devices accessible to a broad
-range of developers. Classical ladder logic used for \acp{PLC} reaches its
-limits and \ac{FPGA} technology is restricted to hardware designers capable of
-handling low level programming languages like \ac{VHDL}. Because of its
-acceptance in the field of software engineering and its eligibility to model
-embedded systems composed of concurrently running tasks, the multithreaded
-approach seems to be suitable as a convenient programming model for these
-hybrid devices. The different threads specified by the developer are
-distributed across the system's \ac{CPU} and \ac{FPGA} resources and
-communicate via defined interaction mechanisms like message passing or shared
-memory.
+challenges and demands convenient programming methods, abstracting the
+underlying low-level components. Classical ladder logic used for \acp{PLC}
+reaches its limits and \ac{FPGA} technology is restricted to hardware
+designers capable of handling low level programming languages like \ac{VHDL}.
+The lack of programmability limits the acceptance among the existing
+developers and prevents a wider dissemination. Because of its acceptance in
+the field of software engineering and its eligibility to model embedded
+systems composed out of concurrently running tasks, the multithreaded approach
+seems to be suitable as a convenient programming model for these hybrid
+devices. The different threads specified by the developer are distributed
+across the system's \ac{CPU} and \ac{FPGA} resources and communicate via
+defined interaction mechanisms like message passing or shared memory.
 
 \todo{Structure of thesis}
