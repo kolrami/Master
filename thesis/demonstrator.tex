@@ -2,6 +2,23 @@
 \chapter{Demonstrator}
 \label{sec:demo}
 
+To demonstrate the work described in the previous chapters in a real world
+application, a ball on plate system is presented in the following sections.
+The demonstrator tries to balance a ball by tracking its position and
+adjusting the angle of the underlying plate, thus allowing to compensate
+external impacts and keeping the ball in the center. Therefore, the plate
+itself is mounted on top of a Stewart platform and has a resistive touchscreen
+attached to it. While the Stewart platform offers the ability to rotate the
+plate around arbitrary axes, the touchscreen provides precise and low latency
+positioning information of the ball.
+
+The control of the platform is implemented by a \ac{PAC} based on the previous
+considerations, including analog I/O, low latency data paths and control
+loops, as well as self-adaptive capabilities. The different components of the
+system are described in detail in the following sections. These include the
+kinematics of the Stewart platform, the touchscreen interface and control
+algorithms for balancing the ball.
+
 \section{Stewart Platform}
 The Stewart platform was introduced by D. Stewart in 1965 \citep{Ste65} and
 gained popular resarch interest in robotics \citep{Szu13}, concerning
@@ -14,8 +31,8 @@ tools are missing \citep{Ji96}. Against the background of increasing
 computational capabilities and more efficient \ac{CAD} tools, this situation
 might change in the future. In the scope of this thesis, the Stewart platform
 promises to be a sophisticated development platform, involving computationally
-expensive calculations for its kinematics and additional I/O capabilities.
-Therefore, it seems to be a suitable demonstrator for a modern \acp{PAC}.
+expensive calculations for its kinematics and need for additional I/O
+capabilities.
 
 The following sections introduce the architecture of the Stewart platform in
 general and the variant used in this thesis, specifying the used notation and
@@ -170,3 +187,57 @@ terms of higher degree and complex operations like $\arctan$ and square roots.
 Therefore, an iterative approach was chosen to find the appropriate angle.
 More details on the concrete implementation of this iterative approach will be
 covered in a following sections.
+
+\section{Touchscreen}
+To track the ball's position on the plate, a resistive touchscreen is mounted
+on top of the plate and touched by the ball. Compared to, for example camera
+based tracking techniques, a touchscreen provides low latency data independent
+from external influences like lighting conditions or camera movements.
+Furthermore, it requires less computational effort, as well as a more compact
+setup.
+
+The following subsections introduce briefly the fundamental principles of the
+resistive touchscreen technology and covers the implementation used in the
+prototype.
+
+\subsection{Resistive Touchscreen Technology}
+An analog resistive touchscreen consists out a glass substrate and a flexible
+film, both coated with a conductor \ac{ITO} \citep{Wal12}, as shown in figure
+\ref{fig:touch_build}.
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{../figures/touch_build}
+		\caption{Construction of resistive touchscreen}
+		\label{fig:touch_build}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{../figures/touch_five}
+		\caption{Five-wire touchscreen}
+		\label{fig:touch_five}
+	\end{subfigure}
+	\caption{Analog resistive touchscreen technology}
+	\label{fig:touch}
+\end{figure}
+The two conductive surfaces are facing each other and
+are separated by insulating spacer dots \citep{Wal12}. When a voltage is
+applied across the surfaces and the flexible film is pressed down, the two
+surfaces make electrical contact, resulting in a voltage divider created by
+the resistance of the \ac{ITO}. Measuring the ratio of the different voltages
+allows to calculate the touch position.
+
+Basically, there exist three major variants of resistive touchscreens, namely
+four-wire, five-wire and eight-wire touchscreens, differing in the number of
+connections to the sensor \citep{Wal12}. For the demonstrator, a five-wire
+touchscreen was used as shown in figure \ref{fig:touch_five}, due to its
+increased durability and sustainability. The X and Y voltages are applied to
+the four corners of the lower glass, while the upper film is used only as a
+contact point to measure the voltage at the touch position (wiper) and
+constitute the fifth wire. To determine, for example, the X position, a
+voltage is applied to the two left corners, while two right corners are
+connected to ground.
+
+To provide the 
+
