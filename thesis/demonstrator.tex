@@ -84,9 +84,9 @@ benefits and drawbacks. Since the actuators in the latter design can be
 realizing as commonly available servo motors, it gained popularity, especially
 for low-cost designs and first prototypes. Therefore, this thesis focuses on a
 servo-based architecture as shown in figure
-\ref{fig:stewart}. The mechanical design and construction was not focused in
-this thesis, but reused from a previous work.
-\begin{figure}[tb]
+\ref{fig:stewart}. The mechanical design and construction was not done in this
+thesis, but adopted from a previous work.
+\begin{figure}
 	\centering
 	\includegraphics[width=6cm]{../figures/stewart}
 	\caption{Construction of the Stewart platform prototype}
@@ -197,8 +197,7 @@ Furthermore, it requires less computational effort, as well as a more compact
 setup.
 
 The following subsections introduce briefly the fundamental principles of the
-resistive touchscreen technology and covers the implementation used in the
-prototype.
+resistive touchscreen technology and covers the use in the prototype.
 
 \subsection{Resistive Touchscreen Technology}
 An analog resistive touchscreen consists out a glass substrate and a flexible
@@ -234,10 +233,52 @@ connections to the sensor \citep{Wal12}. For the demonstrator, a five-wire
 touchscreen was used as shown in figure \ref{fig:touch_five}, due to its
 increased durability and sustainability. The X and Y voltages are applied to
 the four corners of the lower glass, while the upper film is used only as a
-contact point to measure the voltage at the touch position (wiper) and
-constitute the fifth wire. To determine, for example, the X position, a
-voltage is applied to the two left corners, while two right corners are
-connected to ground.
+contact point to measure the voltage at the touch position (wiper). To
+determine, for example, the X position, a voltage is applied to the two left
+corners, while two right corners are connected to ground.
 
-To provide the 
+\subsection{Interfacing the Touchscreen}
+To interface the touchscreen as stated in the previous section, voltage needs
+to be applied to different corners of the touchscreen, while all other ones
+needs to be connected to ground. Therefore, regular digital I/O are
+sufficient, setting their output to 1 or 0, respectively. To measure the
+voltage at the touch point through the viper, an \ac{ADC} with suitable input
+ranges is required. To eliminate noise caused by an unstable voltage source,
+the \ac{ADC} should be connected in a differential fashion to the wiper and
+the supply voltage. This improves the reliability and minimizes the effects of
+voltage fluctuations \citep{OOD00}.
 
+In this work, the pre-assembled evaluation module ADS7845EVM \citep{ADS06} was
+used. While the ZedBoard provides both digital I/O and an on-chip \ac{ADC}
+which could be utilized to interface a touchscreen, additional circuits would
+be required to meet the \ac{ADC}'s input requirements. Since circuit design is
+not target of this thesis, a pre-assembled evaluation module was chosen. It
+provides an appropriate connector for the touchscreen and interfaces with the
+\ac{FPGA} via the \ac{SPI} interface as shown in figure \ref{fig:touch_spi}.
+\begin{figure}
+	\centering
+	\includegraphics{../figures/touch_spi}
+	\caption{\acs{SPI} interface of the ADS7845 touch controller}
+	\label{fig:touch_spi}
+\end{figure}
+A single conversion is done in 24 clock cycles with a period of
+$\SI{400}{\nano\second}$ by sending eight configuration bits to the controller
+and receiving the converted voltage at the touch position as a 12 bit integer.
+The configuration bits send in the first byte include the channel selection
+\emph{A2} - \emph{A0}, i.e. the x and y directions, mode selections and power
+down options. The \emph{SD} bit selects between single-ended and differential
+mode, \emph{M} selects between eight and twelve bit conversion and \emph{P1} -
+\emph{P0} control the power down between conversions. After the control byte
+is send, the controller enters the conversion mode and performs the analog-to-
+digital conversion in the next twelve clock cycles. In the 13th clock cycle
+the last bit is transferred, followed by three zero bits to complete the last
+byte. Therefore, 48 clock cycles are necessary to read the x and y coordinate
+of the touch position, i.e. around $\SI{20}{\micro\second}$.
+
+To connect the controller evaluation module to the ZedBoard, regular digital
+I/Os are required for the serial interface, as well as a $\SI{3.3}{\volt}$
+voltage supply, provided by one of the \ac{Pmod} connectors.
+
+\section{Control Algorithm}
+
+\section{Implementation}
