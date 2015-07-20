@@ -186,7 +186,7 @@ $C_l$. While there exist an analytic solution for this problem, it includes
 terms of higher degree and complex operations like $\arctan$ and square roots.
 Therefore, an iterative approach was chosen to find the appropriate angle.
 More details on the concrete implementation of this iterative approach will be
-covered in a following sections.
+covered in the implementation section.
 
 \section{Touchscreen}
 To track the ball's position on the plate, a resistive touchscreen is mounted
@@ -217,7 +217,7 @@ film, both coated with a conductor \ac{ITO} \citep{Wal12}, as shown in figure
 		\caption{Five-wire touchscreen}
 		\label{fig:touch_five}
 	\end{subfigure}
-	\caption{Analog resistive touchscreen technology}
+	\caption{Analog resistive touchscreen technology \citep[adapted from][]{Wal12}}
 	\label{fig:touch}
 \end{figure}
 The two conductive surfaces are facing each other and
@@ -238,15 +238,14 @@ determine, for example, the X position, a voltage is applied to the two left
 corners, while two right corners are connected to ground.
 
 \subsection{Interfacing the Touchscreen}
-To interface the touchscreen as stated in the previous section, voltage needs
-to be applied to different corners of the touchscreen, while all other ones
-needs to be connected to ground. Therefore, regular digital I/O are
-sufficient, setting their output to 1 or 0, respectively. To measure the
-voltage at the touch point through the viper, an \ac{ADC} with suitable input
-ranges is required. To eliminate noise caused by an unstable voltage source,
-the \ac{ADC} should be connected in a differential fashion to the wiper and
-the supply voltage. This improves the reliability and minimizes the effects of
-voltage fluctuations \citep{OOD00}.
+To interface the touchscreen, voltage needs to be applied to different corners
+of the touchscreen, while all other ones needs to be connected to ground.
+Therefore, regular digital I/O are sufficient, setting their output to 1 or 0,
+respectively. To measure the voltage at the touch point through the viper, an
+\ac{ADC} with suitable input ranges is required. To eliminate noise caused by
+an unstable voltage source, the \ac{ADC} should be connected in a differential
+fashion to the wiper and the supply voltage. This improves the reliability and
+minimizes the effects of voltage fluctuations \citep{OOD00}.
 
 In this work, the pre-assembled evaluation module ADS7845EVM \citep{ADS06} was
 used. While the ZedBoard provides both digital I/O and an on-chip \ac{ADC}
@@ -258,7 +257,7 @@ provides an appropriate connector for the touchscreen and interfaces with the
 \begin{figure}
 	\centering
 	\includegraphics{../figures/touch_spi}
-	\caption{\acs{SPI} interface of the ADS7845 touch controller}
+	\caption{\acs{SPI} interface of the ADS7845 touch controller \citep[adapted from][]{ADST06}}
 	\label{fig:touch_spi}
 \end{figure}
 A single conversion is done in 24 clock cycles with a period of
@@ -282,3 +281,68 @@ voltage supply, provided by one of the \ac{Pmod} connectors.
 \section{Control Algorithm}
 
 \section{Implementation}
+While the previous sections covered the fundamentals for the demonstrator and
+addressed the main problem definitions, this section focuses on the
+implementation of the different components. Consider figure
+\ref{fig:demo_structure}, illustrating the overall structure of the system.
+\begin{figure}
+	\centering
+	\includegraphics{../figures/demo_structure}
+	\caption{Overall structure of the demonstrator}
+	\label{fig:demo_structure}
+\end{figure}
+It consists out of four different ReconOS threads, synchronized and connected
+via mailboxes to each other. The \emph{Touch} thread interfaces with the
+external ADS7845 touch controller by implementing an \ac{SPI} master and
+provides the positioning information to the \emph{Control} thread. That
+implements the \ac{PID} controller and passes the manipulated variable, i.e.
+the rotation of the platform, to the \emph{Inverse} thread. Since the inverse
+kinematic constitutes the most computational intensive task and must be
+performed for each of the six legs, it is parallelized in multiple threads,
+each one calculating a single servo position. Therefore, one to six
+\emph{Inverse} threads might be instantiated.
+
+While the \emph{Touch} and \emph{Servo} threads must be implemented as
+hardware threads, allowing them to interface with the I/O ports of the FPGA,
+the remaining partitioning can be performed arbitrarily. Both the control and
+inverse kinematics implementations are available for hardware synthesis, as
+well as for software compilation.
+
+\paragraph{Touch} As described in the previous section on the touchscreen
+technology, an ADS7845EVM evaluation module is utilized in this work. The
+\emph{Touch} thread implements the \ac{SPI} master according the ADS7845's
+specifications and provides positioning information to the other threads. The
+\ac{SPI} controller generates the required $\SI{2.5}{\mega\hertz}$ clock and
+implements shift registers for both sending and receiving data.
+
+\paragraph{Servo} The servos of the Stewart platform are controlled by a
+\ac{PWM} signal, specifying the angle of the mounted arm. The thread receives
+the required angle encoded as an integer together with a servo id via the
+incoming mailbox and generates an appropriate \ac{PWM} signal. According the
+servo's specification, the pulse must have a width of $\SI{1}{\milli\second}$
+to $\SI{2}{\milli\second}$ and a period of $\SI{10}{\milli\second}$ to
+$\SI{22}{\milli\second}$, resulting in the minimal or maximal angle,
+respectively. Additionally to the control signal, the servos require an
+external power supply, since the ZedBoard is not capable of providing
+sufficient power. Therefore, the PmodCON3 modules provide a dedicated power
+input and connect the control signals directly to the servo.
+
+\paragraph{Inverse} The computationally most demanding component of the
+application is the solution of the Stewart platform's inverse kinematics
+problem. Therefore, it provides  potential for a speedup by a hardware
+implementation. While the inverse kinematics problem itself was already
+discussed in a previous section, this paragraph focuses on its implementation.
+Since it contains many arithmetic operations including fixed point
+calculations, it fits perfectly for an implementation in Vivado HLS. However,
+while the tool includes a math library, it is not able to synthesize sine and
+cosine functions. Therefore, an array synthesized into block \ac{RAM} is
+precalculated and used as a lookup-table. The fixed point data type
+\lstinline{ap_fixed<22,10>} is used for all calculations, providing sufficient
+accuracy for this application. The resulting angle is encoded as an integer of
+11 bits, resulting in a precision of $\SI{0.1}{\degree}$. As already
+mentioned, the servo angle is calculated out of the leg length by a linear
+search over all possible angles. Although an analytical solution could be
+formulated, it requires square roots, high potencies and tangent functions,
+making it harder to implement on an FPGA.
+
+\section{Evaluation}
