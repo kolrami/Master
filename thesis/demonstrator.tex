@@ -291,16 +291,17 @@ implementation of the different components. Consider figure
 	\caption{Overall structure of the demonstrator}
 	\label{fig:demo_structure}
 \end{figure}
-It consists out of four different ReconOS threads, synchronized and connected
-via mailboxes to each other. The \emph{Touch} thread interfaces with the
-external ADS7845 touch controller by implementing an \ac{SPI} master and
-provides the positioning information to the \emph{Control} thread. That
-implements the \ac{PID} controller and passes the manipulated variable, i.e.
-the rotation of the platform, to the \emph{Inverse} thread. Since the inverse
-kinematic constitutes the most computational intensive task and must be
-performed for each of the six legs, it is parallelized in multiple threads,
-each one calculating a single servo position. Therefore, one to six
-\emph{Inverse} threads might be instantiated.
+It consists out of four types of ReconOS threads representing the control loop
+of the ball on plate application, which are synchronized and connected via
+mailboxes to each other. The \emph{Touch} thread interfaces with the external
+ADS7845 touch controller by implementing an \ac{SPI} master and provides the
+positioning information to the \emph{Control} thread. That implements the
+\ac{PID} controller and passes the manipulated variable, i.e. the rotation of
+the platform, to the \emph{Inverse} thread. Since the inverse kinematic
+constitutes the most computational intensive task and must be performed for
+each of the six legs, it is parallelized in multiple threads, each one
+calculating a single servo position. Therefore, one to six \emph{Inverse}
+threads might be instantiated.
 
 While the \emph{Touch} and \emph{Servo} threads must be implemented as
 hardware threads, allowing them to interface with the I/O ports of the FPGA,
@@ -345,4 +346,120 @@ search over all possible angles. Although an analytical solution could be
 formulated, it requires square roots, high potencies and tangent functions,
 making it harder to implement on an FPGA.
 
-\section{Evaluation}
+\section{Self-Awareness}
+While the system described so far implements the basic functionality of the
+ball-on-plate demonstrator, this section focuses on self-adaption strategies
+by extending the demonstrator with a framework to gather self-aware properties
+and introducing basic self-expression capabilities to optimize the power
+consumption.
+
+As stated in the background chapter, self-aware systems require knowledge of
+themselves by acquiring so-called self-*properties, for example by capturing
+sensor data or maintaining performance counters. This self-aware knowledge can
+then be processed by a self-expression engine to modify the system's behavior
+and meet specified requirements. Consider figure \ref{fig:demo_selfaware},
+presenting an extended structure of the demonstrator, implementing the concept
+of a self-aware system.
+\begin{figure}
+	\centering
+	\includegraphics{../figures/demo_selfaware}
+	\caption{Extended structure of the demonstrator}
+	\label{fig:demo_selfaware}
+\end{figure}
+A globally accessible shared memory region allows to collect various types of
+self-aware properties from different sources. For example, the \emph{Power}
+thread acquires sensor data to measure the system's power consumption or the
+\emph{Inverse} threads maintains a performance counter. All this data is then
+utilized by the \emph{Self} thread, implementing a self-expression engine
+consisting out of rules, adjusting parameters of the system. Furthermore, to
+monitor the insights of the system, the \emph{Web} threads provides access to
+several of the self-properties and parameters via an interactive web
+interface.
+
+The following subsections explain the different self-properties and how they
+are acquired, as well as the adaptions strategies and controlled parameters of
+the system. The following sections introduce the different properties in more
+detail.
+
+\subsection{Self-Properties}
+
+The self-properties are acquired by the threads of the system and stored in
+the globally accessible shared memory region. While the acquiring of the
+properties is typically performed in parallel to the regular processing, the
+additional memory accesses introduces an overhead and might effects the
+overall system's performance. However, since the shared memory is not utilized
+in the system so far, the overhead can be neglected. For software threads a
+single word access is, obviously, not performance critical and a hardware
+thread requires less than 10 clock cycles for an access via the memory
+subsystem. It does not need to block until the word is written to the system
+memory, but can proceed after the request is written to the \ac{MEMIF}
+\ac{FIFO}.
+
+To demonstrate self-adaptive capabilities of the system, the power
+consumption, the ball's position on the plate and performance measures of the
+computational intensive inverse kinematics solver are acquired and processed
+by the self-expression engine.
+
+\subsubsection{Power Consumption}
+The power consumption of the system is affected by many components, ranging
+from different threads through the entire the Zynq \ac{SoC} to external
+devices like the touch controller. Therefore, a fine-grained measurement of
+the different component's power consumption would be desirable, allow a more
+sophisticated control of power requirements.
+
+While more advanced boards include power measurement capabilities through
+dedicated components connected to the FPGA, the ZedBoard only features a
+$\SI{10}{\milli\ohm}$ current sense resistor in series with the
+$\SI{12}{\volt}$ input power supply \citep{ZedBoard}. Measuring the voltage
+drop at that resistor allows to calculate the current flowing into the board,
+and, consequently, the power consumption of the system like in equation
+\ref{eq:power}. $V_i$ represents the input voltage from the power supply, i.e.
+$\SI{12}{\volt}$, and $V_s$ the measured voltage drop at the shunt resistor.
+\begin{equation}
+P = V_i I = V_i \frac{V_s}{\SI{10}{\milli\ohm}}
+\label{eq:power}
+\end{equation}
+Since the resistor is placed on the high side, i.e. before any load, it has a
+common mode voltage of around $\SI{12}{\volt}$, far exceeding the capabilities
+of the on-chip \ac{ADC}. Therefore, the dedicated current sensing amplifier
+\todo{LTC4151} is used to measure voltage drop $V_s$. It integrates an
+instrumentation amplifier with an appropriate \ac{ADC} and reports data
+through the \ac{I2C} interface, connected the Zynq's dedicated \ac{I2C}
+controller. This allows to poll the \todo{LTC4151} from a regular software
+thread and make it available via the self-properties memory region. Since this
+region is globally accessible, both hardware and software threads can access
+this data.
+
+Based on the the overall power consumption of the board, different methods for
+a more fine-grained measurement can be discussed. Directly measuring the power
+consumption of single threads is not feasible, but suitable models could be
+applied to estimate the power distribution across the chip. Different works
+have dealt with the problem of simulating the power consumption of \acp{FPGA}
+\citep{DeTu05,JeCa11} and commercial tools like Xilinx XPower are available to
+estimate the resulting drawn. However, the effective switching activity
+heavily depends on the input at runtime. Furthermore, external components are
+not included in the simulation results and software threads running on an
+operating system are heavily dynamic and unpredictable. Especially in case of
+self-adaptive systems acquiring parameters at runtime, long running
+simulations are not applicable. Therefore, learning strategies observing the
+state of the system and its work load seem to be more suitable for power
+estimation at runtime. While turning on and off threads or disabling external
+components temporarily, the system might be able to learn the effects of a
+single component under different load situations.
+
+Another approach, only feasible for hardware threads, might be the usage of
+fine-grained temperature measurements utilizing ring-oscillator based sensors
+\citep{RAH12,JJR13}. Switching activity, temperature and power consumption are
+directly correlated. In combination with knowledge of the placement of the
+different threads on the \ac{FPGA}, a temperature distribution might allow to
+estimate their power draw.
+
+Altogether, several approaches for a fine-grained measurement of the system's
+power consumption are conceivable, requiring a more detailed study out of the
+scope of this thesis. For basic self-adaption techniques demonstrated with
+this application, the overall data seems to be sufficient.
+
+\subsubsection{Ball Position}
+\subsubsection{Inverse Kinematics Performance}
+
+\subsection{Adaption Strategies}
