@@ -279,6 +279,7 @@ I/Os are required for the serial interface, as well as a $\SI{3.3}{\volt}$
 voltage supply, provided by one of the \ac{Pmod} connectors.
 
 \section{Control Algorithm}
+\todo{Control theory}
 
 \section{Implementation}
 While the previous sections covered the fundamentals for the demonstrator and
@@ -314,19 +315,14 @@ technology, an ADS7845EVM evaluation module is utilized in this work. The
 \emph{Touch} thread implements the \ac{SPI} master according the ADS7845's
 specifications and provides positioning information to the other threads. The
 \ac{SPI} controller generates the required $\SI{2.5}{\mega\hertz}$ clock and
-implements shift registers for both sending and receiving data.
+implements shift registers for both sending and receiving data. While the
+touch controller returns two 12 bit value representing the measured voltage at
+the sensing position, the touch thread applies calibration adjustments and
+returns two 12 bit signed integer values representing the position of the ball
+in the platform coordinate system.
 
-\paragraph{Servo} The servos of the Stewart platform are controlled by a
-\ac{PWM} signal, specifying the angle of the mounted arm. The thread receives
-the required angle encoded as an integer together with a servo id via the
-incoming mailbox and generates an appropriate \ac{PWM} signal. According the
-servo's specification, the pulse must have a width of $\SI{1}{\milli\second}$
-to $\SI{2}{\milli\second}$ and a period of $\SI{10}{\milli\second}$ to
-$\SI{22}{\milli\second}$, resulting in the minimal or maximal angle,
-respectively. Additionally to the control signal, the servos require an
-external power supply, since the ZedBoard is not capable of providing
-sufficient power. Therefore, the PmodCON3 modules provide a dedicated power
-input and connect the control signals directly to the servo.
+\paragraph{Control}
+\todo{Control implementation}
 
 \paragraph{Inverse} The computationally most demanding component of the
 application is the solution of the Stewart platform's inverse kinematics
@@ -346,6 +342,18 @@ search over all possible angles. Although an analytical solution could be
 formulated, it requires square roots, high potencies and tangent functions,
 making it harder to implement on an FPGA.
 
+\paragraph{Servo} The servos of the Stewart platform are controlled by a
+\ac{PWM} signal, specifying the angle of the mounted arm. The thread receives
+the required angle encoded as an integer together with a servo id via the
+incoming mailbox and generates an appropriate \ac{PWM} signal. According the
+servo's specification, the pulse must have a width of $\SI{1}{\milli\second}$
+to $\SI{2}{\milli\second}$ and a period of $\SI{10}{\milli\second}$ to
+$\SI{22}{\milli\second}$, resulting in the minimal or maximal angle,
+respectively. Additionally to the control signal, the servos require an
+external power supply, since the ZedBoard is not capable of providing
+sufficient power. Therefore, the PmodCON3 modules provide a dedicated power
+input and connect the control signals directly to the servo.
+
 \section{Self-Awareness}
 While the system described so far implements the basic functionality of the
 ball-on-plate demonstrator, this section focuses on self-adaption strategies
@@ -362,19 +370,18 @@ presenting an extended structure of the demonstrator, implementing the concept
 of a self-aware system.
 \begin{figure}
 	\centering
-	\includegraphics{../figures/demo_selfaware}
+	%\includegraphics{../figures/demo_selfaware}
 	\caption{Extended structure of the demonstrator}
 	\label{fig:demo_selfaware}
 \end{figure}
 A globally accessible shared memory region allows to collect various types of
 self-aware properties from different sources. For example, the \emph{Power}
 thread acquires sensor data to measure the system's power consumption or the
-\emph{Inverse} threads maintains a performance counter. All this data is then
-utilized by the \emph{Self} thread, implementing a self-expression engine
-consisting out of rules, adjusting parameters of the system. Furthermore, to
-monitor the insights of the system, the \emph{Web} threads provides access to
-several of the self-properties and parameters via an interactive web
-interface.
+threads maintain a performance counter. All this data is then utilized by the
+\emph{Self} thread, implementing a self-expression engine consisting out of
+rules, adjusting parameters of the system. Furthermore, to monitor the
+insights of the system, the \emph{Web} threads provides access to several of
+the self-properties and parameters via an interactive web interface.
 
 The following subsections explain the different self-properties and how they
 are acquired, as well as the adaptions strategies and controlled parameters of
@@ -397,8 +404,7 @@ memory, but can proceed after the request is written to the \ac{MEMIF}
 
 To demonstrate self-adaptive capabilities of the system, the power
 consumption, the ball's position on the plate and performance measures of the
-computational intensive inverse kinematics solver are acquired and processed
-by the self-expression engine.
+different threads are acquired and processed by the self-expression engine.
 
 \subsubsection{Power Consumption}
 The power consumption of the system is affected by many components, ranging
@@ -460,6 +466,37 @@ scope of this thesis. For basic self-adaption techniques demonstrated with
 this application, the overall data seems to be sufficient.
 
 \subsubsection{Ball Position}
-\subsubsection{Inverse Kinematics Performance}
+The ball position on the plate is the only external input to the system and,
+therefore, has a significant impact on the system's behavior. Observing the
+position over time allows to adapt the system to requirements for different
+situations. For example, if the ball has a high velocity, the system
+experiences a high load and must be able to react to changes with a low
+latency. On the other hand, if the ball has reached its final position and
+moves only slowly, less performance is required. This allows to, for example,
+reduce the polling frequency and lower the overall power consumption.
+
+The ball position itself is acquired by the \emph{Touch} thread at a specified
+polling interval. Therefore, during idle times, the touch threads can write
+the positioning data to the properties memory region and is not affected in
+its normal operation.
+
+\subsubsection{Processing Performance}
+Performance is an important objective for the system to accomplish. However,
+maximal processing power might not be required in all circumstances. In fact,
+the processing demands might vary during runtime, allowing the system to adapt
+and, for example, save energy in low load situations. Therefore, the current
+performance needs to be monitored continuously and observed over time.
+
+To provide performance measurement during runtime, the threads acquire
+globally valid time stamps at dedicated points during execution and save them
+to the properties memory region. However, threads generated with Vivado HLS
+cannot provide appropriate data, since the scheduling does not guarantee a
+specific execution order. For example, introducing instructions to read a
+timestamp from an external port might be scheduled at any point during
+execution, since it introduces no data dependencies. Note, that software
+threads can access globally valid time stamps via a memory mapped \ax{AXI}
+core.
 
 \subsection{Adaption Strategies}
+
+\todo{Adaption Strategies}
