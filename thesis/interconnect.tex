@@ -238,11 +238,11 @@ processor. Originally, each of the \acp{OSIF} were attached individually
 through a set of memory mapped registers to the processor. However, since the
 kernel driver and system bus support only sequential access, the parallel
 mapping could not be utilized for parallel access and provides no performance
-benefits. Therefore, the interconnect provides only a single \ac{FIFO}
-interface to the processor and is responsible to arbitrate the different
-requests from the hardware components. In software, the driver module provides
-an interface to wait for and receive messages based on a filter, specifying a
-mask (\lstinline{MASK}) and a reference value (\lstinline{BITS}). Whenever the
+benefits. Therefore, the interconnect provides a single \ac{FIFO} interface to
+the processor and is responsible to arbitrate the different requests from the
+hardware components. In software, the driver module provides an interface to
+wait for and receive messages based on a filter, specifying a mask
+(\lstinline{MASK}) and a reference value (\lstinline{BITS}). Whenever the
 driver module reads a message, it routes it to the appropriate user-space
 process satisfying \lstinline{CTRL & MASK == BITS}. To specify the filter, a
 process issues the \lstinline{RECONOS_OSIF_SET_MASK} and
