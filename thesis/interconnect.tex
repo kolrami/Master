@@ -300,8 +300,8 @@ Originally, the software threads directly issue the system call as in line 2.
 To hide the different implementation modes, ReconOS provides an abstraction
 for each operation. Based on the current mode of the resource determined
 during runtime, it either issues a regular system call (line 2) or sends a
-request to the hardware resource (line 4-6) followed by a wait for the
-response (line 8). Note, that the thread sends request as described in the
+request to the hardware resource (line 4-6), followed by a wait for the
+response (line 8). Note, that the threads send requests as described in the
 previous section, including control word with a thread id \lstinline{run_id}
 determined at runtime. The driver handles the underlying access to the
 \ac{OSIF}, arbitrates parallel request and routes the response back to the
@@ -320,18 +320,18 @@ available in all descriptions.
 \subsection{Hardware resources}
 As already covered in the protocol section, a request to a resource, either
 handled via a delegate thread in software or directly in hardware, consists
-out of the control word followed by the original \ac{OSIF} command, i.e. the
-encoding of the command followed by additional arguments. While the delegate
+out of the control word, followed by the original \ac{OSIF} command, i.e. the
+encoding of the command, followed by additional arguments. While the delegate
 thread translate the encoding into the appropriate system call executed by the
 operating system, a hardware resource must implement all logic independently
 of any \ac{OS} features. Thereby, since many system calls are performed in a
-blocking manner, the implementation of the resources incorporates scheduling
+blocking manner, the implementations of the resources incorporate scheduling
 components circumventing the scheduling of the operating system. Since the
 resources have no access to any scheduling components, they can only implement
 basic algorithms, for example \acl{FIFO}. However, for hardware threads,
-scheduling has only limited influence, since all thread can always be executed
-in parallel. Since hardware resources are mainly targeting hardware to
-hardware communication, the limited scheduling capabilities are acceptable.
+scheduling has only limited influence, since all threads can be executed in
+parallel. Since hardware resources are mainly targeting hardware to hardware
+communication, the limited scheduling capabilities are acceptable.
 
 Considering self-adapting systems with changing execution modes of threads
 suggests to reconfigure the mode of a resource analogously. For example, if
@@ -339,7 +339,7 @@ threads are migrated from hardware to software, it might be reasonable to also
 migrate an appropriate resource used by the threads. While the infrastructure
 itself is designed in a flexible way and could support such migrations, it
 includes similar challenges as arising from thread migration. Although this
-self-adaptiveness constitute a relevant research topic, it is not targeted in
+self-adaptiveness constitutes a relevant research topic, it is not targeted in
 this thesis, assuming a fixed configuration of resources, specified at design
 time.
 
