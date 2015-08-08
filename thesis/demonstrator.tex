@@ -550,15 +550,25 @@ the processing demands might vary during runtime, allowing the system to adapt
 and, for example, save energy in low load situations. Therefore, the current
 performance needs to be monitored continuously and observed over time.
 
-To provide performance measurement during runtime, the threads acquire
-globally valid time stamps at dedicated points during execution and save them
-to the properties memory region. However, threads generated with Vivado HLS
-cannot provide appropriate data, since the scheduling does not guarantee a
-specific execution order. For example, introducing instructions to read a
-timestamp from an external port might be scheduled at any point during
-execution, since it introduces no data dependencies. Note, that software
-threads can access globally valid time stamps via a memory mapped \ac{AXI}
-core.
+To provide performance measurements during runtime, the threads must save
+globally valid time stamps at specific points during execution. Therefore, a
+dedicated performance thread receives request from the different threads via a
+mailbox implemented in hardware, containing all necessary information to
+identify the thread and its execution state. While this approach introduces a
+inaccuracy due to the propagation time of the message from the sending thread
+to the performance thread, it becomes necessary to allow hardware threads
+generated using Vivado HLS to capture performance information. Vivado HLS does
+not provide a way to influence the scheduling of operations directly, whereby
+performance measurements must be executed in specific states. Utilizing the
+sequential meaning of \ac{FIFO} accesses via the mailbox call forces the execution in the desired state.
+
+Considering the propagation times of a hardware mailbox presented earlier, the
+additional inaccuracy introduced becomes negligible. Even for software threads
+the overhead is acceptable, since anyway, they need to access a globally valid
+time stamp through the system bus. Furthermore, the approach of performance
+threads unifies the performance evaluation for all types of threads without
+additional drivers, signals or hardware components out of the scope of
+ReconOS.
 
 \subsection{Adaption Strategies}
 
