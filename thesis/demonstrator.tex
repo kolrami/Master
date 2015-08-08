@@ -294,45 +294,31 @@ Figure \ref{fig:pid_rep} illustrates the concept of a \ac{PID} controller with
 regard to the ball-on-plate application as the process of the control loop.
 \begin{figure}
 	\centering
-	\begin{subfigure}{0.49\textwidth}
-		\centering
-		\includegraphics{../figures/pid_rep}
-		\caption{Representation of controlled system}
-		\label{fig:pid_rep}
-	\end{subfigure}
-	\begin{subfigure}{0.49\textwidth}
-		\centering
-		%\includegraphics{../figures/pid_static}
-		\caption{Separation of rotation angle and axis}
-		\label{fig:pid_static}
-	\end{subfigure}
-	\caption{\acs{PID} controller for Stewart platform}
-	\label{fig:pid}
+	\centering
+	\includegraphics{../figures/pid_rep}
+	\caption{Representation of controlled system}
+	\label{fig:pid_rep}
 \end{figure}
 The platform's rotation constitutes the manipulated variable, while the ball's
-position represents the controlled variable. However, a basic \ac{PID}
-controller handles scalar variables, while the ball position is a two-
-dimensional vector. Therefore, not the ball position itself is used as the
-controlled variable, but only the distance of the ball to the desired
-position. Using this information, the controller manipulates the angle of the
-platform, while the rotation axis is calculated perpendicular to the error
-vector, as illustrated in figure \ref{fig:pid_static}.
+position represents the controlled variable. The error vector is calculated as
+the difference of the target position and the current position, i.e., since
+the target position is the center of the plate, the negated position of the
+ball. Vividly, the resulting controller output represents the acceleration
+required to push the ball in the desired direction. To achive this
+acceleration, the platform needs to bo rotated around an axis perpendicular to
+the acceleration vector and by an angle, proportional to the length of the
+vector. These two values can be determined by applying geometric calculations
+and fed into the inverse kinematics algorithm to achieve the correct rotation.
+Note, that the controller output vector does generally not point to the target
+position, since the derivative term compensates the velocity of the ball.
 
 While the implementation of a \ac{PID} controller is well-known, the
 challenging part is to tune its parameters, i.e. the factors for the
-proportional, integrative and derivative terms, for the ball-on-plate system.
-Typically, simulations are used to represent the controlled process by a
-mathematical model and numerically calculating optimal parameters. However,
-the focus of this thesis does not lay on controller design and tuning and,
-therefore, appropriate values where determined by systematic experiments.
-Figure \ref{fig:pid_tuning} illustrates the final parameters by a plot of the
-resulting errors in x and y direction.
-\begin{figure}
-	\centering
-	%\includegraphics{../figures/pid_tuning}
-	\caption{Optimal parameters for the ball-on-plate demonstrator}
-	\label{fig:pid_tuning}
-\end{figure}
+proportional, integrative and derivative terms. Typically, simulations are
+used to represent the controlled process by a mathematical model and
+numerically calculating optimal parameters. However, the focus of this thesis
+does not lay on controller design and, therefore, appropriate values where
+determined by systematic experiments.
 
 \section{Implementation}
 While the previous sections covered the fundamentals for the demonstrator and
@@ -374,16 +360,32 @@ the sensing position, the touch thread applies calibration adjustments and
 returns two 12 bit signed integer values representing the position of the ball
 in the platform coordinate system.
 
-\paragraph{Control} The \emph{Control} threads implements the \ac{PID}
-controller and calculates the required rotation axis as described in the
-previous section. Therefore, it receives the ball position from the
-\emph{Touch} thread and calculates the error as the distance of the ball to
-its desired target position. This error is fed into the \ac{PID}
-implementation, returning the rotation angle for the platform. Parallel, the
-rotation axis is calculated as the cross product of the vector from the
-desired position to the actual position and the unit vector $(0,0,1)^T$.
-Furthermore, since the inverse kinematics implementation requires a rotation
-vector of length one, the resulting vector is divided by its length.
+\paragraph{Control} The \emph{Control} thread implements the \ac{PID}
+controller as described in the previous section. Therefore, it receives the
+ball position from the \emph{Touch} thread, calculates the error vector and
+applies the \ac{PID}control algorithm as sketched in listing \ref{lst:pid} for
+the x coordinate.
+\begin{lstlisting}[
+	language=VHDL,
+	caption={\acs{PID} implementation},
+	label={lst:pid},
+	float=tb
+]
+error_x_diff = (error_x - error_x_last) / delta;
+error_x_sum += error_x * delta;
+ctrl_x_p = KP * error_x;
+ctrl_x_i = KI * error_x_sum;
+ctrl_x_d = KD * error_x_diff;
+ctrl_x = ctrl_x_p + ctrl_x_i + ctrl_x_d;
+\end{lstlisting}
+The proportional component is directly represented by the current error, while
+the derivative and integral components are calculated via the delta variable,
+representing the time period since the last value. By multiplying each
+component with the \ac{PID} parameters \emph{KP}, \emph{KI} and \emph{KD}, the
+resulting control output is determined. Since the inverse kinematics threads
+require a rotation axis and an absolute angle to rotate the plate, the output
+vector is used to calculate its perpendicular vector of length one as the
+rotation axis and its length as the rotation angle.
 
 \paragraph{Inverse} The computationally most demanding component of the
 application is the solution of the Stewart platform's inverse kinematics
@@ -432,7 +434,7 @@ presenting an extended structure of the demonstrator, implementing the concept
 of a self-aware system.
 \begin{figure}
 	\centering
-	%\includegraphics{../figures/demo_selfaware}
+	\includegraphics{../figures/demo_selfaware}
 	\caption{Extended structure of the demonstrator}
 	\label{fig:demo_selfaware}
 \end{figure}
@@ -489,13 +491,13 @@ P = V_i I = V_i \frac{V_s}{\SI{10}{\milli\ohm}}
 Since the resistor is placed on the high side, i.e. before any load, it has a
 common mode voltage of around $\SI{12}{\volt}$, far exceeding the capabilities
 of the on-chip \ac{ADC}. Therefore, the dedicated current sensing amplifier
-\todo{LTC4151} is used to measure the voltage drop $V_s$. It integrates an
+LTC4151 is used to measure the voltage drop $V_s$. It integrates an
 instrumentation amplifier with an appropriate \ac{ADC} and reports data
 through the \ac{I2C} interface, connected the Zynq's dedicated \ac{I2C}
-controller. This allows to poll the \todo{LTC4151} from a regular software
-thread and make the measurement data available via the self-properties memory
-region. Since this region is globally accessible, both hardware and software
-threads can access this data.
+controller. This allows to poll the LTC4151 from a regular software thread and
+make the measurement data available via the self-properties memory region.
+Since this region is globally accessible, both hardware and software threads
+can access this data.
 
 Based on the the overall power consumption of the board, different methods for
 a more fine-grained measurement can be discussed. Directly measuring the power
