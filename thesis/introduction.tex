@@ -14,7 +14,7 @@ dominating \ac{PLC} reaches its limits, the \ac{PAC} was introduced as the
 next generation of control. It combines the reliability and robustness of a
 \ac{PLC} with the advanced software capabilities of a \ac{PC}. Incorporating
 state-of-the-art embedded technology like \acp{FPGA} eliminate the need for
-expensive custom hardware designs without loosing the benefits of executing
+expensive custom hardware designs, without loosing the benefits of executing
 time critical control functions directly in silicon.
 
 Unfortunately, the increasing complexity of such systems introduces new
@@ -29,6 +29,25 @@ systems composed out of concurrently running tasks, the multithreaded approach
 seems to be suitable as a convenient programming model for these hybrid
 devices. The different threads specified by the developer are distributed
 across the system's \ac{CPU} and \ac{FPGA} resources and communicate via
-defined interaction mechanisms like message passing or shared memory.
+defined interaction mechanisms like message passing or shared memory. Combined
+with recent advances in \ac{HLS} techniques and low latency communication
+infrastructures, this approach seems to be suitable for modern \ac{PAC}
+designs.
 
-\todo{Structure of thesis}
+Besides the challenges in programming these hybrid systems, their increasing
+complexity and dynamics pose problems for the maintainers and administrators.
+Rapidly changing environmental conditions and varying demands require the
+systems to self-adapt without the interference of a human, incapable of
+surveying the entire system and all its coherences.
+
+This thesis investigates the feasibility of the multithreaded approach as
+implemented by the ReconOS framework for \ac{PAC} designs and studies
+different self-adaption strategies for a prototypical application. Chapter
+\ref{chap:motivation} motivates the problem definition and introduces relevant
+concepts and fundamentals. Chapter \ref{chap:hls} introduces the Vivado HLS
+tool and presents an integration into the ReconOS framework to generate
+hardware threads including communication and processing logic, followed by
+chapter \ref{chap:interconnect}, addressing the problem of communication
+overhead of threads by proposing a hardware interconnect infrastructure. Based
+on these results, chapter \ref{chap:demonstrator} presents a real-world Ball
+on Plate demonstrator, including self-adaption capabilities.
