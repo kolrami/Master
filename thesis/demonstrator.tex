@@ -356,9 +356,11 @@ specifications and provides positioning information to the other threads. The
 \ac{SPI} controller generates the required $\SI{2.5}{\mega\hertz}$ clock and
 implements shift registers for both sending and receiving data. While the
 touch controller returns two 12 bit value representing the measured voltage at
-the sensing position, the touch thread applies calibration adjustments and
-returns two 12 bit signed integer values representing the position of the ball
-in the platform coordinate system.
+the sensing position, the touch thread converts them into coordinates
+representing the ball's position in the plate's coordinate system by applying
+translations and scaling. Additionally, to reduce noise in the ball's
+position, multiple measurements are performed in a single scan cycle and are
+smoothed by applying a median average.
 
 \paragraph{Control} The \emph{Control} thread implements the \ac{PID}
 controller as described in the previous section. Therefore, it receives the
@@ -435,7 +437,7 @@ of a self-aware system.
 \begin{figure}
 	\centering
 	\includegraphics{../figures/demo_selfaware}
-	\caption{Extended structure of the demonstrator}
+	\caption{Extended structure of the demonstrator \todo{saw thread}}
 	\label{fig:demo_selfaware}
 \end{figure}
 A globally accessible shared memory region allows to collect various types of
@@ -572,4 +574,4 @@ ReconOS.
 
 \subsection{Adaption Strategies}
 
-\todo{Adaption Strategies}
+\section{Evaluation}

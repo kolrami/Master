@@ -1,14 +1,14 @@
 %!TEX root = thesis.tex
-\chapter{Motivation and Background}
+\chapter{Background and Related Work}
 \label{chap:motivation}
-This chapter gives an introduction into the main topics and motivates several
-problems addressed in the rest of the thesis. It also includes references to
-related work representing current research topics and points out possible
-links. Beginning with an introduction into \acp{PAC} and their history, the
-ReconOS framework is introduced, including a discussion on shortcomings and
-opportunities. Subsequently, modern \ac{HLS} approaches are presented and the
-concept of self-adaptive systems is covered. Finally, the contribution of this
-work is presented and motivated.
+This chapter gives an introduction into the relevant topics and motivates
+the problems addressed in the rest of the thesis. It also includes
+references to related work representing current research topics and points out
+possible links. Beginning with an introduction into \acp{PAC} and their
+history, the ReconOS framework is introduced, including a discussion on its
+shortcomings and opportunities. Subsequently, modern \ac{HLS} approaches are
+presented and the concept of self-adaptive systems is covered. Finally, the
+contribution of this work is presented and motivated.
 
 \section{\aclp{PAC}}
 \aclp{PAC} are a relatively new class of controllers emerged in the past years
@@ -16,10 +16,9 @@ out of the discussions on advantages and disadvantages of \acp{PLC} compared
 to \acp{PC} \citep{bel05}. The acronym \ac{PAC} itself was introduced by the
 \ac{ARC} in 2001 \citep{pay13} to represent this next of generation
 controllers. However, a strict definition to clearly identify a \ac{PAC} and
-differentiate it from other \acp{PLC} is missing. The term is used more as
-buzzword for the automation vendor's marketing, but still reflects the
-increasing demands by the modern industry and the evolution of automation
-controllers.
+differentiate it from other \acp{PLC} is missing. The term is used as buzzword
+for the automation vendor's marketing, but still reflects the increasing
+demands by the modern industry and the evolution of automation controllers.
 
 Since its origin in the 1960s \citep{par99}, the \ac{PLC} dominates the
 control and automation market by providing high reliability, a well-known
@@ -53,7 +52,7 @@ systems and a discontinuity in controller technology. Engineers, targeting the
 and started evaluating different technology. They came up with \acp{PC} for
 industrial control, offering advanced software capabilities, utilization of
 \ac{COTS} components and graphical environments \citep{bel05}. However,
-standard \acp{PC} are not ideal for industrial control applications due to
+standard \acp{PC} are not ideal for industrial control applications, due to
 missing robustness in rugged environments, stable operating systems and common
 programming models. Finally, the engineers either omitted advanced
 functionalities or deployed a coupled \ac{PC}/\ac{PLC} system. Without any
@@ -61,7 +60,7 @@ satisfactory solution, hardware vendors tried to fill up the gap by developing
 a new class of controller, the so-called \acp{PAC}.
 
 The \ac{PAC} combines the best features of \acp{PLC} and \acp{PC} in a single
-device by incorporating robustness and reliability with advanced software
+device, by incorporating robustness and reliability with advanced software
 capabilities as illustrated in figure \ref{fig:pac}.
 \begin{figure}[tb]
 	\centering
@@ -105,9 +104,9 @@ With increasing demand for high-performance embedded systems and upcoming
 \acp{SoC}, integrating powerful general-purpose processors with reconfigurable
 logic, convenient programming models are required to tap the full potential of
 these hybrid systems \citep{ANA04,VMB13}. \ac{HLS} approaches allow the
-synthesis of hardware designs from a high-level language and simplify the
-development of custom hardware, but do not provide an abstraction for the
-underlying hardware components at system level.
+synthesis from a high-level language and simplify the development of custom
+hardware, but do not provide an abstraction for the underlying hardware
+components at system level.
 
 ReconOS addresses this problem and provides a unified execution environment
 leveraging the well-established multithreaded programming model and extending
@@ -257,13 +256,12 @@ systems. However, hardware implementations are still limited to developers
 familiar with \ac{FPGA} technology and low-level programming languages like
 \ac{VHDL}. To lower these entry barriers and open the technology to a broader
 range of developers, recent research explores \ac{HLS} to synthesize efficient
-hardware out of high-level languages like C \citep{SWL13}. A common
-description for both software and hardware implementations fits perfectly into
-the concept of transparent multi-core systems \citep{CBN11}. A thread might be
-migrated at runtime from software to hardware or vice versa, to fulfill
-requirements in, for example, power consumption or performance. Such so-called
-self-adaptive systems are also a hot topic in current research
-\citep{AHL14,HLP09}.
+hardware out of high-level languages \citep{SWL13}. A common description for
+both software and hardware implementations fits perfectly into the concept of
+transparent multi-core systems \citep{CBN11}. A thread might be migrated at
+runtime from software to hardware or vice versa, to fulfill requirements in,
+for example, power consumption or performance. Such so-called self-adaptive
+systems are also a hot topic in current research \citep{AHL14,HLP09}.
 
 \section{\acl{HLS}}
 %While the integration of hardware threads into the multithreaded programming

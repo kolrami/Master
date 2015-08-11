@@ -244,7 +244,7 @@ signals.
 		\caption{Interface inferred by Vivado HLS}
 		\label{fig:hwt_if_h}
 	\end{subfigure}
-	\caption{Interfaces of hardware thread}
+	\caption{Interfaces of hardware thread \todo{update signal}}
 	\label{fig:hwt_if}
 \end{figure}
 When generating a hardware thread using Vivado HLS, these interfaces must be
@@ -269,12 +269,14 @@ hardware thread, including arguments and directives.
 void thread_entry(hls::stream<uint32> osif_sw2hw,
                   hls::stream<uint32> osif_hw2sw,
                   hls::stream<uint32> memif_hwt2mem,
-                  hls::stream<uint32> memif_mem2hwt) {
+                  hls::stream<uint32> memif_mem2hwt,
+                  hls::stream<bool> sig) {
 	#pragma HLS INTERFACE ap_ctrl_none port=return
 	#pragma HLS INTERFACE ap_fifo port=osif_sw2hw
 	#pragma HLS INTERFACE ap_fifo port=osif_hw2sw
 	#pragma HLS INTERFACE ap_fifo port=memif_hwt2mem
 	#pragma HLS INTERFACE ap_fifo port=memif_mem2hwt
+	#pragma HLS INTERFACE ap_fifo port=sig
 	// hardware thread body
 }
 \end{lstlisting}
@@ -285,15 +287,23 @@ implemented as \acp{FIFO}. Since the hardware thread does not need the, by
 default, generated control signals \lstinline{ap_start}, \lstinline{ap_done},
 \lstinline{ap_idle} and \lstinline{ap_ready}, the directive in line 5
 instructs Vivado HLS to generate the mandatory clock and reset signals, but
-omit the default control ports. Applying these directives results in an
-interface as shown in figure \ref{fig:hwt_if_h}. Comparing it with the
-required interface of ReconOS reveals an improper naming of the generated
-ports. Since Vivado HLS does not support to specify user defined names, the
-synthesized top-level model is wrapped by another entity providing the correct
-port names. It should be noted, that the interrupt signal
-\lstinline{HWT_SIGNAL} is not considered here and left unconnected in the
-wrapper model. Hardware threads generated using Vivado HLS does not support
-pausing and resuming right now.
+omit the default control ports. Note, that the signal port is mapped as a
+\ac{FIFO} interface instead of plain signal. Due to the interface demands of
+Vivado HLS, the read of a plain signal with \lstinline{ap_none} protocol would
+be scheduled in the first state, independent from its arrangement in the code.
+In contrast, mapping the \lstinline{sig} signal as the empty port of a
+\ac{FIFO} interface infers the semantics of signal changing during runtime and
+allows to check its value via the provided \lstinline{hls::stream} functions.
+Furthermore, since \acp{FIFO} are inherently sequential, the read operation is
+scheduled in the desired state.
+
+Applying these directives results in an interface as shown in figure
+\ref{fig:hwt_if_h}. Comparing it with the required interface of ReconOS
+reveals an improper naming of the generated ports. Since Vivado HLS does not
+support to specify user defined names, the synthesized top-level model is
+wrapped by another entity providing the correct port names and maps the signal
+\lstinline{signal} to the empty and data signals of generated \ac{FIFO} ports
+and leaves the read signal unconnected.
 
 \subsection{\acs{OSFSM} Specification}
 Having the external interfaces modeled using the \lstinline{hls::stream}
