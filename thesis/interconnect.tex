@@ -208,13 +208,13 @@ storing it.
 While the internal structure of the interconnect can be arbitrarily defined,
 its external interface presented to the different ReconOS components is fixed.
 This allows to develop a range of interconnect structures for different
-requiremens of the applications. Furthermore, considering self-adaptive
+requirements of the applications. Furthermore, considering self-adaptive
 features of the application and partial reconfiguration capabilities of the
 \ac{FPGA}, the fixed external interface allows reconfiguration of the
-interconnect during runtime. Figure \ref{fig:interconnect_if} presents the
-interface, consisiting out of bidirectional \ac{FIFO} ports for each connected
-component, namely the hardware threads, the hardware resources and the
-processor.
+interconnect during runtime. Figure \ref{fig:interconnect_if} \todo{Add Reconf
+ports} presents the interface, consisting out of bidirectional \ac{FIFO} ports
+for each connected component, namely the hardware threads, the hardware
+resources and the processor.
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=12cm]{../figures/interconnect_if}
@@ -253,6 +253,23 @@ specifies a mask of \lstinline{0xFF000000}, together with a reference value of
 \lstinline{0x01000000}. It only filters the source address, since the
 destination address does not represent the delegate thread, but a specific
 resource.
+
+Additionally to the \ac{FIFO} ports, the interconnect provides three control
+signals for reconfiguration, namely \lstinline{IC_Sig}, \lstinline{IC_Rdy} and
+\lstinline{IC_Rst}. Since reconfiguration of the interconnect should be
+possible independently of the operation of the threads and resources of the
+system, the procedure must guarantee that no messages are lost and the
+interfaces are stalled during reconfiguration The interconnect must be halted
+and reconfigured in an appropriate state. Therefore, the runtime issues the
+\lstinline{IC_Sig} signal and waits for the interconnect to acknowledge this
+signal by \lstinline{IC_Rdy}. This implies, that the entire interconnect is
+halted and can safely be reset and reconfigured. Halting the interconnect is
+possible due to the \ac{FIFO} based interfaces, which are marked full or
+empty, respectively. Note, that transferring the interconnect's state might be
+possible via the interface to the processor, but is not desired, to eliminate
+dependencies between different interconnects. Saving a state would require the
+reconfigured interconnect to restore this state, even if its internal
+structure might differ significantly.
 
 \subsection{Software Delegate Mechanism}
 
@@ -360,7 +377,7 @@ MboxHw = hw,mbox,2
 \end{lstlisting}
 As the listing indicates, changing the implementation mode of a resource can
 be achieved by adding a flag to the configuration file and, therefore, is
-totally transparent to the developer.
+totally transparent.
 
 Additionally to the manual specification of implementation modes, the
 toolchain could implement algorithms to determine automatically the best
@@ -369,6 +386,12 @@ threads using a specific resource, an optimized mode could be determined.
 However, when considering self-adapting systems reconfiguring the execution
 modes of threads at runtime, the toolchain cannot decide on an optimal
 solution.
+
+While the interconnect interface supports partial reconfiguration, the ReconOS
+toolchain neither supports the specification of different interconnect, nor
+the generation of partial bitstreams. Therefore, it is the developers
+responsibility to provide appropriate netlists and run the implementation
+tools.
 
 \section{Evaluation}
 To prove the feasibility of the proposed interconnect design and illustrate
@@ -475,8 +498,54 @@ out for the next turn. This procedure introduces no delay for single request
 compared to an iterative approach looping through the inputs. After
 determining the next message to arbitrate, the control word is written to the
 output in state \emph{C}, followed by the rest of the message's data in state
-\emph{P}. When all words are read, the arbiter return to state \emph{W} and
+\emph{P}. When all words are read, the arbiter returns to state \emph{W} and
 processes the next message.
+
+\subsubsection{Reconfiguration}
+Besides normal operation, the crossbar interconnect also supports partial
+reconfiguration of itself, by providing the previously explained
+\lstinline{IC_} signals. Consider figure \ref{fig:crossbar} \todo{Add reconf
+part to figure} and the gray bars on the external \ac{FIFO} ports,
+implementing the necessary halt logic. Since the interconnect internally
+stores the state of a transaction, it cannot be reconfigured during
+processing. Instead, all active transactions are completed, while new ones are
+rejected on the incoming data ports. Therefore, a blocking logic snoops the
+input \acp{FIFO} and overwrites the full signal during idle state, i.e. after
+the last data word of a transaction and before the next control word.
+Parallel, the outgoing ports are monitored to signal the completion of all
+transactions. This procedure guarantees, due to the limited length of
+transactions, that the interconnect can be halted regardless of the behavior
+of its connected components.
+
+Since in the scope of this thesis only a single hardware interconnect was
+developed, the reconfiguration feature could not be tested with different
+types of interconnects. However, to demonstrate its feasibility and evaluate
+the performance, the interconnect was halted and reconfigured with itself in
+the image streaming application presented later. For that application, only
+reconfiguring the interconnect resources, i.e. not halting the interconnect
+and waiting for its acknowledge, takes around $\SI{6.2}{\milli\second}$ in
+average. This time might differ depending on the size of the interconnect,
+more precisely the area of the interconnect's P-Block. Measuring the total
+execution time of the application results in $\SI{6.7}{\milli\second}$ without
+a reconfiguration of the interconnect and $\SI{13}{\milli\second}$ with a
+reconfiguration of the interconnect with itself at a random point during
+execution. As expected, the application stalls during reconfiguration of the
+interconnect and continues normal execution as soon as the interconnect is
+reset. The resulting difference of $\SI{13}{\milli\second} -
+\SI{6.7}{\milli\second} - \SI{6.2}{\milli\second = \SI{0.1}{\milli\second}}$
+is required for the halting and handshaking procedure.
+
+While the additional halt logic required only adds marginal complexity to the
+interconnect, implementing a partial bitstream constitute a more challenging
+part. To allow the interconnect to be partially reconfigured, it must be
+constrained to a fixed region on the \ac{FPGA}.  Thereby, the placement of the
+proxy logic is determined and no other logic is allowed to be placed inside of
+this region. This negatively influences the placement and routing, likely
+resulting in unrouted signals or timing issues. While even large interconnects
+could be implemented without issues when being unconstrained, forcing it into
+a specified area becomes a challenge for the routing algorithm. Therefore,
+performing an appropriate floorplanning is a crucial step in the design and
+implementation flow.
 
 \subsubsection{Resource Utilization}
 While the crossbar interconnect allows parallel transaction between different
@@ -914,6 +983,3 @@ the computation time, the hardware versions are limited by the processing time
 of the image. This also explains the marginal difference between the pipe and
 shared memory implementation, since during processing the memory interface is
 free and both threads can share it efficiently.
-
-
-\todo{conclusion?}

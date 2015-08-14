@@ -270,11 +270,13 @@ The configuration bits sent in the first byte include the channel selection
 down options. The \emph{SD} bit selects between single-ended and differential
 mode, \emph{M} selects between eight and twelve bit conversion and \emph{P1} -
 \emph{P0} control the power down between conversions. After the control byte
-is sent, the controller enters the conversion mode and performs the
-analog-to-digital conversion in the next twelve clock cycles. In the 13th
-clock cycle the last bit is transferred, followed by three zero bits to complete the last byte. Therefore, 48 clock cycles are necessary to read
-the x and y coordinate of the touch position, i.e. around
-$\SI{20}{\micro\second}$.
+is sent, the controller enters the conversion mode and performs the analog-to-
+digital conversion in the next twelve clock cycles. In the 13th clock cycle
+the last bit is transferred, followed by three zero bits to complete the last
+byte. Therefore, 48 clock cycles are necessary to read the x and y coordinate
+of the touch position, i.e. around $\SI{20}{\micro\second}$. Note, that these
+information only imply a single measurement, while, as stated later, for a
+precise positioning information multiple conversions are required.
 
 To connect the controller evaluation module to the ZedBoard, regular digital
 I/Os are required for the serial interface, as well as a $\SI{3.3}{\volt}$
@@ -355,12 +357,18 @@ technology, an ADS7845EVM evaluation module is utilized in this work. The
 specifications and provides positioning information to the other threads. The
 \ac{SPI} controller generates the required $\SI{2.5}{\mega\hertz}$ clock and
 implements shift registers for both sending and receiving data. While the
-touch controller returns two 12 bit value representing the measured voltage at
+touch controller returns a 12 bit value representing the measured voltage at
 the sensing position, the touch thread converts them into coordinates
 representing the ball's position in the plate's coordinate system by applying
 translations and scaling. Additionally, to reduce noise in the ball's
-position, multiple measurements are performed in a single scan cycle and are
-smoothed by applying a median average.
+position, multiple measurements are performed in a single scan cycle. Thereby,
+a series of measurements is discarded, when a pair of consecutive readouts
+differs noticeably, for example because of insufficient pressure applied to
+the touchscreen. Only if the measurements passes the validity check, their
+average is used for calculating the ball's position. Since this procedure
+results in a varying acquisition time, the touch thread also monitors the
+actual period of time past the last measurement and reports it to the control
+thread.
 
 \paragraph{Control} The \emph{Control} thread implements the \ac{PID}
 controller as described in the previous section. Therefore, it receives the
@@ -431,13 +439,13 @@ As stated in the background chapter, self-aware systems require knowledge of
 themselves by acquiring so-called self-*properties, for example by capturing
 sensor data or maintaining performance counters. This self-aware knowledge can
 then be processed by a self-expression engine to modify the system's behavior
-and meet specified requirements. Consider figure \ref{fig:demo_selfaware},
-presenting an extended structure of the demonstrator, implementing the concept
-of a self-aware system.
+and meet specified requirements. Consider figure \ref{fig:demo_selfaware}
+\todo{saw thread}, presenting an extended structure of the demonstrator,
+implementing the concept of a self-aware system, inspired by \citep{AHL14}.
 \begin{figure}
 	\centering
 	\includegraphics{../figures/demo_selfaware}
-	\caption{Extended structure of the demonstrator \todo{saw thread}}
+	\caption{Extended structure of the demonstrator}
 	\label{fig:demo_selfaware}
 \end{figure}
 A globally accessible shared memory region allows to collect various types of
@@ -575,3 +583,6 @@ ReconOS.
 \subsection{Adaption Strategies}
 
 \section{Evaluation}
+\subsection{\acl{HLS}}
+\subsection{Performance}
+\subsection{Interconnect}

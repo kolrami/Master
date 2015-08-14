@@ -226,9 +226,9 @@ self-adaptive, reconfigurable systems.
 \subsection{Interface Description}
 A ReconOS hardware thread must implement a fixed set of interfaces to be
 connected to the different components of the system. As illustrated in figure
-\ref{fig:hwt_if_o}, these include the two bidirectional \ac{FIFO} based
-\ac{OSIF} and \ac{MEMIF} interfaces, as well as clock, reset and interrupt
-signals.
+\ref{fig:hwt_if_o} \todo{update signal}, these include the two bidirectional
+\ac{FIFO} based \ac{OSIF} and \ac{MEMIF} interfaces, as well as clock, reset
+and interrupt signals.
 \begin{figure}
 	\centering
 	\begin{subfigure}{10.2cm}
@@ -244,7 +244,7 @@ signals.
 		\caption{Interface inferred by Vivado HLS}
 		\label{fig:hwt_if_h}
 	\end{subfigure}
-	\caption{Interfaces of hardware thread \todo{update signal}}
+	\caption{Interfaces of hardware thread}
 	\label{fig:hwt_if}
 \end{figure}
 When generating a hardware thread using Vivado HLS, these interfaces must be
