@@ -211,10 +211,10 @@ This allows to develop a range of interconnect structures for different
 requirements of the applications. Furthermore, considering self-adaptive
 features of the application and partial reconfiguration capabilities of the
 \ac{FPGA}, the fixed external interface allows reconfiguration of the
-interconnect during runtime. Figure \ref{fig:interconnect_if} \todo{Add Reconf
-ports} presents the interface, consisting out of bidirectional \ac{FIFO} ports
-for each connected component, namely the hardware threads, the hardware
-resources and the processor.
+interconnect during runtime. Figure \ref{fig:interconnect_if} presents the
+interface, consisting out of bidirectional \ac{FIFO} ports for each connected
+component, namely the hardware threads, the hardware resources and the
+processor.
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=12cm]{../figures/interconnect_if}
@@ -504,18 +504,20 @@ processes the next message.
 \subsubsection{Reconfiguration}
 Besides normal operation, the crossbar interconnect also supports partial
 reconfiguration of itself, by providing the previously explained
-\lstinline{IC_} signals. Consider figure \ref{fig:crossbar} \todo{Add reconf
-part to figure} and the gray bars on the external \ac{FIFO} ports,
-implementing the necessary halt logic. Since the interconnect internally
-stores the state of a transaction, it cannot be reconfigured during
-processing. Instead, all active transactions are completed, while new ones are
-rejected on the incoming data ports. Therefore, a blocking logic snoops the
-input \acp{FIFO} and overwrites the full signal during idle state, i.e. after
-the last data word of a transaction and before the next control word.
-Parallel, the outgoing ports are monitored to signal the completion of all
-transactions. This procedure guarantees, due to the limited length of
-transactions, that the interconnect can be halted regardless of the behavior
-of its connected components.
+\lstinline{IC_} signals. Consider figure \ref{fig:crossbar} and the gray bars
+on the external \ac{FIFO} ports, implementing the necessary halt logic. Since
+the interconnect internally stores the state of a transaction, it cannot be
+reconfigured during processing. Instead, all active transactions are
+completed, while new ones are rejected on the incoming data ports. Therefore,
+a blocking logic snoops the input \acp{FIFO} and overwrites the full signal
+during idle state, i.e. after the last data word of a transaction and before
+the next control word. Parallel, the outgoing ports are monitored to signal
+the completion of all transactions. This procedure guarantees, due to the
+limited length of transactions, that the interconnect can be halted regardless
+of the behavior of its connected components.  For the sake of clarity, the
+connections between the halt logic and the external ports on the right are not
+drawn. The \lstinline{IC_Sig} signal is routed to each of the components,
+while the outgoing ready signals are reduced by a logical and.
 
 Since in the scope of this thesis only a single hardware interconnect was
 developed, the reconfiguration feature could not be tested with different

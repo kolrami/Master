@@ -439,9 +439,9 @@ As stated in the background chapter, self-aware systems require knowledge of
 themselves by acquiring so-called self-*properties, for example by capturing
 sensor data or maintaining performance counters. This self-aware knowledge can
 then be processed by a self-expression engine to modify the system's behavior
-and meet specified requirements. Consider figure \ref{fig:demo_selfaware}
-\todo{saw thread}, presenting an extended structure of the demonstrator,
-implementing the concept of a self-aware system, inspired by \citep{AHL14}.
+and meet specified requirements. Consider figure \ref{fig:demo_selfaware},
+presenting an extended structure of the demonstrator, implementing the concept
+of a self-aware system, inspired by \citep{AHL14}.
 \begin{figure}
 	\centering
 	\includegraphics{../figures/demo_selfaware}
@@ -577,12 +577,35 @@ additional inaccuracy introduced becomes negligible. Even for software threads
 the overhead is acceptable, since anyway, they need to access a globally valid
 time stamp through the system bus. Furthermore, the approach of performance
 threads unifies the performance evaluation for all types of threads without
-additional drivers, signals or hardware components out of the scope of
-ReconOS.
+additional drivers, signals or hardware components.
 
 \subsection{Adaption Strategies}
+Based on the self-properties described in the previous section, the
+\emph{Self} thread implements a self-expression engine, adapting the system to
+minimize its power consumption. Therefore, it adjusts the scan cycle rate of
+the \ac{PAC} based on the position and velocity of the ball. The scan cycle
+rate should directly influence the overall power consumption, since all
+calculations are done during this cycle. Reducing its frequency, computations
+like the inverse kinematics and the acquisition of the touch position are
+performed less often and the idle periods are extended.
+
+Consider figure \ref{fig:selfadapt}, visualizing the self-adaption idea by
+plotting the ball's distance from its target position, its velocity and the
+self-adapted scan rate over time in an exemplary manner.
+\begin{figure}
+	\centering
+	\includegraphics{../figures/selfadapt}
+	\caption{Illustration of self-adaption by adjusting scan rate}
+	\label{fig:selfadapt}
+\end{figure}
+When the ball is stabilized at its target position, i.e. has a low distance to
+the center and a small velocity, less corrections are required and the scan
+rate can be reduced. As soon as an external disturbance forces the ball away
+from its target position and raises its velocity, the system counteracts,
+requiring a short response time and a faster scan rate.
 
 \section{Evaluation}
 \subsection{\acl{HLS}}
 \subsection{Performance}
 \subsection{Interconnect}
+\subsection{Self-Adaption}
