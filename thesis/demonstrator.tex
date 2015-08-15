@@ -538,7 +538,7 @@ power consumption are conceivable, requiring a more detailed study out of the
 scope of this thesis. For basic self-adaption techniques demonstrated with
 this application, the overall data seems to be sufficient.
 
-\subsubsection{Ball Position}
+\subsubsection{Ball Position and \acs{PID} output}
 The ball position on the plate is the only external input to the system and,
 therefore, has a significant impact on the system's behavior. Observing the
 position over time allows to adapt the system to requirements for different
@@ -589,12 +589,23 @@ calculations are done during this cycle. Reducing its frequency, computations
 like the inverse kinematics and the acquisition of the touch position are
 performed less often and the idle periods are extended.
 
-Consider figure \ref{fig:selfadapt}, visualizing the self-adaption idea by
+Consider figure \ref{fig:selfadapt_pv}, visualizing the self-adaption idea by
 plotting the ball's distance from its target position, its velocity and the
 self-adapted scan rate over time in an exemplary manner.
 \begin{figure}
 	\centering
-	\includegraphics{../figures/selfadapt}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics{../figures/selfadapt_pv}
+		\caption{Scan rate compared to ball's velocity and distance to center}
+		\label{fig:selfadapt_pv}
+	\end{subfigure}
+	\begin{subfigure}{0.49\textwidth}
+		\centering
+		\includegraphics{../figures/selfadapt_a}
+		\caption{Scan rate compared to absolute value of rotation angle}
+		\label{fig:selfadapt_a}
+	\end{subfigure}
 	\caption{Illustration of self-adaption by adjusting scan rate}
 	\label{fig:selfadapt}
 \end{figure}
@@ -602,10 +613,94 @@ When the ball is stabilized at its target position, i.e. has a low distance to
 the center and a small velocity, less corrections are required and the scan
 rate can be reduced. As soon as an external disturbance forces the ball away
 from its target position and raises its velocity, the system counteracts,
-requiring a short response time and a faster scan rate.
+requiring a short response time and a faster scan rate. Since both, the ball's
+distance to the center and the ball's velocity are considered by the
+proportional and derivative terms of the \ac{PID} controller, the output value
+of the controller, i.e. the rotation angle of the plate, seems to be a
+suitable measure to adapt the scan rate. Figure \ref{fig:selfadapt_a}
+illustrates this analogously to figure \ref{fig:selfadapt_pv}. A larger angle
+of the plate implies that the ball is either far away from the center or has a
+high velocity, exactly what is required by the self adaption. However, the
+scan rate should not be lowered too quickly, but only when the plate's angle
+stays stable over some time.
 
 \section{Evaluation}
+While the previous sections stated the implementation details of the
+demonstrator, this section presents a detailed evaluation regarding relevant
+aspects of this work. It addresses the benefits of the newly introduced
+techniques like the integration of \ac{HLS} or the hardware interconnect, and
+draws conclusions for its feasibility for \acp{PAC}. Furthermore, the
+discussed self-adaption strategies are evaluated and to what extend they
+influence the system's power consumption.
+
 \subsection{\acl{HLS}}
+The ball on plate demonstrator consist out of a variety of hardware threads,
+implemented using a combination of Vivado HLS and \ac{VHDL}. During
+development it clearly turned out, that \ac{HLS} approaches simplify the
+development process and reduce the implementation time significantly.
+Especially the advanced debugging capabilities by executing the hardware
+implementation in software avoids time consuming \ac{RTL} simulations and
+allows to more easily verify the algorithm's correctness. It also clearly
+turned out, that \ac{HLS} has its strengths in complex arithmetic calculations
+including fixed point data types and divisions, while it is not useful for
+implementing timing critical functions. For example, the inverse kinematics
+include many fixed point calculations for transformations between the
+different coordinate systems, while the implementation of the \ac{SPI}
+protocol for the touch controller or the generation of a \ac{PWM} signal for
+the servos require clock accurate timing. However, even if a hardware thread
+is implemented in either \ac{VHDL} or \ac{HLS}, it can still benefit from
+both's advantages by instantiating custom user logic generated using \ac{HLS}
+techniques in a \ac{VHDL} thread. For example, the \emph{Touch} thread
+instantiates a scaling entity to transform the voltages into coordinates in
+the plate's coordinate system. More generally spoken, a thread could be
+implemented in \ac{VHDL} and instantiates multiple user logic entities from
+different sources, like Vivado HLS or the Core Generator tool.
+
 \subsection{Performance}
-\subsection{Interconnect}
-\subsection{Self-Adaption}
+Incorporating the \ac{FPGA} into the system and spending spending additional
+effort for developing hardware implementations of different threads promises
+significant speedups and lower energy consumption. To demonstrate the possible
+benefits in utilizing hardware threads, this section presents a performance
+evaluation of the system and compares different implementation modes of the
+various threads and resources.
+
+\subsection{\acl{PAC}}
+
+\subsection{Self-Adaption and Power Consumption}
+The self-adaption strategy implemented for the ball on plate demonstrator as
+described in the previous section tires to minimize the overall power
+consumption by adapting the cycle rate of the closed loop controller and,
+thereby, extending idle periods. However, while the adaption itself works as
+expected, no change in power consumption could be measured via the LTC4151
+\ac{IC}. The LTC4151 has a resolution of $\SI{20}{\micro\volt}$
+\citep{LTC4151}, which corresponds to $\SI{0.024}{\watt}$, and a conversion
+rate of typically $\SI{7.5}{\hertz}$, i.e. a single measurement takes around
+$\SI{130}{\milli\second}$. To get an impression of the power consumption of
+the system and verify, that the expected change is below the measurement
+accuracy, the already mentioned XPower tool from Xilinx is used for analysis
+of the implemented logic. Table \ref{tab:xpower} shows the power consumption
+of the threads for different \ac{FF} toggle rates.
+\begin{table}
+	\scriptsize
+	\centering
+	\captionabove{Power consumption estimated by XPower for different \ac{FF}
+	toggle rates}
+	\label{tab:xpower}
+	\begin{tabular}{lcccc}
+	\hline
+	\textbf{Thread} & \multicolumn{4}{c}{\textbf{Power consumption in $\SI{}{\watt}$}}\\
+	& \textbf{12.5\%} & \textbf{30\%} & \textbf{100\%}\\
+	\hline
+	Servo & 0.00023 & 0.00031 & 0.00059\\
+	Touch & 0.00557 & 0.00632 & 0.00762\\
+	Control & ?? & ?? & ??\\
+	Inverse & 0.00622 & 0.00706 & 0.00918\\
+	\hline
+	& 0.01202 & 0.01369 & 0.01739\\
+	\hline
+	\end{tabular}
+\end{table}
+Even with a maximum toggle rate of 100\% the total power consumption of all
+processing threads is beneath the resolution of the LTC4151. Furthermore, the
+conversion rate is below the slowest possible cycle rate of the system.
+Therefore, it is not possible to measure any difference in power consumption.
