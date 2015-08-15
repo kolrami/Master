@@ -686,17 +686,17 @@ of the threads for different \ac{FF} toggle rates.
 	\captionabove{Power consumption estimated by XPower for different \ac{FF}
 	toggle rates}
 	\label{tab:xpower}
-	\begin{tabular}{lcccc}
+	\begin{tabular}{lccc}
 	\hline
-	\textbf{Thread} & \multicolumn{4}{c}{\textbf{Power consumption in $\SI{}{\watt}$}}\\
+	\textbf{Thread} & \multicolumn{3}{c}{\textbf{Power consumption in $\SI{}{\watt}$}}\\
 	& \textbf{12.5\%} & \textbf{30\%} & \textbf{100\%}\\
 	\hline
 	Servo & 0.00023 & 0.00031 & 0.00059\\
 	Touch & 0.00557 & 0.00632 & 0.00762\\
-	Control & ?? & ?? & ??\\
+	Control & 0.00495 & 0.00530 & 0.00583\\
 	Inverse & 0.00622 & 0.00706 & 0.00918\\
 	\hline
-	& 0.01202 & 0.01369 & 0.01739\\
+	& 0.01697 & 0.01899 & 0.02322\\
 	\hline
 	\end{tabular}
 \end{table}
@@ -704,3 +704,5 @@ Even with a maximum toggle rate of 100\% the total power consumption of all
 processing threads is beneath the resolution of the LTC4151. Furthermore, the
 conversion rate is below the slowest possible cycle rate of the system.
 Therefore, it is not possible to measure any difference in power consumption.
+
+\subsection{\acs{PID} Controller}
