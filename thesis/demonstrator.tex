@@ -480,6 +480,7 @@ consumption, the ball's position on the plate and performance measures of the
 different threads are acquired and processed by the self-expression engine.
 
 \subsubsection{Power Consumption}
+\label{sssec:power}
 The power consumption of the system is affected by many components, ranging
 from different threads through the entire the Zynq \ac{SoC} to external
 devices like the touch controller. Therefore, a fine-grained measurement of
@@ -554,6 +555,7 @@ the positioning data to the properties memory region and is not affected in
 its normal operation.
 
 \subsubsection{Processing Performance}
+\label{sssec:processing}
 Performance is an important objective for the system to accomplish. However,
 maximal processing power might not be required in all circumstances. In fact,
 the processing demands might vary during runtime, allowing the system to adapt
@@ -583,32 +585,11 @@ additional drivers, signals or hardware components.
 Based on the self-properties described in the previous section, the
 \emph{Self} thread implements a self-expression engine, adapting the system to
 minimize its power consumption. Therefore, it adjusts the scan cycle rate of
-the \ac{PAC} based on the position and velocity of the ball. The scan cycle
-rate should directly influence the overall power consumption, since all
-calculations are done during this cycle. Reducing its frequency, computations
-like the inverse kinematics and the acquisition of the touch position are
-performed less often and the idle periods are extended.
+the \ac{PAC} based on the current angle of the plate. All calculations are
+processed during the scan cycle and reducing the scan rate ensures that
+computational intensive tasks are performed less often. This results in
+extended idle periods and in an overall lower energy consumption.
 
-Consider figure \ref{fig:selfadapt_pv}, visualizing the self-adaption idea by
-plotting the ball's distance from its target position, its velocity and the
-self-adapted scan rate over time in an exemplary manner.
-\begin{figure}
-	\centering
-	\begin{subfigure}{0.49\textwidth}
-		\centering
-		\includegraphics{../figures/selfadapt_pv}
-		\caption{Scan rate compared to ball's velocity and distance to center}
-		\label{fig:selfadapt_pv}
-	\end{subfigure}
-	\begin{subfigure}{0.49\textwidth}
-		\centering
-		\includegraphics{../figures/selfadapt_a}
-		\caption{Scan rate compared to absolute value of rotation angle}
-		\label{fig:selfadapt_a}
-	\end{subfigure}
-	\caption{Illustration of self-adaption by adjusting scan rate}
-	\label{fig:selfadapt}
-\end{figure}
 When the ball is stabilized at its target position, i.e. has a low distance to
 the center and a small velocity, less corrections are required and the scan
 rate can be reduced. As soon as an external disturbance forces the ball away
@@ -618,11 +599,21 @@ distance to the center and the ball's velocity are considered by the
 proportional and derivative terms of the \ac{PID} controller, the output value
 of the controller, i.e. the rotation angle of the plate, seems to be a
 suitable measure to adapt the scan rate. Figure \ref{fig:selfadapt_a}
-illustrates this analogously to figure \ref{fig:selfadapt_pv}. A larger angle
-of the plate implies that the ball is either far away from the center or has a
-high velocity, exactly what is required by the self adaption. However, the
-scan rate should not be lowered too quickly, but only when the plate's angle
-stays stable over some time.
+illustrates this by plotting the plate's angle and the adapted scan rate for an exemplary execution.
+\begin{figure}
+	\centering
+	\includegraphics{../figures/selfadapt_a}
+	\caption{Scan rate compared to plate's angle}
+	\label{fig:selfadapt_a}
+\end{figure}
+A larger angle of the plate implies that the ball is either far away from the
+center or has a high velocity. As figure \ref{fig:selfadapt_a} further
+indicates, the increase of the scan rate is performed gradually over time,
+while the decrease in case of a disturbance of the ball is done much faster,
+more precisely in a linear or exponential fashion, respectively. Furthermore,
+it is limited in both its maximal and minimal values. Note, that since the
+adaption of the scan rate is performed at a rate equal to the scan rate
+itself, the resulting change as seen in the plot is not linear or exponential.
 
 \section{Evaluation}
 While the previous sections stated the implementation details of the
@@ -664,22 +655,133 @@ benefits in utilizing hardware threads, this section presents a performance
 evaluation of the system and compares different implementation modes of the
 various threads and resources.
 
+Table \ref{tab:demo_perf} and figure \ref{fig:demo_perf} present the measured
+performance characteristics, i.e. the execution times, as well as the power
+consumptions for different configurations of the system, varying in number and
+implementation modes of threads and resources. \emph{HC} and \emph{SC}
+indicate the mode of the control thread, \emph{HI} and \emph{SI} the number of
+threads solving the inverse kinematics problem and \emph{HIc} and \emph{SIc}
+the implementation mode of the resources used for communication between the
+different threads.
+\begin{table}
+	\scriptsize
+	\centering
+	\captionabove{Performance evaluation of demonstrator}
+	\label{tab:demo_perf}
+	\begin{tabular}{lccccc}
+	\hline
+	\textbf{Configuration} & \textbf{Touch (ms)} & \textbf{Control (ms)} & \textbf{Inverse (ms)} & \textbf{Overhead (ms)} & \textbf{Power (W)}\\
+	\hline
+	HC, 1 HI, HIc & 0.519823 & 0.002807 & 0.988770 & 0.002273 & 3.282711\\
+	HC, 2 HI, HIc & 0.518647 & 0.002807 & 0.494335 & 0.002339 & 3.285396\\
+	HC, 3 HI, HIc & 0.516636 & 0.002807 & 0.330010 & 0.002188 & 3.285785\\
+	%HC, 4 HI, HIc & 0.516841 & 0.002807 & 0.329460 & 0.002298 & 3.282977\\
+	HC, 5 HI, HIc & 0.516800 & 0.002807 & 0.329111 & 0.002129 & 3.280403\\
+	%HC, 1 SI, HIc & 0.533154 & 0.002807 & 13.985671 & 0.035734 & 3.393689\\
+	%HC, 2 SI, HIc & 0.533736 & 0.002807 & 7.096788 & 0.048645 & 3.394321\\
+	SC, 1 SI, HIc & 0.533503 & 0.029877 & 14.175555 & 0.085007 & 3.403409\\
+	SC, 2 SI, HIc & 0.520863 & 0.028068 & 9.264843 & 0.092866 & 3.393398\\
+	SC, 1 HI, SIc & 0.532210 & 0.043583 & 1.236276 & 0.132937 & 3.300271\\
+	HC, 1 HI, SIc & 0.516617 & 0.002807 & 1.232297 & 0.154249 & 3.310040\\
+	HC, 5 HI, SIc & 0.513496 & 0.002807 & 0.394123 & 0.173940 & 3.305959\\
+	\hline
+	\end{tabular}
+\end{table}
+\begin{figure}
+	\centering
+	\includegraphics{../figures/demo_perf}
+	\caption{Performance evaluation of demonstrator}
+	\label{fig:demo_perf}
+\end{figure}
+The execution times are measured as described in section
+\ref{sssec:processing} and listed for the \emph{Touch}, \emph{Control} and
+\emph{Inverse} threads. For the \emph{Touch} thread, it does not include the
+idle time until the next read, but only the time needed to interface the touch
+controller, averaging multiple values and eventually rejecting invalid
+measurements. The overhead is calculated by measuring the time needed for the
+entire cycle and subtracting the single execution times. Note, that the
+execution time of the \emph{Inverse} thread also include communication
+overhead, since it represent the time required for calculating all six legs,
+determined as the difference of start time of first leg and end time of last
+leg. The power is measured utilizing the LTC4151 \ac{IC} as described in
+section \ref{sssec:power}. All measurements where averaged over 1000 samples,
+acquired during $\SI{20}{\second}$.
+
+As already predicted when designing the system, the inverse kinematics require
+the most computation time during the scan cycle and significantly benefits
+from a hardware implementation in several aspects. First of all, a single
+software thread needs around $\SI{14}{\milli\second}$ for its calculation,
+which is far beyond the targeted scan cycle rate of $\SI{10}{\milli\second}$.
+Even two software threads are straight at the limit and do not scale linearly,
+due to other task executed on the processor. In comparison, the hardware
+implementation provides a speedup of 14 with regard to the single thread
+configuration and even up to 28 with regard to multiple threads. Furthermore,
+the hardware threads scale linearly, i.e. doubling the number of threads
+halves the execution time. A single hardware thread takes
+$\SI{0.988770}{\milli\second}$, while two hardware threads take
+$\SI{0.494335}{\milli\second}$, resulting in a speedup of $\nicefrac{\SI{0.988
+770}{\milli\second}}{\SI{0.494335}{\milli\second}}=2.000202$. In applications
+requiring even shorter scan cycles, a hardware implementation can provide huge
+benefits. Note, that five inverse threads provide no more speedup compared to
+three, since in both cases two executions are necessary. Only a sixth thread
+would provide a further speedup, but due to resource limitation cause by
+insufficent \ac{DSP} blocks, six threads could not be implemented on the
+ZedBoard. Not only the processing performance is effected by the
+implementation mode, but also the power consumption can be reduced by
+incorporating custom hardware. In this case, a difference of around
+$\SI{120}{\milli\watt}$ could be measured.
+
+While the \emph{Inverse} thread benefits most considerably from its
+acceleration using a custom hardware implementation, the \emph{Control} thread
+also achieves a speedup of approximately 10. Since the control algorithm
+cannot be parallelized and has significantly lower processing requirements,
+this speedup is less prominent and, furthermore, has no influence on the
+system's power consumption. However, the hardware implementation offers less
+overhead due to the direct communication in hardware and a clearly lower
+jitter in execution time. While for this application the jitter is not too
+important, it might be relevant for jitter sensitive applications and a reason
+for a hardware thread implementation.
+
+Besides the implementation modes of the threads, the modes of the resources
+are influencing the performance of the system. As the last rows of table
+\ref{tab:demo_perf} indicate, the overhead introduced by the software
+resources heavily influences the overall performance. While, for example in
+case \emph{HC, 5 HI, HIc} the overhead constitute only 0.64\% of the inverse
+and control threads' execution time, in case \emph{HC, 5 HI, SIc}, it account
+for 43.82\%. Since it is far below the minimal scan cycle time, the overhead
+is still acceptable for this application, but for more low-latency purposes,
+it might be an important consideration.
+
 \subsection{\acl{PAC}}
 
 \subsection{Self-Adaption and Power Consumption}
-The self-adaption strategy implemented for the ball on plate demonstrator as
-described in the previous section tires to minimize the overall power
-consumption by adapting the cycle rate of the closed loop controller and,
-thereby, extending idle periods. However, while the adaption itself works as
-expected, no change in power consumption could be measured via the LTC4151
-\ac{IC}. The LTC4151 has a resolution of $\SI{20}{\micro\volt}$
-\citep{LTC4151}, which corresponds to $\SI{0.024}{\watt}$, and a conversion
-rate of typically $\SI{7.5}{\hertz}$, i.e. a single measurement takes around
-$\SI{130}{\milli\second}$. To get an impression of the power consumption of
-the system and verify, that the expected change is below the measurement
-accuracy, the already mentioned XPower tool from Xilinx is used for analysis
-of the implemented logic. Table \ref{tab:xpower} shows the power consumption
-of the threads for different \ac{FF} toggle rates.
+\begin{figure}
+	\centering
+	\includegraphics{../figures/selfadapt_pw}
+	\caption{Scan rate compared to system's power consumption}
+	\label{fig:selfadapt_pw}
+\end{figure}
+The self-adaption strategy implemented as described in the previous section
+tires to minimize the overall power consumption by adapting the cycle rate of
+the closed loop controller and, thereby, extending idle periods. Figure
+\ref{fig:selfadapt_pw} shows an exemplary execution and how the adaption in
+scan rate effects the overall power consumption of the system. It clearly
+shows the relation of the two variables and that the system is able to reduce
+its power consumption by using self-adaption techniques. However, these
+measurements were made with the inverse kinematics calculated in software,
+which is, as shown in the previous section, not optimal in terms of processing
+performance, but, in general, might be an option if other applications require
+resources on the \ac{FPGA}. When investigating the effect of the scan rate
+with the inverse kinematics implemented in hardware, no change in power
+consumption could be measured via the LTC4151 \ac{IC}. The LTC4151 has a
+resolution of $\SI{20}{\micro\volt}$ \citep{LTC4151}, which corresponds to
+$\SI{0.024}{\watt}$, and a conversion rate of typically $\SI{7.5}{\hertz}$,
+i.e. a single measurement takes around $\SI{130}{\milli\second}$. To get an
+impression of the power consumption of the system and verify, that the
+expected change is below the measurement accuracy, the already mentioned
+XPower tool from Xilinx is used for analysis of the implemented logic. Table
+\ref{tab:xpower} shows the power consumption of the threads for different
+\ac{FF} toggle rates.
 \begin{table}
 	\scriptsize
 	\centering
