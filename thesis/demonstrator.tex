@@ -687,12 +687,6 @@ different threads.
 	\hline
 	\end{tabular}
 \end{table}
-\begin{figure}
-	\centering
-	\includegraphics{../figures/demo_perf}
-	\caption{Performance evaluation of demonstrator}
-	\label{fig:demo_perf}
-\end{figure}
 The execution times are measured as described in section
 \ref{sssec:processing} and listed for the \emph{Touch}, \emph{Control} and
 \emph{Inverse} threads. For the \emph{Touch} thread, it does not include the
@@ -706,6 +700,12 @@ determined as the difference of start time of first leg and end time of last
 leg. The power is measured utilizing the LTC4151 \ac{IC} as described in
 section \ref{sssec:power}. All measurements where averaged over 1000 samples,
 acquired during $\SI{20}{\second}$.
+\begin{figure}
+	\centering
+	\includegraphics{../figures/demo_perf}
+	\caption{Performance evaluation of demonstrator}
+	\label{fig:demo_perf}
+\end{figure}
 
 As already predicted when designing the system, the inverse kinematics require
 the most computation time during the scan cycle and significantly benefits
