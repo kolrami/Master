@@ -3,7 +3,7 @@
 \label{chap:demonstrator}
 
 To demonstrate the work described in the previous chapters in a real world
-application, a ball on plate system is presented in the following sections.
+application, a Ball on Plate system is presented in the following sections.
 The demonstrator tries to balance a ball by tracking its position and
 adjusting the angle of the underlying plate, thus allowing to compensate
 external impacts and keeping the ball in the center. Therefore, the plate
@@ -292,8 +292,9 @@ industrial control and have a long history of use, surviving several changes
 of technology \citep{Joh05}. Even complex applications comprise control
 networks out of basic \ac{PID} loops.
 
-Figure \ref{fig:pid_rep} \todo{fix wrong PD in controller figure} illustrates the concept of a \ac{PID} controller with
-regard to the ball-on-plate application as the process of the control loop.
+Figure \ref{fig:pid_rep} \todo{fix wrong PD in controller figure} illustrates
+the concept of a \ac{PID} controller with regard to the Ball on Plate
+application as the process of the control loop.
 \begin{figure}
 	\centering
 	\centering
@@ -334,7 +335,7 @@ implementation of the different components. Consider figure
 	\label{fig:demo_structure}
 \end{figure}
 It consists out of four types of ReconOS threads, which are representing the
-control loop of the ball on plate application and are synchronized via
+control loop of the Ball on Plate application and are synchronized via
 mailboxes to each other. The \emph{Touch} thread interfaces with the external
 ADS7845 touch controller by implementing an \ac{SPI} master and provides the
 positioning information to the \emph{Control} thread. That implements the
@@ -430,7 +431,7 @@ input and connect the control signals directly to the servo.
 
 \section{Self-Awareness}
 While the system described so far implements the basic functionality of the
-ball-on-plate demonstrator, this section focuses on self-adaption strategies
+Ball on Plate demonstrator, this section focuses on self-adaption strategies
 by extending the demonstrator with a framework to gather self-aware properties
 and introducing basic self-expression capabilities to optimize the power
 consumption.
@@ -625,7 +626,7 @@ discussed self-adaption strategies are evaluated and to what extend they
 influence the system's power consumption.
 
 \subsection{\acl{HLS}}
-The ball on plate demonstrator consist out of a variety of hardware threads,
+The Ball on Plate demonstrator consist out of a variety of hardware threads,
 implemented using a combination of Vivado HLS and \ac{VHDL}. During
 development it clearly turned out, that \ac{HLS} approaches simplify the
 development process and reduce the implementation time significantly.
@@ -752,8 +753,6 @@ for 43.82\%. Since it is far below the minimal scan cycle time, the overhead
 is still acceptable for this application, but for more low-latency purposes,
 it might be an important consideration.
 
-%\subsection{\acl{PAC}}
-
 \subsection{Self-Adaption and Power Consumption}
 \begin{figure}
 	\centering
@@ -806,41 +805,3 @@ Even with a maximum toggle rate of 100\% the total power consumption of all
 processing threads is beneath the resolution of the LTC4151. Furthermore, the
 conversion rate is below the slowest possible cycle rate of the system.
 Therefore, it is not possible to measure any difference in power consumption.
-
-\subsection{\acs{PID} Controller}
-Although the scope of this thesis does not focuses on controller design and
-tuning, a brief evaluation of the implemented \ac{PID} controller is given in
-this section. By systematically exploring different values for the
-\ac{PID} parameters, the final system applies $K_P = -0.09$, $K_I = 0$ and
-$K_D = -28$. Figure \ref{fig:demo_pid} shows a tracking of the ball for two
-applications.
-\begin{figure}
-	\centering
-	\begin{subfigure}{0.49\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{../figures/eval_pos}
-		\caption{Balancing of ball in the center}
-		\label{fig:eval_pos}
-	\end{subfigure}
-	\begin{subfigure}{0.49\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{../figures/eval_traj}
-		\caption{Following of a fixed trajectory}
-		\label{fig:eval_traj}
-	\end{subfigure}
-	\caption{Captures of ball's movement controlled by \acs{PID} controller}
-	\label{fig:demo_pid}
-\end{figure}
-For figure \ref{fig:eval_pos} the ball is balanced at the center of the plate
-and any external disturbance is compensated, with the aim to keep the ball on
-the plate. The figure shows a slight overshoot at the center and, due to a
-missing integral term, never reaches the absolute center. Since the ball has a
-relatively high initial friction, a large angle is needed to give the ball an
-initial impulse. It then destabilizes and never reaches a resting position.
-Therefore, a small inaccuracy for its final position is acceptable.
-Additionally to the balancing of the ball in the center, figure
-\ref{fig:eval_traj} shows an exemplary trajectory for the ball to follow.
-Again, an inaccuracy from the desired trajectory in the direction of movement
-is apparent. The trajectory is achieved by changing the target position of the
-ball over time and adjusting the \ac{PID} controller to avoid the so-called
-derivative kick.
