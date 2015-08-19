@@ -45,3 +45,28 @@ system was presented to prove the feasibility of the presented approaches in a
 real-world \ac{PAC} application.
 
 \section{Future Work}
+While this thesis introduced new ideas and developed prototypical
+demonstrations, different aspects might be used as a basis for future research
+and engineering work. While the \ac{HLS} introduction has proven its
+feasibility, it might provide even further features. Since the states of a
+thread are generated out of a high level description, \ac{HLS} approaches
+might allow to automatically handle state migration by generating logic to
+save the thread's state. This would allow to schedule the hardware threads in
+case of, for example, insufficient device resources without additional effort
+by the developer.
+
+Also the proposed interconnect architecture provides possibilities for further
+research. A detailed study of different types of interconnects, for example
+buses or rings, and their suitability for different kinds of applications is
+missing. Furthermore, the reconfiguration of the interconnect could be
+evaluated more detailed with different types of interconnects. Additionally,
+the reconfiguration of hardware resources was totally out of the scope of this
+thesis, but is directly related to the reconfiguration of the interconnect.
+Just the same as for hardware threads, the resources' state must be saved and
+restored after migration.
+
+As pointed out in the evaluation of the demonstrator, possible self-adaption
+strategies for this application are only limited, at least to influence the
+power consumption. A more detailed analysis to what extends real-world
+applications can benefit from self-adaptive capabilities and how they can be
+utilized in a hybrid multi-core system is still part of ongoing research.
