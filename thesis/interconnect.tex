@@ -11,7 +11,7 @@ Especially for \acp{PAC}, utilizing the \ac{FPGA} for low-latency and
 performance critical parts of the controller, a fast communication is crucial.
 
 This chapter addresses the topic of communication overhead and investigates
-ways to speedup the on-chip communication without loosing transparency or
+ways to speedup the on-chip communication, without loosing transparency or
 burden the developer with additional tasks. Starting with a short description
 of the current system, different approaches from the literature are discussed
 and compared. The final architecture is then presented and evaluated.
@@ -49,7 +49,7 @@ the \ac{OSIF} and decode the commands. After executing the appropriate \ac{OS}
 call, the delegate thread writes back an acknowledge into the \ac{OSIF} and,
 optionally, the result of the system call. Following this process, the
 exchange of a single message between two hardware threads via a mailbox
-includes two interrupts implying context switches into the kernel space, the
+includes two interrupts, implying context switches into the kernel space, the
 handling of the mailbox by the kernel and the access of the \ac{OSIF} itself.
 All these operations introduce a significant delay of thousands of clock
 cycles and burden the processor with additional tasks. Furthermore, since the
@@ -165,7 +165,7 @@ control flag.
 	\caption{Control message preceding each message}
 	\label{fig:proto}
 \end{figure}
-They consists out of a source and destination, as well as a length field,
+They consist out of a source and destination, as well as a length field,
 indicating the number of following words. Since the address fields have a
 length of eight bits, the number of addressable components is limited to 255,
 which seems to be sufficient for typical applications. Anyway, the number of
@@ -289,12 +289,12 @@ all software threads can share the same \ac{OSIF} arbitrated by the driver
 module.
 
 Utilizing the \ac{OSIF} interface enables software threads to access hardware
-resources, but provide no transparent abstraction. To hide the underlying
-implementation of a resource request from the software thread, the runtime
-needs to know the implementation mode of each resource, enabling it to execute
-the appropriate system call or interface with the hardware. Since every
-resource is represented by a data structure during runtime, it can be easily
-extended by a flag indicating the implementation mode. Listing
+resources, but provides no transparent abstraction. To hide the underlying
+implementation of a resource from the software thread, the runtime needs to
+know the implementation mode of each resource, enabling it to execute the
+appropriate system call or interface with the hardware. Since every resource
+is represented by a data structure during runtime, it can be easily extended
+by a flag indicating the implementation mode. Listing
 \ref{lst:mbox_get} illustrates the concept by presenting a part of the
 \lstinline{mbox_get} implementation.
 \begin{lstlisting}[
@@ -388,15 +388,13 @@ modes of threads at runtime, the toolchain cannot decide on an optimal
 solution.
 
 While the interconnect interface supports partial reconfiguration, the ReconOS
-toolchain neither supports the specification of different interconnect, nor
-the generation of partial bitstreams. Therefore, it is the developers
-responsibility to provide appropriate netlists and run the implementation
-tools.
+toolchain neither supports the specification of different interconnects, nor
+the generation of partial bitstreams.
 
 \section{Evaluation}
 To prove the feasibility of the proposed interconnect design and illustrate
 the benefits of a direct hardware communication, an extensive evaluation is
-presented in this section. The interconnect details discussed so far
+presented in this section. The interconnect details discussed so far,
 emphasized only the external interface and disregarded its internal structure.
 However, for an evaluation of the system an actual implementation is required.
 Therefore, a crossbar based interconnect consisting of routing and arbitration
@@ -441,9 +439,9 @@ arbitration components are asynchronous, the external ports are buffered by
 additional \acp{FIFO}. While the incoming buffers are essential, the outgoing
 ones could be omitted. However, as it turned out during the implementation of
 different slave components connecting the interconnect signals asynchronously,
-timing becomes a heavily limiting factor and even a small interconnect does
-not meet the required timing constraints. Therefore, the outgoing buffers
-shorten the critical path significantly and eliminating timing issues.
+timing becam a heavily limiting factor and even a small interconnect did not
+meet the required timing constraints. Therefore, the outgoing buffers shorten
+the critical path significantly and eliminate timing issues.
 
 \subsubsection{Routing Component}
 As illustrated in figure \ref{fig:crossbar}, the routing component multiplexes
@@ -503,12 +501,12 @@ processes the next message.
 
 \subsubsection{Reconfiguration}
 Besides normal operation, the crossbar interconnect also supports partial
-reconfiguration of itself, by providing the previously explained
+reconfiguration of itself by providing the previously explained
 \lstinline{IC_} signals. Consider figure \ref{fig:crossbar} and the gray bars
 on the external \ac{FIFO} ports, implementing the necessary halt logic. Since
 the interconnect internally stores the state of a transaction, it cannot be
 reconfigured during processing. Instead, all active transactions are
-completed, while new ones are rejected on the incoming data ports. Therefore,
+continued, while new ones are rejected at the incoming data ports. Therefore,
 a blocking logic snoops the input \acp{FIFO} and overwrites the full signal
 during idle state, i.e. after the last data word of a transaction and before
 the next control word. Parallel, the outgoing ports are monitored to signal
@@ -537,7 +535,7 @@ reset. The resulting difference of $\SI{13}{\milli\second} -
 \SI{6.7}{\milli\second} - \SI{6.2}{\milli\second = \SI{0.1}{\milli\second}}$
 is required for the halting and handshaking procedure.
 
-While the additional halt logic required only adds marginal complexity to the
+While the additional halt logic only adds marginal complexity to the
 interconnect, implementing a partial bitstream constitute a more challenging
 part. To allow the interconnect to be partially reconfigured, it must be
 constrained to a fixed region on the \ac{FPGA}.  Thereby, the placement of the
@@ -547,14 +545,9 @@ resulting in unrouted signals or timing issues. While even large interconnects
 could be implemented without issues when being unconstrained, forcing it into
 a specified area becomes a challenge for the routing algorithm. Therefore,
 performing an appropriate floorplanning is a crucial step in the design and
-implementation flow.
+implementation flow of a reconfigurable interconnect.
 
 \subsubsection{Resource Utilization}
-While the crossbar interconnect allows parallel transaction between different
-ports and a low delay of a few clock cycles, it consumes a relatively high
-amount of resources. As stated, the interconnect mainly consists out of the
-routing and arbitration components. Figure \ref{fig:crossbar_util} shows their
-resource utilization, increasing with the number of ports.
 \begin{figure}
 	\centering
 	\begin{subfigure}{0.49\textwidth}
@@ -572,16 +565,21 @@ resource utilization, increasing with the number of ports.
 	\caption{Resource utilization for different number of ports}
 	\label{fig:crossbar_util}
 \end{figure}
-Thereby, the number of \acp{LUT} shows a stronger growth than the number of
-registers, since most of the resources are consumed by the combination
-multiplexers, heavily influenced by the number of ports. Furthermore, the
-arbiter's multiplexers need significantly more resources compared to the
-router's counterparts, since they multiplex the 32-bit wide data ports, while
-the router connects the incoming data port directly to all outgoing ports.
+While the crossbar interconnect allows parallel transactions between different
+ports and a low delay of a few clock cycles, it consumes a relatively high
+amount of resources. As stated, the interconnect mainly consists out of the
+routing and arbitration components. Figure \ref{fig:crossbar_util} shows their
+resource utilization, increasing with the number of ports. Thereby, the number
+of \acp{LUT} shows a stronger growth than the number of registers, since most
+of the resources are consumed by the combination multiplexers, heavily
+influenced by the number of ports. Furthermore, the arbiter's multiplexers
+need significantly more resources compared to the router's counterparts, since
+they multiplex the 32-bit wide data ports, while the router connects the
+incoming data port directly to all outgoing ports.
 
-In total, even a rather unrealistic high number of ports results in an
-acceptable resource utilization without timing issues caused by the
-interconnect.
+%In total, even a rather unrealistic high number of ports results in an
+%acceptable resource utilization without timing issues caused by the
+%interconnect.
 
 %Additionally to the routing and arbitration components, the entire
 %interconnect also includes several \acp{FIFO} for buffering of the external
@@ -679,8 +677,7 @@ from the hardware threads, decodes them and enqueues them into the appropriate
 request buffers. Afterwards, \emph{PUT} and \emph{GET} check the queues for
 pending requests and process them. While put requests store the transmitted
 data words in the data buffer, get requests read out the stored words and
-sends them back to the issuing threads. Therefore, the request buffers,
-additionally, store the thread ids for each request.
+sends them back to the issuing threads. 
 
 While implementing this structure using Vivado HLS simplified the handling of
 \ac{FIFO} buffers dramatically, it also pointed out the limitations of the C
@@ -753,7 +750,7 @@ communication primitives does not provide an abstraction for data streaming
 from one thread to another. Even though the memory interface provides fast
 access to the main memory, it does not support parallel access for multiple
 threads. Instead, all requests are serialized and processed sequentially. For
-multiple threads exchanging data concurrently, this enforced sentimentality
+multiple threads exchanging data concurrently, this enforced sequentiality
 limits the performance and puts significant load on the memory interface.
 
 The following sections introduce the pipe as a new abstraction for streaming
@@ -767,14 +764,14 @@ abstract a unidirectional stream between different threads. While traditional
 pipes in software provide a buffer storing the written data until it is read,
 restricted on-chip memory on the \ac{FPGA} limits buffering for a hardware
 implementation. Therefore, the ReconOS pipe implementation does not utilize a
-dedicated buffer but directly forwards the data to the destination thread. The
-write method blocks until a corresponding read method is called and writes
+dedicated buffer, but directly forwards the data to the destination thread.
+The write method blocks until a corresponding read method is called and writes
 directly to the destination buffer. Analogously, the read method blocks until
 a write request occurs and finishes. Note, that a pipe represents a direct
 connection between two threads and does not provide any support for
 concurrently occurring reads or writes on the same pipe. This must be handled
-by the developer by introducing appropriate synchronization mechanisms,
-serializing access and preventing concurrent requests.
+by the developer by introducing appropriate synchronization mechanisms and
+preventing concurrent requests.
 
 Table \ref{tab:pipe_api} show the \ac{API} of the ReconOS pipe for C,
 \ac{VHDL} and \ac{HLS} implementations of threads.
@@ -831,8 +828,8 @@ Therefore, it receives an address via a mailbox, reads a specified number of
 bytes from that address to a local ram and writes the data to the pipe
 \lstinline{s0_out}.
 
-In software the ReconOS pipe is implemented by, basically, two semaphores,
-indicating read and write operations as sketched in listing \ref{lst:pipe_sw}.
+In software the ReconOS pipe is implemented by two semaphores, indicating read
+and write operations as sketched in listing \ref{lst:pipe_sw}.
 \begin{lstlisting}[
 	language=C,
 	caption={Software implementation of ReconOS pipe},
@@ -884,22 +881,22 @@ For both writing and reading, the hardware thread sends an encoding of the
 command, followed by the number of bytes to write or read, respectively. In
 response to both requests, the pipe sends back an acknowledge to the threads,
 indicating the number of actual bytes, i.e. the minimum of the read and write
-request's lengths. Through that mechanism, the pipe mimics the blocking calls
+requests' lengths. Through that mechanism, the pipe mimics the blocking calls
 to the semaphore in the software implementation. While the synchronization is
 handled by the centralized resource, the data transfer could be processed via
 direct thread interconnects. However, the data is transferred to the pipe
 resource and then send back to the destination thread. While this design
 introduces a delay of a few clock cycles, it eliminates the need for
 additional interconnect links, resulting in lower resource utilization and
-improved timing. Based on this protocol, figure \ref{fig:pipe_hw_fsm} shows
-the appropriate control logic of the hardware implementation. In its states
-\emph{INIT}, \emph{RReq} and \emph{WReq} it waits for a read and write
-request. Thereby, the order in which the request arrive does not matter. After
-both request are received, the pipe outputs the responses in states
-\emph{RRes} and \emph{WRes}. Since the response to the reading thread must
-arrive before the payload data, it is send before the write response. Finally,
-in state \emph{Data} the resource forwards the data received from the writing
-thread and returns to its initial state afterwards.
+improved timing. Figure \ref{fig:pipe_hw_fsm} shows the appropriate control
+logic of the hardware implementation. In its states \emph{INIT}, \emph{RReq}
+and \emph{WReq} it waits for a read and write request. Thereby, the order in
+which the request arrive does not matter. After both request are received, the
+pipe outputs the responses in states \emph{RRes} and \emph{WRes}. Since the
+response to the reading thread must arrive before the payload data, it is send
+before the write response. Finally, in state \emph{Data} the resource forwards
+the data received from the writing thread and returns to its initial state
+afterwards.
 
 \subsubsection{Results}
 Based on the pipe implementation, table \ref{tab:pipe_turn} shows, analogously
@@ -926,9 +923,9 @@ The execution times in table \ref{tab:pipe_turn} result from transferring 512
 bytes or 128 words respectively and are averaged over 10000 measurements. As
 expected, the same relations as described for the mailbox can be applied,
 certainly with even more significant differences, especially for communication
-between threads of the same implementation mode. For example the hardware
+between threads of the same implementation mode. For example, the hardware
 implementation of a pipe compared to its handling via the delegate thread
-provides a speedup of around 80 in case of communication between two hardware
+provides a speedup of around 80, in case of communication between two hardware
 threads. The discrepancy between the execution times of software communication
 via a hardware resource and hardware communication via a software resource
 results from additional thread scheduling and interrupt handling needed in the
@@ -939,14 +936,7 @@ example and to compare its performance to a classical shared memory approach,
 an image processing application was implemented in various versions. It
 consists out of multiple threads, applying line based modification to the
 image and exchanging its lines in a pipeline as shown in figure
-\ref{fig:img_proc}. It consist out of two filter threads, the first one
-brightening up the image by multiplying each pixel with $1.2$ and the second
-one mirroring the image horizontally. In both cases, the original and modified
-images are read from and written to the shared memory to make them accessible
-from the processor. Therefore, the read and write threads receive an address
-via mailbox and the write thread sends an acknowledge back when finished
-writing. Communication between the different filter threads is handled by a
-pipe or shared memory in combination with mailboxes for synchronization.
+\ref{fig:img_proc}. 
 \begin{figure}
 	\centering
 	%\begin{subfigure}{0.49\textwidth}
@@ -965,23 +955,31 @@ pipe or shared memory in combination with mailboxes for synchronization.
 	\caption{Image processing application}
 	\label{fig:img_proc}
 \end{figure}
-The mailboxes synchronizes the access to the shared memory and propagate the
-appropriate addresses to the next thread. Both versions were implemented with
-a hardware and software implementation of the used resources, namely the pipe
-and mailbox, and evaluated by measuring the processing time for a single image
-of 128x205 pixels. They are measured by subtracting the time stamps captured
-when sending the initial command to the read thread and after receiving the
-acknowledge from the write thread. As the turnaround times already suggest,
-the software implementation of the pipes leads to the slowest execution time
-of $\SI{88.60}{\milli\second}$, followed by the software implementation of the
-mboxes requiring $\SI{24.44}{\milli\second}$. The communication involving the
-processor slows down the system dramatically, especially the transfer of data
-via the \ac{OSIF} is significantly slower than via shared memory.
-Consequently, the hardware implementations of the synchronization primitives
-provide better results, namely $\SI{7.12}{\milli\second}$ for the classical
-shared memory approach and $\SI{6.72}{\milli\second}$ for the pipe
-implementation. While in the software case the communication overhead exceeds
-the computation time, the hardware versions are limited by the processing time
-of the image. This also explains the marginal difference between the pipe and
-shared memory implementation, since during processing the memory interface is
-free and both threads can share it efficiently.
+The first filter thread brightens up the image by multiplying each pixel with
+$1.2$ and the second one mirrors the image horizontally. In both cases, the
+original and modified images are read from and written to the shared memory to
+make them accessible from the processor. Therefore, the read and write threads
+receive an address via mailbox and the write thread sends an acknowledge back
+when finished writing. Communication between the different filter threads is
+handled by a pipe or shared memory in combination with mailboxes for
+synchronization. The mailboxes synchronize the access to the shared memory and
+propagate the appropriate addresses to the next thread. Both versions were
+implemented with a hardware and software implementation of the used resources,
+namely the pipe and mailbox, and evaluated by measuring the processing time
+for a single image of 128x205 pixels. They are measured by subtracting the
+time stamps captured when sending the initial command to the read thread and
+after receiving the acknowledge from the write thread. As the turnaround times
+already suggest, the software implementation of the pipes leads to the slowest
+execution time of $\SI{88.60}{\milli\second}$, followed by the software
+implementation of the mboxes requiring $\SI{24.44}{\milli\second}$. The
+communication involving the processor slows down the system dramatically,
+especially the transfer of data via the \ac{OSIF} is significantly slower than
+via shared memory. Consequently, the hardware implementations of the
+synchronization primitives provide better results, namely
+$\SI{7.12}{\milli\second}$ for the classical shared memory approach and
+$\SI{6.72}{\milli\second}$ for the pipe implementation. While in the software
+case the communication overhead exceeds the computation time, the hardware
+versions are limited by the processing time of the image. This also explains
+the marginal difference between the pipe and shared memory implementation,
+since during processing the memory interface is free and both threads can
+share it efficiently.
