@@ -6,7 +6,8 @@ controllers and introduce new challenges for the future of control. To
 compensate for the growing demand of features, these device incorporate
 powerful embedded processing systems, \acp{FPGA} and \ac{COTS} components.
 However, by introducing heavily heterogeneous systems with increasing
-complexity, programming and maintaining becomes challenge for the developers.
+complexity, programming and maintaining becomes a challenge for the
+developers.
 
 This thesis evaluated new programming methods and adaption
 techniques developed in the context of heterogeneous embedded systems,
@@ -16,7 +17,7 @@ the posed problem definition. In a first step, the programmability of these
 devices is addressed, by applying the multithreaded programming model based on
 the ReconOS framework and extending it with support for \ac{HLS}. By
 integrating it seamlessly into the existing toolchain and providing a unified
-program description for both hardware and software implementation , its
+program description for both hardware and software implementation, its
 feasibility and advantages for several applications was proven.
 
 Based on the extended ReconOS framework, shortcomings of the current
@@ -35,30 +36,30 @@ considerations for reconfiguring the interconnect were made and a working
 prototype was presented.
 
 Since the self-adapting capabilities are highly relevant in current research
-and also a for future \ac{PAC} applications, the third part of this theses
-addressed this topic. Therefore, and to demonstrate the use of all proposed
-techniques, a Ball on Plate demonstrator was developed, including combinations
-of hard- and software threads implemented traditionally and with the use of
+and for future \ac{PAC} applications, the third part of this theses addressed
+this topic. Therefore, and to demonstrate the use of all proposed techniques,
+a Ball on Plate demonstrator was developed, including combinations of hard-
+and software threads implemented traditionally and with the use of
 \ac{HLS}, the new interconnect architecture, as well as self-adaption
 strategies to minimize power consumption. An extensive evaluation of this
-system was presented to prove the feasibility of the presented approaches in a
-real-world \ac{PAC} application.
+system was presented and its feasibility of the presented approaches in a
+real-world \ac{PAC} application was proven.
 
 \section{Future Work}
 While this thesis introduced new ideas and developed prototypical
-demonstrations, different aspects might be used as a basis for future research
-and engineering work. While the \ac{HLS} introduction has proven its
-feasibility, it might provide even further features. Since the states of a
-thread are generated out of a high level description, \ac{HLS} approaches
-might allow to automatically handle state migration by generating logic to
-save the thread's state. This would allow to schedule the hardware threads in
-case of, for example, insufficient device resources without additional effort
-by the developer.
+demonstrations, the aspects might be used as a basis for future research and
+engineering work. While the \ac{HLS} introduction has proven its feasibility,
+it might provide further features. Since the states of a thread are generated
+out of a high level description, \ac{HLS} approaches might allow to
+automatically handle state migration by generating logic to save the thread's
+state. This would allow to schedule the hardware threads in case of, for
+example insufficient device resources, without additional effort by the
+developer.
 
-Also the proposed interconnect architecture provides possibilities for further
+Th proposed interconnect architecture provides possibilities for further
 research. A detailed study of different types of interconnects, for example
 buses or rings, and their suitability for different kinds of applications is
-missing. Furthermore, the reconfiguration of the interconnect could be
+missing. Furthermore, the reconfiguration of the interconnect can be
 evaluated more detailed with different types of interconnects. Additionally,
 the reconfiguration of hardware resources was totally out of the scope of this
 thesis, but is directly related to the reconfiguration of the interconnect.
@@ -66,7 +67,7 @@ Just the same as for hardware threads, the resources' state must be saved and
 restored after migration.
 
 The interconnect architecture also circumvents the scheduling of the operating
-system. While the effects should be investigated in more detailed, ReconOS
+system. While the effects should be investigated in more detail, ReconOS
 currently does not support a \ac{RTOS}. For its use in \acp{PAC}, it should be
 ported to an \ac{RTOS} with support for deadlines and appropriate scheduling
 algorithms.
