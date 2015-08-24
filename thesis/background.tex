@@ -158,13 +158,13 @@ THREAD_ENTRY() {
 }
 \end{lstlisting}
 This separation becomes even more apparent in the VHDL implementation shown in
-listing \ref{lst:hwt}. The \ac{OSFSM} handles all requests to \ac{OS}
+listing \ref{lst:hwt}. The \ac{OSSFSM} handles all requests to \ac{OS}
 functions and controls the internal processing logic via handshaking signals.
 For seamless integration, the ReconOS runtime provides a \ac{VHDL} library
 wrapping all \ac{OS} functions as procedures with a guarding signal
-\lstinline{done}, to condition the state transitions of the \ac{OSFSM}. This
+\lstinline{done}, to condition the state transitions of the \ac{OSSFSM}. This
 signal allows blocking \ac{OS} calls to temporarily suspend the hardware
-thread. While the \ac{OSFSM} mimics the sequence of \ac{OS} calls of the
+thread. While the \ac{OSSFSM} mimics the sequence of \ac{OS} calls of the
 software thread, the implementation of the internal processing may differ
 significantly. It can benefit from all advantages of a custom \ac{FPGA} design
 like fine-grained parallelism or specialized \ac{FPGA} resources.
@@ -413,7 +413,7 @@ broader range of users, chapter \ref{chap:hls} discusses the integration of
 Vivado HLS into the current toolchain to implement hardware threads. Since
 Vivado HLS synthesizes from C code, the possibility of a common description
 for hardware and software threads will be evaluated. Especially, the
-generation of the \ac{OSFSM} will be investigated.
+generation of the \ac{OSSFSM} will be investigated.
 
 Following, the ReconOS framework will be extended to fit the needs for a
 \ac{PAC} device. While the current delegate mechanism provides exceptional

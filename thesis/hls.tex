@@ -3,7 +3,7 @@
 \label{chap:hls}
 While the benefits of \ac{HLS} in \ac{FPGA} development was already motivated,
 this chapter discusses the integration into the ReconOS framework and how it
-can be utilized for generating the \ac{OSFSM} and processing logic. Starting
+can be utilized for generating the \ac{OSSFSM} and processing logic. Starting
 with a detailed introduction into Vivado HLS and its concepts, the resulting
 design and implementation decisions for its integration into ReconOS are
 discussed. Finally, an evaluation based on the SortDemo application is
@@ -211,10 +211,10 @@ Knowing Vivado HLS' fundamental concepts and design flows allows to
 investigate an integration into ReconOS, to simplify the development of
 hardware threads and open the framework to a broader range of developers. This
 includes a way to specify the thread's implementation, i.e. the processing
-logic and \ac{OSFSM}, as well as a seamless integration into the existing
+logic and \ac{OSSFSM}, as well as a seamless integration into the existing
 toolchain. While the processing logic itself is completely user defined and
 only limited by general restrictions of Vivado HLS, the structure of the
-\ac{OSFSM} and the thread's external interfaces are prescribed by the ReconOS
+\ac{OSSFSM} and the thread's external interfaces are prescribed by the ReconOS
 framework. For convenient use, the existing ReconOS package functions for
 \ac{OS} calls and memory access should be adapted, to provide a unified
 programming interface for all thread descriptions. Especially, the blocking
@@ -306,25 +306,25 @@ wrapped by another entity providing the correct port names and maps the signal
 \lstinline{signal} to the empty and data signals of generated \ac{FIFO} ports,
 while the read signal is ignored and left dangling.
 
-\subsection{\acs{OSFSM} Specification}
+\subsection{\acs{OSSFSM} Specification}
 Having the external interfaces modeled using the \lstinline{hls::stream}
 class sets out the basis for a hardware thread description in Vivado HLS. A
-ReconOS thread is separated into the \ac{OSFSM} and the internal processing
+ReconOS thread is separated into the \ac{OSSFSM} and the internal processing
 logic as motivated in the introductory chapter. Since the processing logic is
 completely application specific and does not use any ReconOS specific
 functionality, it is the developers task to implement the desired algorithm
-correctly and to interface with the \ac{OSFSM}. However, it is unclear, how
-the \ac{OSFSM} can be modeled inside of Vivado HLS. Many \ac{OS} functions
+correctly and to interface with the \ac{OSSFSM}. However, it is unclear, how
+the \ac{OSSFSM} can be modeled inside of Vivado HLS. Many \ac{OS} functions
 imply a blocking semantic and the ordering of several calls must be preserved.
 Since the C code itself has a strongly sequential meaning, it seems to fit
-perfectly to model the \ac{OSFSM} structure. Furthermore, all sequential calls
+perfectly to model the \ac{OSSFSM} structure. Furthermore, all sequential calls
 contain accesses to \ac{FIFO} interfaces, which are inherently sequential and
 synthesized accordingly by Vivado HLS. Further data dependencies are also
 respected by the synthesis, while independent processing might be executed in
 parallel to \ac{OS} calls, speeding up the design.
 
 Listing \ref{lst:osfsm_hls} shows an exemplary ReconOS thread implementing the
-\ac{OSFSM} for the SortDemom application.
+\ac{OSSFSM} for the SortDemom application.
 \begin{lstlisting}[
 	language=C,
 	caption={Exemplary ReconOS thread in Vivado HLS},
@@ -389,7 +389,7 @@ in three different states, sequentially executed after each other.
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=10cm]{../figures/osfsm_a}
-	\caption{Analysis of synthesized \acs{OSFSM}}
+	\caption{Analysis of synthesized \acs{OSSFSM}}
 	\label{fig:osfsm_a}
 \end{figure}
 Furthermore, data dependency introduced by the \ac{OS} calls are preserved.
@@ -407,7 +407,7 @@ interfaces as top-level arguments and the \lstinline{RAM} macro wraps the
 instantiation of an on-chip \ac{RAM}.
 
 Utilizing the inherently sequential meaning of C code allows a convenient
-specification of the \ac{OSFSM} in Vivado HLS, similar to a software
+specification of the \ac{OSSFSM} in Vivado HLS, similar to a software
 specification. In fact, the same C code used to synthesize custom hardware can
 also be executed on the \ac{CPU}. Having all hardware specific functionality
 wrapped inside of the ReconOS macros allows to generate a corresponding
