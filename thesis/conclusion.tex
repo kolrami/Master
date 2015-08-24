@@ -65,10 +65,14 @@ thesis, but is directly related to the reconfiguration of the interconnect.
 Just the same as for hardware threads, the resources' state must be saved and
 restored after migration.
 
+The interconnect architecture also circumvents the scheduling of the operating
+system. While the effects should be investigated in more detailed, ReconOS
+currently does not support a \ac{RTOS}. For its use in \acp{PAC}, it should be
+ported to an \ac{RTOS} with support for deadlines and appropriate scheduling
+algorithms.
+
 As pointed out in the evaluation of the demonstrator, possible self-adaption
 strategies for this application are only limited, at least to influence the
 power consumption. A more detailed analysis to what extends real-world
 applications can benefit from self-adaptive capabilities and how they can be
 utilized in a hybrid multi-core system is still part of ongoing research.
-
-\todo{RTOS}
