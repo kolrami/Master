@@ -2,28 +2,28 @@
 \chapter{Demonstrator}
 \label{chap:demonstrator}
 
-To demonstrate the work described in the previous chapters in a real world
-application, a Ball on Plate system is presented in the following sections.
-The demonstrator tries to balance a ball by tracking its position and
-adjusting the angle of the underlying plate, thus allowing to compensate
-external impacts and keeping the ball in the center. Therefore, the plate
-itself is mounted on top of a Stewart platform and has a resistive touchscreen
-attached to it. While the Stewart platform offers the ability to rotate the
-plate around arbitrary axes, the touchscreen provides precise and low latency
-positioning information of the ball.
+To demonstrate the aspects described in the previous chapters and its
+feasibility for a \ac{PAC} design in a real world application, this chapeter
+presents a Ball on Plate system. It tries to balance a ball by tracking its
+position and adjusting the angle of an underlying plate, thus allowing to
+compensate external impacts and keeping the ball in the center. Therefore, the
+plate itself is mounted on top of a Stewart platform and has a resistive
+touchscreen attached to it. While the Stewart platform offers the ability to
+rotate the plate around arbitrary axes, the touchscreen provides precise and
+low-latency positioning information of the ball.
 
 The control of the platform is implemented by a \ac{PAC} based on the previous
-considerations, including analog I/O, low latency data paths and control
+considerations, including analog I/O, low-latency data paths and control
 loops, as well as self-adaptive capabilities. The different components of the
 system are described in detail in the following sections. These include the
-kinematics of the Stewart platform, the touchscreen interface and control
+kinematics of the Stewart platform, the touchscreen interface and the control
 algorithms for balancing the ball.
 
 \section{Stewart Platform}
 The Stewart platform was introduced by D. Stewart in 1965 \citep{Ste65} and
-gained popular resarch interest in robotics \citep{Szu13}, concerning
+gained popular research interest in robotics \citep{Szu13}, concerning
 kinematics, dynamics or work space estimations. However, outside the
-scientific community the Stewart platform was not widely adopted and most
+scientific community, the Stewart platform was not widely adopted and most
 designs are constrained to applications requiring \ac{6DoF}, for instance
 flight simulators or \ac{CNC} machining centers. Although a Stewart platform
 provides many potential advantages, sophisticated synthesis and simulation
@@ -34,20 +34,20 @@ promises to be a sophisticated development platform, involving computationally
 expensive calculations for its kinematics and the need for additional I/O
 capabilities.
 
-The following sections introduce the architecture of the Stewart platform in
-general and the variant used in this thesis, specify the used notations and
-solve the inverse kinematics problem.
+%The following sections introduce the architecture of the Stewart platform in
+%general and the variant used in this thesis, specify the used notations and
+%solve the inverse kinematics problem.
 
 \subsection{Architecture}
 While Stewart introduced the general idea of a Stewart platform in his work in
 1965 \citep{Ste65}, a strict definition is missing in the literature. The only
-commonality is the characterization as a parallel manipulator \citep{Szu13},
+commonality is its characterization as a parallel manipulator \citep{Szu13},
 consisting out of a bottom base and an upper platform. Compared to a serial
-manipulator, it consists out of multiple serial chains controlled
-simultaneously and connected to a single end-effector. While this design
-provides unique benefits like high accuracy, better load-to-weight ratios and
-improved rigidity, it limits the available work space and causes highly
-nonlinear behavior.
+manipulator, the Stewart platform consists out of multiple serial chains
+controlled simultaneously and connected by a single end-effector. While this
+design provides unique benefits like high accuracy, better load-to-weight
+ratios and improved rigidity, it limits the available work space and causes
+highly nonlinear behavior.
 
 %\begin{figure}
 %	\centering
@@ -76,22 +76,23 @@ The different variant of a Stewart platform vary in the type of the
 connections and actuators, as well as their spacial configuration, i.e. the
 positioning of the different connections. The most common realization utilizes
 six prismatic actuator, for example hydraulic pistons or linear motors. It is
-often referred to as Hexapod and associated with the term Stewart platform,
-not least because of its similarity to the original design proposed by
-Stewart. Other architectures utilize fixed prismatic or rotary actuators to
+often referred to as \emph{Hexapod} and associated with the term Stewart
+platform, not least because of its similarity to the original design proposed
+by Stewart. Other architectures utilize fixed prismatic or rotary actuators to
 vary the lengths of the six legs. All of these variants have its unique
-benefits and drawbacks. Since the actuators in the latter design can be
-realized as commonly available servo motors, it gained popularity, especially
-for low-cost designs and first prototypes. Therefore, this thesis focuses on a
-servo-based architecture as shown in figure
-\ref{fig:stewart}. The mechanical design and construction was not done in this
-thesis, but adopted from a previous work.
+benefits and drawbacks. Since rotary actuators can be realized as commonly
+available servo motors, this design approach gained popularity, especially for
+low-cost designs and first prototypes. Therefore, this thesis focuses on a
+servo-based architecture as shown in figure \ref{fig:stewart}.
 \begin{figure}
 	\centering
 	\includegraphics[width=6cm]{../figures/stewart}
 	\caption{Construction of the Stewart platform prototype}
 	\label{fig:stewart}
 \end{figure}
+Note, that the mechanical design and construction was not done in this thesis,
+but adopted from a previous work and extended by constructions for a stable
+base and the touchscreen.
 
 \subsection{Construction and Notation}
 This section introduces the basic notations, coordinate systems and dimensions
@@ -123,15 +124,15 @@ relevant notations.
 	\label{fig:stewart_notation}
 \end{figure}
 
-As already described previously, the system consists out of a lower base and
-an upper platform, connected by six legs. For both, the base and platform, a
-particular coordinate system is introduced as shown in figures
-\ref{fig:stewart_base} and \ref{fig:stewart_platform}. While the origin of the
-base coordinate system $B$ is located in the center of the base and at the
-same height as the shaft of the servos, the origin of platform's coordinate
-system $P$ is located exactly at the height of the platform joints
-$J_i$. With regard to the platform's coordinate system, the coordinates of the
-six joints are annotated in figure \ref{fig:stewart_platform}.
+As already described, the system consists out of a lower base and an upper
+platform, connected by six legs. For both, the base and platform, a particular
+coordinate system is introduced as shown in figures \ref{fig:stewart_base} and
+\ref{fig:stewart_platform}. While the origin of the base coordinate system $B$
+is located in the center of the base and at the same height as the shaft of
+the servos, the origin of platform's coordinate system $P$ is located exactly
+at the height of the platform joints $J_i$. With regard to the platform's
+coordinate system, the coordinates of the six joints are annotated in figure
+\ref{fig:stewart_platform}.
 
 Additionally, each servo specifies its own coordinate system $S_i$, located at
 the intersection point of the servo's shaft and the servo's joint position.
@@ -141,30 +142,29 @@ or down, depending of the servo, i.e. for even servos it points down and for
 odd servos it point up. Figure \ref{fig:stewart_side} illustrates the servo
 coordinate systems and shows the angle $\alpha$ of the servo arm. The
 different coordinate systems for even and odd servos allow to handle all
-servos analogously and to respect the physical configuration of the servo
+servos analogously and abstract from the physical configuration of the servo
 arms.
 
 Calculating the inverse kinematics of the platform requires to transform the
-joints of the platform to the corresponding servo coordinate system. This is
-done in two steps, by transforming them to $B$, and finally to $S_i$. While
-the transformation to the base coordinate system $B$ is trivial, by simply
-adding an offset $C_h$ to the z coordinate, transforming the resulting point
-to the servo coordinate system $S_i$ requires more sophisticated calculations,
-including rotation and scaling. At first, the base coordinate system is
-rotated to match the y axis of the appropriate servo coordinate system,
-followed by mirroring the x and z axis to fit the desired orientations.
-Finally, the origin is translated to match the servo positions by adding and
-subtracting $C_{sx}$ and $C_{sy}$ to the x and y coordinates, respectively.
+joints of the platform to the corresponding servo coordinate systems. This is
+done by applying two transformations successively, first from $P$ to $B$ and
+then from $B$ to $S_i$. While the transformation to the base coordinate system
+$B$ is performed by adding an offset $C_h$ to the z coordinate, transforming
+the resulting point to the servo coordinate system $S_i$ requires more
+sophisticated calculations. At first, the base coordinate system is rotated to
+match the y axis of the appropriate servo coordinate system, followed by
+mirroring the x and z axis to fit the desired orientations. Finally, the
+origin is translated by $C_{sx}$ and $C_{sy}$ to match the servo positions.
 
 \subsection{Inverse Kinematics}
 Taking the basic notations of the previous section as a basis, the inverse
 kinematic calculates the required servo angles for a desired angle of the
 platform. Unlike for serial manipulators, the inverse kinematics of a Stewart
 platform has a unique analytic solution, while the forward kinematics problem
-is highly nonlinear and requires iterative approaches. However, the low-cost
-variant utilizing rotary instead of linear actuators introduces additional
-calculations to calculate the required servo angles from the desired leg
-lengths.
+is highly nonlinear and requires iterative approaches. Furthermore, the
+low-cost variant utilizing rotary instead of linear actuators introduces
+additional calculations to determine the required servo angles out of the
+desired leg lengths.
 
 Assuming, that the desired angle of the platform is given by a rotation axis
 $r$ and a rotation angle $r_a$, equation \ref{eq:platform_rot} shows the
@@ -178,22 +178,22 @@ J'_i =
 \end{pmatrix}
 \label{eq:platform_rot}
 \end{equation}
-Transforming these position to the appropriate servo coordinate systems as
-described in the previous section allows to calculate the distance between the
-servo joint and the platform joint. While for a linear actuator this would be
-the solution, rotary actuators can not vary the length of the legs directly.
-Therefore, the angle $\alpha$ must be adjusted in a way, that the distance
-between its joint and the platform joint is equal to the fixed leg length
-$C_l$. While there exist an analytic solution for this problem, it includes
-terms of higher degree and complex operations like $\arctan$ and square roots.
-Therefore, an iterative approach was chosen to find the appropriate angle.
-More details on the concrete implementation of this iterative approach will be
-covered in the implementation section.
+Transforming these positions to the appropriate servo coordinate systems as
+described in the previous section, allows to calculate the distance between
+the servo joint and the platform joint. While for a linear actuator this would
+be the solution, rotary actuators can not vary the length of the legs
+directly. Therefore, the angle $\alpha$ must be adjusted in a way, that the
+distance between its joint and the platform joint is equal to the fixed leg
+length $C_l$. While there exist an analytic solution for this problem, it
+includes terms of higher degree and complex operations like $\arctan$ and
+square roots. Therefore, an iterative approach was chosen to find the
+appropriate angle. More details on the concrete implementation of this
+iterative approach will be covered in the implementation section.
 
 \section{Touchscreen}
 To track the ball's position on the plate, a resistive touchscreen is mounted
 on top of the plate and touched by the ball. Compared to, for example camera
-based tracking techniques, a touchscreen provides low latency data,
+based tracking techniques, a touchscreen provides low-latency data,
 independent from external influences like lighting conditions or camera
 movements. Furthermore, it requires less computational effort, as well as a
 more compact setup.
@@ -236,26 +236,27 @@ touchscreen was used as shown in figure \ref{fig:touch_five}, due to its
 increased durability and sustainability. The X and Y voltages are applied to
 the four corners of the lower glass, while the upper film is used only as a
 contact point to measure the voltage at the touch position (wiper). To
-determine, for example, the X position, a voltage is applied to the two left
-corners, while two right corners are connected to ground.
+determine, for example the X position, a voltage is applied to the two left
+corners, while the two right corners are connected to ground and the voltage
+on the wiper is measured.
 
 \subsection{Interfacing the Touchscreen}
 To interface the touchscreen, voltage needs to be applied to different corners
-of the touchscreen, while all other ones needs to be connected to ground.
-Therefore, regular digital I/O are sufficient, setting their output to 1 or 0,
-respectively. To measure the voltage at the touch point through the viper, an
+of the touchscreen, while others need to be connected to ground. Therefore,
+regular digital I/O are sufficient, setting their output to 1 or 0,
+respectively. To measure the voltage at the touch point through the wiper, an
 \ac{ADC} with suitable input ranges is required. To eliminate noise caused by
 an unstable voltage source, the \ac{ADC} should be connected in a differential
 fashion to the wiper and the supply voltage. This improves the reliability and
 minimizes the effects of voltage fluctuations \citep{OOD00}.
 
 In this work, the pre-assembled evaluation module ADS7845EVM \citep{ADS06} was
-used. While the ZedBoard provides both digital I/O and an on-chip \ac{ADC}
-which could be utilized to interface a touchscreen, additional circuits would
-be required to meet the \ac{ADC}'s input requirements. Since circuit design is
-not target of this thesis, a pre-assembled evaluation module was chosen. It
-provides an appropriate connector for the touchscreen and interfaces with the
-\ac{FPGA} via the \ac{SPI} interface as shown in figure \ref{fig:touch_spi}.
+used. While the ZedBoard provides both digital I/O and an on-chip \ac{ADC},
+its input requirements are limited and additional circuits would be required.
+Since circuit design is not target of this thesis, a pre-assembled evaluation
+module was chosen. It provides an appropriate connector for the touchscreen
+and interfaces with the \ac{FPGA} via an \ac{SPI} interface as shown in figure
+\ref{fig:touch_spi}.
 \begin{figure}
 	\centering
 	\includegraphics{../figures/touch_spi}
@@ -263,34 +264,35 @@ provides an appropriate connector for the touchscreen and interfaces with the
 	\label{fig:touch_spi}
 \end{figure}
 A single conversion is done in 24 clock cycles with a period of
-$\SI{400}{\nano\second}$ by sending eight configuration bits to the controller
-and receiving the converted voltage at the touch position as a 12 bit integer.
-The configuration bits sent in the first byte include the channel selection
-\emph{A2} - \emph{A0}, i.e. the x and y directions, mode selections and power
-down options. The \emph{SD} bit selects between single-ended and differential
-mode, \emph{M} selects between eight and twelve bit conversion and \emph{P1} -
-\emph{P0} control the power down between conversions. After the control byte
-is sent, the controller enters the conversion mode and performs the analog-to-
-digital conversion in the next twelve clock cycles. In the 13th clock cycle
-the last bit is transferred, followed by three zero bits to complete the last
-byte. Therefore, 48 clock cycles are necessary to read the x and y coordinate
-of the touch position, i.e. around $\SI{20}{\micro\second}$. Note, that these
-information only imply a single measurement, while, as stated later, for a
-precise positioning information multiple conversions are required.
+$\SI{400}{\nano\second}$, by sending eight configuration bits to the
+controller and receiving the converted voltage at the touch position as a 12
+bit integer. The configuration bits sent in the first byte include the channel
+selection \emph{A2} - \emph{A0}, i.e. the x and y directions, mode selections
+and power down options. The \emph{SD} bit selects between single-ended and
+differential mode, \emph{M} selects between eight and twelve bit conversion
+and \emph{P1} - \emph{P0} control the power down between conversions. After
+the control byte is sent, the controller enters the conversion mode and
+performs the analog-to-digital conversion in the next twelve clock cycles. In
+the 13th clock cycle the last bit is transferred, followed by three zero bits
+to complete the last byte. Therefore, 48 clock cycles are necessary to read
+the x and y coordinate of the touch position, i.e. around
+$\SI{20}{\micro\second}$. Note, that these information only imply a single
+measurement, while for precise positioning information multiple conversions
+are required.
 
 To connect the controller evaluation module to the ZedBoard, regular digital
 I/Os are required for the serial interface, as well as a $\SI{3.3}{\volt}$
 voltage supply, provided by one of the \ac{Pmod} connectors.
 
 \section{\acs{PID} Control}
-Tracking of the ball's position and adjusting the plate's angle appropriately,
-allows to stabilize the ball at a desired position, for example at the center.
-This task is a typical control application and should be implemented by the
-well-known \ac{PID} controller, consisting out of a proportional, integral and
-derivative term. \ac{PID} controllers are widely adopted in the field of
-industrial control and have a long history of use, surviving several changes
-of technology \citep{Joh05}. Even complex applications comprise control
-networks out of basic \ac{PID} loops.
+Tracking of the ball's position and adjusting the plate's angle allows to
+stabilize the ball at a desired position, for example at the center. This task
+is a typical control application and will be implemented by the well-known
+\ac{PID} controller, consisting out of a proportional, integral and derivative
+term. \ac{PID} controllers are widely adopted in the field of industrial
+control and have a long history of use, surviving several changes of
+technology \citep{Joh05}. Even complex applications comprise control networks
+out of basic \ac{PID} loops.
 
 Figure \ref{fig:pid_rep} illustrates the concept of a \ac{PID} controller with
 regard to the Ball on Plate application as the process of the control loop.
@@ -306,9 +308,9 @@ position represents the controlled variable. The error vector is calculated as
 the difference of the target position and the current position, i.e., since
 the target position is the center of the plate, the negated position of the
 ball. Vividly, the resulting controller output represents the acceleration
-required to push the ball in the desired direction. To achive this
-acceleration, the platform needs to bo rotated around an axis perpendicular to
-the acceleration vector and by an angle, proportional to the length of the
+required to push the ball in the desired direction. To achieve this
+acceleration, the platform needs to be rotated around an axis perpendicular to
+the acceleration vector and by an angle proportional to the length of the
 vector. These two values can be determined by applying geometric calculations
 and fed into the inverse kinematics algorithm to achieve the correct rotation.
 Note, that the controller output vector does generally not point to the target
@@ -342,8 +344,8 @@ positioning information to the \emph{Control} thread. That implements the
 the platform, to the \emph{Inverse} thread. Since the inverse kinematic
 constitutes the most computational intensive task and must be performed for
 each of the six legs, it is parallelized in multiple threads, each one
-calculating a single servo position. Therefore, one to six
-\emph{Inverse} threads might be instantiated.
+calculating a single servo position. Therefore, one to six \emph{Inverse}
+threads can be instantiated.
 
 While the \emph{Touch} and \emph{Servo} threads must be implemented as
 hardware threads, allowing them to interface with the I/O ports of the FPGA,
@@ -352,7 +354,7 @@ inverse kinematics implementations are available for hardware synthesis, as
 well as for software compilation.
 
 \paragraph{Touch} As described in the previous section on the touchscreen
-technology, an ADS7845EVM evaluation module is utilized in this work. The
+technology, the ADS7845EVM evaluation module is utilized in this work. The
 \emph{Touch} thread implements the \ac{SPI} master according the ADS7845's
 specifications and provides positioning information to the other threads. The
 \ac{SPI} controller generates the required $\SI{2.5}{\mega\hertz}$ clock and
@@ -364,7 +366,7 @@ translations and scaling. Additionally, to reduce noise in the ball's
 position, multiple measurements are performed in a single scan cycle. Thereby,
 a series of measurements is discarded, when a pair of consecutive readouts
 differs noticeably, for example because of insufficient pressure applied to
-the touchscreen. Only if the measurements passes the validity check, their
+the touchscreen. Only if all measurements passe the validity check, their
 average is used for calculating the ball's position. Since this procedure
 results in a varying acquisition time, the touch thread also monitors the
 actual period of time past the last measurement and reports it to the control
@@ -373,8 +375,8 @@ thread.
 \paragraph{Control} The \emph{Control} thread implements the \ac{PID}
 controller as described in the previous section. Therefore, it receives the
 ball position from the \emph{Touch} thread, calculates the error vector and
-applies the \ac{PID}control algorithm as sketched in listing \ref{lst:pid} for
-the x coordinate.
+applies the \ac{PID} control algorithm as sketched in listing \ref{lst:pid}
+for the x coordinate.
 \begin{lstlisting}[
 	language=VHDL,
 	caption={\acs{PID} implementation},
@@ -390,7 +392,7 @@ ctrl_x = ctrl_x_p + ctrl_x_i + ctrl_x_d;
 \end{lstlisting}
 The proportional component is directly represented by the current error, while
 the derivative and integral components are calculated via the delta variable,
-representing the time period since the last value. By multiplying each
+representing the time period since the last execution. By multiplying each
 component with the \ac{PID} parameters \emph{KP}, \emph{KI} and \emph{KD}, the
 resulting control output is determined. Since the inverse kinematics threads
 require a rotation axis and an absolute angle to rotate the plate, the output
@@ -399,22 +401,20 @@ rotation axis and its length as the rotation angle.
 
 \paragraph{Inverse} The computationally most demanding component of the
 application is the solution of the Stewart platform's inverse kinematics
-problem. Therefore, it provides  potential for a speedup by a hardware
+problem. Therefore, it provides potential for a speedup by a hardware
 implementation. The \emph{Inverse} thread receives an axis encoded as two 10
 bit integers and an angle encoded as a 9 bit integer, as well as a 3 bit leg
 id. Out of these information, it calculates the desired servo angle for the
 specified leg. Since the calculation contains many arithmetic operations
 including fixed point calculations, it fits perfectly for an implementation in
-Vivado HLS. However, while the tool includes a math library, it is not able to
-synthesize sine and cosine functions. Therefore, an array synthesized into
-block \ac{RAM} is precalculated and used as a lookup-table. The fixed point
-data type \lstinline{ap_fixed<22,10>} is used for all calculations, providing
-sufficient accuracy for this application. The returned servo angle is encoded
-as an integer of 11 bits, resulting in a precision of $\SI{0.1}{\degree}$. As
-already mentioned, the servo angle is calculated out of the leg length by a
-linear search over all possible angles. Although an analytical solution could
-be formulated, it requires square roots, high potencies and tangent functions,
-making it harder to implement on an FPGA.
+Vivado HLS. The fixed point data type \lstinline{ap_fixed<22,10>} is used for
+all calculations, providing sufficient accuracy for this application. The
+returned servo angle is encoded as an integer of 11 bits, resulting in a
+precision of $\SI{0.1}{\degree}$. As already mentioned, the servo angle is
+calculated out of the leg length by a linear search over all possible angles.
+Although an analytical solution could be formulated, it requires square roots,
+high potencies and tangent functions, making it harder to implement on an
+FPGA.
 
 \paragraph{Servo} The servos of the Stewart platform are controlled by a
 \ac{PWM} signal, specifying the angle of the mounted arm. The thread receives
@@ -440,8 +440,8 @@ themselves by acquiring so-called self-*properties, for example by capturing
 sensor data or maintaining performance counters. This self-aware knowledge can
 then be processed by a self-expression engine to modify the system's behavior
 and meet specified requirements. Consider figure \ref{fig:demo_selfaware},
-presenting an extended structure of the demonstrator, implementing the concept
-of a self-aware system, inspired by \citep{AHL14}.
+presenting an extended structure of the demonstrator inspired by
+\citep{AHL14}.
 \begin{figure}
 	\centering
 	\includegraphics{../figures/demo_selfaware}
@@ -467,8 +467,8 @@ The self-properties are acquired by the threads of the system and stored in
 the globally accessible shared memory region. While the acquiring of the
 properties is typically performed in parallel to the regular processing, the
 additional memory access introduces an overhead and might effects the
-overall system's performance. However, since the shared memory is not utilized
-in the system so far, the overhead can be neglected. For software threads a
+overall system performance. However, since the shared memory is not utilized
+so far, the overhead can be neglected. For software threads a
 single word access is, obviously, not performance critical and a hardware
 thread requires less than 10 clock cycles for an access via the memory
 subsystem. It does not need to block until the word is written to the system
@@ -481,34 +481,34 @@ different threads are acquired and processed by the self-expression engine.
 
 \subsubsection{Power Consumption}
 \label{sssec:power}
-The power consumption of the system is affected by many components, ranging
-from different threads through the entire the Zynq \ac{SoC} to external
-devices like the touch controller. Therefore, a fine-grained measurement of
-the different component's power consumption would be desirable, allowing a
-more sophisticated control.
+The power consumption of the system is affected by many components and can be
+measured at different levels of granularity, ranging from different threads
+through the entire Zynq \ac{SoC} to external devices like the touch
+controller. For a sophisticated self-expression strategy, a fine-grained
+measurement of the different component's power consumption would be desirable.
 
 While more advanced boards include power measurement capabilities through
 dedicated components connected to the FPGA, the ZedBoard features a
 $\SI{10}{\milli\ohm}$ current sense resistor in series with the
 $\SI{12}{\volt}$ input power supply \citep{ZedBoard}. Measuring the voltage
-drop at that resistor allows to calculate the current flowing into the board,
-and, consequently, the power consumption of the system like in equation
-\ref{eq:power}. $V_i$ represents the input voltage from the power supply, i.e.
-$\SI{12}{\volt}$, and $V_s$ the measured voltage drop at the shunt resistor.
+drop at that resistor allows to calculate the current flowing into the board
+and, consequently, the power consumption of the system as presented in
+equation \ref{eq:power}. $V_i$ represents the input voltage from the power
+supply, i.e. $\SI{12}{\volt}$, and $V_s$ the measured voltage drop.
 \begin{equation}
 P = V_i I = V_i \frac{V_s}{\SI{10}{\milli\ohm}}
 \label{eq:power}
 \end{equation}
-Since the resistor is placed on the high side, i.e. before any load, it has a
-common mode voltage of around $\SI{12}{\volt}$, far exceeding the capabilities
-of the on-chip \ac{ADC}. Therefore, the dedicated current sensing amplifier
-LTC4151 is used to measure the voltage drop $V_s$. It integrates an
+Since the shunt resistor is placed on the high side, i.e. before any load, it
+has a common mode voltage of around $\SI{12}{\volt}$, far exceeding the
+capabilities of the on-chip \ac{ADC}. Therefore, the dedicated current sensing
+amplifier LTC4151 is used to measure the voltage drop $V_s$. It integrates an
 instrumentation amplifier with an appropriate \ac{ADC} and reports data
 through the \ac{I2C} interface, connected the Zynq's dedicated \ac{I2C}
 controller. This allows to poll the LTC4151 from a regular software thread and
 make the measurement data available via the self-properties memory region.
-Since this region is globally accessible, both hardware and software threads
-can access this data.
+Since it is globally accessible, both hardware and software threads can access
+this data.
 
 Based on the the overall power consumption of the board, different methods for
 a more fine-grained measurement can be discussed. Directly measuring the power
@@ -519,7 +519,7 @@ have dealt with the problem of simulating the power consumption of \acp{FPGA}
 estimate the resulting drawn. However, the effective switching activity
 heavily depends on the input at runtime. Furthermore, external components are
 not included in the simulation results and software threads running on an
-operating system are heavily dynamic and unpredictable. Especially in case of
+operating system are heavily dynamic and unpredictable. Especially, in case of
 self-adaptive systems acquiring parameters at runtime, long running
 simulations are not applicable. Therefore, learning strategies observing the
 state of the system and its work load seem to be more suitable for power
@@ -537,7 +537,7 @@ estimate their power draw.
 Altogether, several approaches for a fine-grained measurement of the system's
 power consumption are conceivable, requiring a more detailed study out of the
 scope of this thesis. For basic self-adaption techniques demonstrated with
-this application, the overall data seems to be sufficient.
+this application, the board level data seems to be sufficient.
 
 \subsubsection{Ball Position and \acs{PID} output}
 The ball position on the plate is the only external input to the system and,
@@ -559,7 +559,7 @@ its normal operation.
 Performance is an important objective for the system to accomplish. However,
 maximal processing power might not be required in all circumstances. In fact,
 the processing demands might vary during runtime, allowing the system to adapt
-and, for example, save energy in low load situations. Therefore, the current
+and, for example, save energy in low load situations. Therefore, the
 performance needs to be monitored continuously and observed over time.
 
 To provide performance measurements during runtime, the threads must save
@@ -599,7 +599,8 @@ distance to the center and the ball's velocity are considered by the
 proportional and derivative terms of the \ac{PID} controller, the output value
 of the controller, i.e. the rotation angle of the plate, seems to be a
 suitable measure to adapt the scan rate. Figure \ref{fig:selfadapt_a}
-illustrates this by plotting the plate's angle and the adapted scan rate for an exemplary execution.
+illustrates this by plotting the plate's angle and the adapted scan rate for
+an exemplary execution.
 \begin{figure}
 	\centering
 	\includegraphics{../figures/selfadapt_a}
@@ -619,7 +620,7 @@ itself, the resulting change as seen in the plot is not linear or exponential.
 While the previous sections stated the implementation details of the
 demonstrator, this section presents a detailed evaluation regarding relevant
 aspects of this work. It addresses the benefits of the newly introduced
-techniques like the integration of \ac{HLS} or the hardware interconnect, and
+techniques, like the integration of \ac{HLS} or the hardware interconnect, and
 draws conclusions for its feasibility for \acp{PAC}. Furthermore, the
 discussed self-adaption strategies are evaluated and to what extend they
 influence the system's power consumption.
@@ -629,9 +630,9 @@ The Ball on Plate demonstrator consist out of a variety of hardware threads,
 implemented using a combination of Vivado HLS and \ac{VHDL}. During
 development it clearly turned out, that \ac{HLS} approaches simplify the
 development process and reduce the implementation time significantly.
-Especially the advanced debugging capabilities by executing the hardware
-implementation in software avoids time consuming \ac{RTL} simulations and
-allows to more easily verify the algorithm's correctness. It also clearly
+Especially the advanced debugging capabilities, by executing the hardware
+implementation in software, avoid time consuming \ac{RTL} simulations and
+allow a more easy verification of the algorithm's correctness. It also clearly
 turned out, that \ac{HLS} has its strengths in complex arithmetic calculations
 including fixed point data types and divisions, while it is not useful for
 implementing timing critical functions. For example, the inverse kinematics
@@ -643,9 +644,7 @@ is implemented in either \ac{VHDL} or \ac{HLS}, it can still benefit from
 both's advantages by instantiating custom user logic generated using \ac{HLS}
 techniques in a \ac{VHDL} thread. For example, the \emph{Touch} thread
 instantiates a scaling entity to transform the voltages into coordinates in
-the plate's coordinate system. More generally spoken, a thread could be
-implemented in \ac{VHDL} and instantiates multiple user logic entities from
-different sources, like Vivado HLS or the Core Generator tool.
+the plate's coordinate system.
 
 \subsection{Performance}
 Incorporating the \ac{FPGA} into the system and spending spending additional
@@ -725,7 +724,7 @@ requiring even shorter scan cycles, a hardware implementation can provide huge
 benefits. Note, that five inverse threads provide no more speedup compared to
 three, since in both cases two executions are necessary. Only a sixth thread
 would provide a further speedup, but due to resource limitation cause by
-insufficent \ac{DSP} blocks, six threads could not be implemented on the
+insufficient \ac{DSP} blocks, six threads could not be implemented on the
 ZedBoard. Not only the processing performance is effected by the
 implementation mode, but also the power consumption can be reduced by
 incorporating custom hardware. In this case, a difference of around
@@ -760,7 +759,7 @@ it might be an important consideration.
 	\label{fig:selfadapt_pw}
 \end{figure}
 The self-adaption strategy implemented as described in the previous section
-tires to minimize the overall power consumption by adapting the cycle rate of
+tries to minimize the overall power consumption by adapting the cycle rate of
 the closed loop controller and, thereby, extending idle periods. Figure
 \ref{fig:selfadapt_pw} shows an exemplary execution and how the adaption in
 scan rate effects the overall power consumption of the system. It clearly
@@ -768,9 +767,9 @@ shows the relation of the two variables and that the system is able to reduce
 its power consumption by using self-adaption techniques. However, these
 measurements were made with the inverse kinematics calculated in software,
 which is, as shown in the previous section, not optimal in terms of processing
-performance, but, in general, might be an option if other applications require
-resources on the \ac{FPGA}. When investigating the effect of the scan rate
-with the inverse kinematics implemented in hardware, no change in power
+performance. However, in general, it might be an option if other applications
+require resources on the \ac{FPGA}. When investigating the effect of the scan
+rate with the inverse kinematics implemented in hardware, no change in power
 consumption could be measured via the LTC4151 \ac{IC}. The LTC4151 has a
 resolution of $\SI{20}{\micro\volt}$ \citep{LTC4151}, which corresponds to
 $\SI{0.024}{\watt}$, and a conversion rate of typically $\SI{7.5}{\hertz}$,
