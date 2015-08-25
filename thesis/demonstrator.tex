@@ -430,7 +430,7 @@ input and connect the control signals directly to the servo.
 
 \section{Self-Awareness}
 While the system described so far implements the basic functionality of the
-Ball on Plate demonstrator, this section focuses on self-adaption strategies
+Ball on Plate demonstrator, this section focuses on self-adaptation strategies
 by extending the demonstrator with a framework to gather self-aware properties
 and introducing basic self-expression capabilities to optimize the power
 consumption.
@@ -458,8 +458,8 @@ insights of the system, the \emph{Web} threads provides access to several of
 the self-properties and parameters via an interactive web interface.
 
 The following subsections explain the different self-properties and how they
-are acquired, as well as the adaptions strategies and controlled parameters of
-the system.
+are acquired, as well as the adaptation strategies and controlled parameters
+of the system.
 
 \subsection{Self-Properties}
 
@@ -536,7 +536,7 @@ estimate their power draw.
 
 Altogether, several approaches for a fine-grained measurement of the system's
 power consumption are conceivable, requiring a more detailed study out of the
-scope of this thesis. For basic self-adaption techniques demonstrated with
+scope of this thesis. For basic self-adaptation techniques demonstrated with
 this application, the board level data seems to be sufficient.
 
 \subsubsection{Ball Position and \acs{PID} output}
@@ -581,7 +581,7 @@ time stamp through the system bus. Furthermore, the approach of performance
 threads unifies the performance evaluation for all types of threads without
 additional drivers, signals or hardware components.
 
-\subsection{Adaption Strategies}
+\subsection{Adaptation Strategies}
 Based on the self-properties described in the previous section, the
 \emph{Self} thread implements a self-expression engine, adapting the system to
 minimize its power consumption. Therefore, it adjusts the scan cycle rate of
@@ -613,7 +613,7 @@ indicates, the increase of the scan rate is performed gradually over time,
 while the decrease in case of a disturbance of the ball is done much faster,
 more precisely in a linear or exponential fashion, respectively. Furthermore,
 it is limited in both its maximal and minimal values. Note, that since the
-adaption of the scan rate is performed at a rate equal to the scan rate
+adaptation of the scan rate is performed at a rate equal to the scan rate
 itself, the resulting change as seen in the plot is not linear or exponential.
 
 \section{Evaluation}
@@ -622,7 +622,7 @@ demonstrator, this section presents a detailed evaluation regarding relevant
 aspects of this work. It addresses the benefits of the newly introduced
 techniques, like the integration of \ac{HLS} or the hardware interconnect, and
 draws conclusions for its feasibility for \acp{PAC}. Furthermore, the
-discussed self-adaption strategies are evaluated and to what extend they
+discussed self-adaptation strategies are evaluated and to what extend they
 influence the system's power consumption.
 
 \subsection{\acl{HLS}}
@@ -751,20 +751,20 @@ for 43.82\%. Since it is far below the minimal scan cycle time, the overhead
 is still acceptable for this application, but for more low-latency purposes,
 it might be an important consideration.
 
-\subsection{Self-Adaption and Power Consumption}
+\subsection{Self-Adaptation and Power Consumption}
 \begin{figure}
 	\centering
 	\includegraphics{../figures/selfadapt_pw}
 	\caption{Scan rate compared to system's power consumption}
 	\label{fig:selfadapt_pw}
 \end{figure}
-The self-adaption strategy implemented as described in the previous section
+The self-adaptation strategy implemented as described in the previous section
 tries to minimize the overall power consumption by adapting the cycle rate of
 the closed loop controller and, thereby, extending idle periods. Figure
-\ref{fig:selfadapt_pw} shows an exemplary execution and how the adaption in
+\ref{fig:selfadapt_pw} shows an exemplary execution and how the adaptation in
 scan rate effects the overall power consumption of the system. It clearly
 shows the relation of the two variables and that the system is able to reduce
-its power consumption by using self-adaption techniques. However, these
+its power consumption by using self-adaptation techniques. However, these
 measurements were made with the inverse kinematics calculated in software,
 which is, as shown in the previous section, not optimal in terms of processing
 performance. However, in general, it might be an option if other applications
