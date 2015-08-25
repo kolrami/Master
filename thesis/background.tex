@@ -187,7 +187,9 @@ begin
 		case state is
 			when GET_DATA =>
 				MBOX_GET(i_osif, o_osif, res_mbox_in, data_in, done);
-				if done then state <= PROCESSING; end if;
+				if done then
+					state <= PROCESSING;
+				end if;
 			when PROCESSING =>
 				run <= '1';
 				if rdy = '1' then
@@ -196,7 +198,9 @@ begin
 				end if;
 			when PUT_DATA =>
 				MBOX_PUT(i_osif, o_osif, res_mbox_out, data_out, done);
-				if done then state <= GET_DATA; end if;
+				if done then
+					state <= GET_DATA;
+				end if;
 		end case;
 	end if;
 end process OSFSM;
