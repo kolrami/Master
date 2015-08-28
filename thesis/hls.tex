@@ -392,7 +392,7 @@ in three different states, sequentially executed after each other.
 	\caption{Analysis of synthesized \acs{OSSFSM}}
 	\label{fig:osfsm_a}
 \end{figure}
-Furthermore, data dependency introduced by the \ac{OS} calls are preserved.
+Furthermore, data dependencies introduced by the \ac{OS} calls are preserved.
 For example, the internal processing logic accesses the on-chip ram after the
 initialization by \lstinline{MEM_READ} with the unsorted data. Vivado HLS
 schedules these accesses to guarantee the right order of execution. However,
@@ -410,7 +410,7 @@ Utilizing the inherently sequential meaning of C code allows a convenient
 specification of the \ac{OSSFSM} in Vivado HLS, similar to a software
 specification. In fact, the same C code used to synthesize custom hardware can
 also be executed on the \ac{CPU}. Having all hardware specific functionality
-wrapped inside of the ReconOS macros allows to generate a corresponding
+wrapped inside of the ReconOS macros, allows to generate a corresponding
 implementation in software. Instead of writing into the
 \acp{FIFO} and delegating the \ac{OS} calls to the delegate threads, the
 appropriate system calls are executed directly and memory accesses are mapped

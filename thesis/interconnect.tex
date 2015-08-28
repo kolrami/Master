@@ -45,18 +45,18 @@ hardware thread issues the request by writing the appropriate messages into
 the \ac{OSIF}, namely an internal encoding of the command, followed by an
 identification of the appropriate \ac{OS} resource and additional arguments.
 The interrupt causes the delegate thread to wake up, read the messages from
-the \ac{OSIF} and decode the commands. After executing the appropriate \ac{OS}
-call, the delegate thread writes back an acknowledge into the \ac{OSIF} and,
-optionally, the result of the system call. Following this process, the
-exchange of a single message between two hardware threads via a mailbox
-includes two interrupts, implying context switches into the kernel space, the
-handling of the mailbox by the kernel and the access of the \ac{OSIF} itself.
-All these operations introduce a significant delay of thousands of clock
-cycles and burden the processor with additional tasks. Furthermore, since the
-benefits of a custom hardware implementation originate from its highly
-parallel structures, the sequential execution enforced by the communication
-via the central processor results in a bottleneck, limiting the full potential
-of all hardware threads.
+the \ac{OSIF} and decodes the commands. After executing the appropriate
+\ac{OS} call, the delegate thread writes back an acknowledge into the
+\ac{OSIF} and, optionally, the result of the system call. Following this
+process, the exchange of a single message between two hardware threads via a
+mailbox includes two interrupts, implying context switches into the kernel
+space, the handling of the mailbox by the kernel and the access of the
+\ac{OSIF} itself. All these operations introduce a significant delay of
+thousands of clock cycles and burden the processor with additional tasks.
+Furthermore, since the benefits of a custom hardware implementation originate
+from its highly parallel structures, the sequential execution enforced by the
+communication via the central processor results in a bottleneck, limiting the
+full potential of all hardware threads.
 
 Besides the communication via system calls and synchronization primitives
 handled by the delegate mechanism, the threads can also exchange data via the
@@ -110,11 +110,10 @@ bus structure, again, limits parallel access and performance. Choosing an
 appropriate interconnect, just like the implementation mode of the resources,
 seems to be a crucial step, highly dependent on the application and its
 structure. Furthermore, since the system might be able to adapt itself to
-upcoming requirements during runtime, the needs for the interconnect
-structure might change after design time. Consequently, an interconnect
-architecture should provide a flexible way of utilizing different structures
-specified at design time and, additionally, allow a reconfiguration at run
-time.
+upcoming requirements during runtime, the needs for the interconnect structure
+might change after design time. Consequently, an interconnect architecture
+should provide a flexible way of utilizing different structures specified at
+design time and, additionally, allow a reconfiguration at runtime.
 
 Figure \ref{fig:interconnect} illustrates the reconfigurable interconnect
 architecture developed and presented in this thesis.
@@ -215,15 +214,15 @@ interconnect during runtime. Figure \ref{fig:interconnect_if} presents the
 interface, consisting out of bidirectional \ac{FIFO} ports for each connected
 component, namely the hardware threads, the hardware resources and the
 processor.
-\begin{figure}[tb]
+\begin{figure}
 	\centering
-	\includegraphics[width=12cm]{../figures/interconnect_if}
+	\includegraphics{../figures/interconnect_if}
 	\caption{Interface of reconfigurable interconnect}
 	\label{fig:interconnect_if}
 \end{figure}
 Obviously, the interface depends on the number of hardware resources and
 hardware threads and is generated accordingly. Therefore, an implemented
-interconnect structure must also respect the variying number of ports. Note,
+interconnect structure must also respect the varying number of ports. Note,
 that all \ac{FIFO} interfaces are implemented as target ports, i.e. the
 components connect their master or slave interfaces directly to the
 interconnect, without a dedicated \ac{FIFO} core in between. This leaves the
@@ -259,17 +258,17 @@ signals for reconfiguration, namely \lstinline{IC_Sig}, \lstinline{IC_Rdy} and
 \lstinline{IC_Rst}. Since reconfiguration of the interconnect should be
 possible independently of the operation of the threads and resources of the
 system, the procedure must guarantee that no messages are lost and the
-interfaces are stalled during reconfiguration The interconnect must be halted
+interfaces are stalled during reconfiguration. The interconnect must be halted
 and reconfigured in an appropriate state. Therefore, the runtime issues the
-\lstinline{IC_Sig} signal and waits for the interconnect to acknowledge this
-signal by \lstinline{IC_Rdy}. This implies, that the entire interconnect is
-halted and can safely be reset and reconfigured. Halting the interconnect is
-possible due to the \ac{FIFO} based interfaces, which are marked full or
-empty, respectively. Note, that transferring the interconnect's state might be
-possible via the interface to the processor, but is not desired, to eliminate
-dependencies between different interconnects. Saving a state would require the
-reconfigured interconnect to restore this state, even if its internal
-structure might differ significantly.
+\lstinline{IC_Sig} signal and waits for the acknowledgment by the interconnect
+via the \lstinline{IC_Rdy} signal. This implies, that the entire
+interconnect is halted and can safely be reset and reconfigured. Halting the
+interconnect is possible due to the \ac{FIFO} based interfaces, which are
+marked full or empty, respectively. Note, that transferring the interconnect's
+state might be possible via the interface to the processor, but is not
+desired, to eliminate dependencies between different interconnects. Saving a
+state would require the reconfigured interconnect to restore this state, even
+if its internal structure might differ significantly.
 
 \subsection{Software Delegate Mechanism}
 
@@ -339,16 +338,17 @@ As already covered in the protocol section, a request to a resource, either
 handled via a delegate thread in software or directly in hardware, consists
 out of the control word, followed by the original \ac{OSIF} command, i.e. the
 encoding of the command, followed by additional arguments. While the delegate
-thread translate the encoding into the appropriate system call executed by the
-operating system, a hardware resource must implement all logic independently
-of any \ac{OS} features. Thereby, since many system calls are performed in a
-blocking manner, the implementations of the resources incorporate scheduling
-components circumventing the scheduling of the operating system. Since the
-resources have no access to any scheduling components, they can only implement
-basic algorithms, for example \acl{FIFO}. However, for hardware threads,
-scheduling has only limited influence, since all threads can be executed in
-parallel. Since hardware resources are mainly targeting hardware to hardware
-communication, the limited scheduling capabilities are acceptable.
+thread translates the encoding into the appropriate system call executed by
+the operating system, a hardware resource must implement all logic
+independently of any \ac{OS} features. Thereby, since many system calls are
+performed in a blocking manner, the implementations of the resources
+incorporate scheduling components circumventing the scheduling of the
+operating system. Since the resources have no access to any scheduling
+components, they can only implement basic algorithms, for example \acl{FIFO}.
+However, for hardware threads, scheduling has only limited influence, since
+all threads can be executed in parallel. Since hardware resources are mainly
+targeting hardware to hardware communication, the limited scheduling
+capabilities are acceptable.
 
 Considering self-adapting systems with changing execution modes of threads
 suggests to reconfigure the mode of a resource analogously. For example, if
@@ -439,7 +439,7 @@ arbitration components are asynchronous, the external ports are buffered by
 additional \acp{FIFO}. While the incoming buffers are essential, the outgoing
 ones could be omitted. However, as it turned out during the implementation of
 different slave components connecting the interconnect signals asynchronously,
-timing becam a heavily limiting factor and even a small interconnect did not
+timing becomes a heavily limiting factor and even a small interconnect did not
 meet the required timing constraints. Therefore, the outgoing buffers shorten
 the critical path significantly and eliminate timing issues.
 
@@ -460,9 +460,9 @@ available at the incoming slave port and reads the first control word. States
 \emph{RO} and \emph{RD} then perform the routing by considering the
 destination address of the message and setting the appropriate select bit for
 the multiplexer. While \emph{RO} compares the destination address to the known
-ids of the output ports, \emph{RD} represent the default routing target. After
-determining the destination port for the message, the control word is written
-to the output in state \emph{C}, followed by the payload data in state
+ids of the output ports, \emph{RD} represents the default routing target.
+After determining the destination port for the message, the control word is
+written to the output in state \emph{C}, followed by the payload data in state
 \emph{P}. After the entire message is transferred, the router returns to its
 initial state \emph{W} and waits for the next message.
 
@@ -641,7 +641,7 @@ representative synchronization object. The following subsections present an
 explanation of the hardware implementation using \ac{HLS} and an evaluation of
 several turnaround times.
 \subsubsection{Mailbox}
-A mailbox constitute a basic synchronization primitive allowing to exchange
+A mailbox constitutes a basic synchronization primitive allowing to exchange
 single data words by providing thread safe put and get methods. In software,
 the mailbox is implemented as a memory area with protected access through a
 semaphore, counting the number of available words and handling blocking calls.
@@ -675,8 +675,8 @@ cycles between three main states \emph{REQ}, \emph{PUT} and \emph{GET},
 consisting out of multiple sub-states. \emph{REQ} handles the incoming request
 from the hardware threads, decodes them and enqueues them into the appropriate
 request buffers. Afterwards, \emph{PUT} and \emph{GET} check the queues for
-pending requests and process them. While put requests store the transmitted
-data words in the data buffer, get requests read out the stored words and
+pending requests and process them. While put-requests store the transmitted
+data words in the data buffer, get-requests read out the stored words and
 sends them back to the issuing threads. 
 
 While implementing this structure using Vivado HLS simplified the handling of
@@ -691,11 +691,11 @@ To measure the performance of the mailbox, table \ref{tab:mbox_turn} shows the
 turnaround times for combinations of different resource implementations,
 thread execution modes and processor loads averaged over 10000 measurements.
 The turnaround time represents the period between the execution of the put
-operation and the return of get operation. The destination thread performs an
+operation and the return of get-operation. The destination thread performs an
 \lstinline{MBOX_GET} and, since the targeted mailbox is empty, blocks in this
 call. After that, the source thread performs an \lstinline{MBOX_PUT} and, in
-consequence, the blocking get operation of the destination thread returns.
-Before the put operation and after the return of the get operation, both
+consequence, the blocking get-operation of the destination thread returns.
+Before the put-operation and after the return of the get operation, both
 threads save a time stamp, used to calculate the turnaround time as its
 difference. Since an application typically puts some load on the processor,
 the measurements were performed for both low and high system loads. While for
@@ -735,10 +735,10 @@ thread, avoiding an additional thread switch. The same reason applies for the
 hardware to software processing, since no thread switch from the delegate to
 the user thread is necessary.
 
-Alltogether, a hardware resources outperforms its software counterpart in
+Altogether, a hardware resource outperforms its software counterpart in
 every case a hardware thread is involved. However, it circumvents the
 scheduling of software threads by the operating system, which should be
-considered when selecting the implementation mode. Furhtermode, additional
+considered when selecting the implementation mode. Furthermore, additional
 hardware resources are required and many hardware resources may lead to timing
 issues.
 
@@ -746,7 +746,7 @@ issues.
 While the synchronization of hardware threads benefits significantly from an
 implementation of resources in hardware, data exchange is still limited by the
 performance of the shared memory interface. The currently implemented
-communication primitives does not provide an abstraction for data streaming
+communication primitives do not provide an abstraction for data streaming
 from one thread to another. Even though the memory interface provides fast
 access to the main memory, it does not support parallel access for multiple
 threads. Instead, all requests are serialized and processed sequentially. For
@@ -773,7 +773,7 @@ concurrently occurring reads or writes on the same pipe. This must be handled
 by the developer by introducing appropriate synchronization mechanisms and
 preventing concurrent requests.
 
-Table \ref{tab:pipe_api} show the \ac{API} of the ReconOS pipe for C,
+Table \ref{tab:pipe_api} shows the \ac{API} of the ReconOS pipe for C,
 \ac{VHDL} and \ac{HLS} implementations of threads.
 \begin{table}
 	\scriptsize
@@ -805,7 +805,7 @@ without modifications for software execution. The \ac{VHDL} function,
 additionally, include the \lstinline{i_osif}, \lstinline{o_osif},
 \lstinline{i_ram} and \lstinline{o_ram} records and provide the
 \lstinline{lenrt} output signal instead of a return value. To illustrate the
-usage of the pipe implementation, listing \ref{lst:pipe_exmpl} show an
+usage of the pipe implementation, listing \ref{lst:pipe_exmpl} shows an
 exemplary hardware thread written in Vivado HLS, reading data from the main
 memory and writing it to an outgoing pipe.
 \begin{lstlisting}[
@@ -920,7 +920,7 @@ the start of the read command and after the completion of the write command, the
 	\end{tabular}
 \end{table}
 The execution times in table \ref{tab:pipe_turn} result from transferring 512
-bytes or 128 words respectively and are averaged over 10000 measurements. As
+bytes or 128 words, respectively, and are averaged over 10000 measurements. As
 expected, the same relations as described for the mailbox can be applied,
 certainly with even more significant differences, especially for communication
 between threads of the same implementation mode. For example, the hardware

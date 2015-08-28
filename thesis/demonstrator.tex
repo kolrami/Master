@@ -72,27 +72,24 @@ highly nonlinear behavior.
 %	\caption{Different variants of Stewart platforms \citep[adopted from][]{Szu13}}
 %	\label{fig:stewart_architectures}
 %\end{figure}
-The different variant of a Stewart platform vary in the type of the
+The different variants of a Stewart platform vary in the type of the
 connections and actuators, as well as their spacial configuration, i.e. the
 positioning of the different connections. The most common realization utilizes
 six prismatic actuator, for example hydraulic pistons or linear motors. It is
 often referred to as \emph{Hexapod} and associated with the term Stewart
 platform, not least because of its similarity to the original design proposed
 by Stewart. Other architectures utilize fixed prismatic or rotary actuators to
-vary the lengths of the six legs. All of these variants have its unique
+vary the lengths of the six legs. All of these variants have their unique
 benefits and drawbacks. Since rotary actuators can be realized as commonly
 available servo motors, this design approach gained popularity, especially for
 low-cost designs and first prototypes. Therefore, this thesis focuses on a
-servo-based architecture as shown in figure \ref{fig:stewart}.
+servo-based architecture, as shown in figure \ref{fig:stewart}.
 \begin{figure}
 	\centering
 	\includegraphics[width=6cm]{../figures/stewart}
-	\caption{Construction of the Stewart platform prototype}
+	\caption{Construction of servo based Steward platform}
 	\label{fig:stewart}
 \end{figure}
-Note, that the mechanical design and construction was not done in this thesis,
-but adopted from a previous work and extended by constructions for a stable
-base and the touchscreen.
 
 \subsection{Construction and Notation}
 This section introduces the basic notations, coordinate systems and dimensions
@@ -129,10 +126,10 @@ platform, connected by six legs. For both, the base and platform, a particular
 coordinate system is introduced as shown in figures \ref{fig:stewart_base} and
 \ref{fig:stewart_platform}. While the origin of the base coordinate system $B$
 is located in the center of the base and at the same height as the shaft of
-the servos, the origin of platform's coordinate system $P$ is located exactly
-at the height of the platform joints $J_i$. With regard to the platform's
-coordinate system, the coordinates of the six joints are annotated in figure
-\ref{fig:stewart_platform}.
+the servos, the origin of the platform's coordinate system $P$ is located
+exactly at the height of the platform joints $J_i$. With regard to the
+platform's coordinate system, the coordinates of the six joints are annotated
+in figure \ref{fig:stewart_platform}.
 
 Additionally, each servo specifies its own coordinate system $S_i$, located at
 the intersection point of the servo's shaft and the servo's joint position.
@@ -324,6 +321,25 @@ numerically calculating optimal parameters. However, the focus of this thesis
 does not lay on controller design and, therefore, appropriate values where
 determined by systematic experiments.
 
+\section{Construction}
+To get an impression of the final prototype, figure \ref{fig:stewart_photo}
+shows an image of its construction.
+\begin{figure}
+	\centering
+	\includegraphics[width=8cm]{../figures/stewart_photo}
+	\caption{The Ball on Plate prototype}
+	\label{fig:stewart_photo}
+\end{figure}
+The Stewart platform itself was not build in the scope of this thesis but
+adopted from a previous work. It consists out of six standard servos and
+perspex elements for the base and platform, as well as six metal legs with
+appropriate joints. On top of the platform, the touchscreen is mounted inside
+of a wooden frame and connected via cables to the touch controller mounted
+under the footing of the prototype. Along with the PmodCON3 modules for
+driving the servos, the ZedBoard is also mounted there. Since the system
+itself boots autonomously from the SD card of the ZedBoard, only a power
+supply and, optionally, a network connectivity for the web interface is required.
+
 \section{Implementation}
 While the previous sections covered the fundamentals for the demonstrator and
 addressed the main problem definitions, this section focuses on the
@@ -349,7 +365,7 @@ threads can be instantiated.
 
 While the \emph{Touch} and \emph{Servo} threads must be implemented as
 hardware threads, allowing them to interface with the I/O ports of the FPGA,
-the remaining partitioning can be performed arbitrarily. Both the control and
+the remaining partitioning can be performed arbitrarily. Both, the control and
 inverse kinematics implementations are available for hardware synthesis, as
 well as for software compilation.
 
@@ -365,7 +381,7 @@ representing the ball's position in the plate's coordinate system by applying
 translations and scaling. Additionally, to reduce noise in the ball's
 position, multiple measurements are performed in a single scan cycle. Thereby,
 a series of measurements is discarded, when a pair of consecutive readouts
-differs noticeably, for example because of insufficient pressure applied to
+differs noticeably, for example, because of insufficient pressure applied to
 the touchscreen. Only if all measurements passe the validity check, their
 average is used for calculating the ball's position. Since this procedure
 results in a varying acquisition time, the touch thread also monitors the
@@ -522,7 +538,7 @@ not included in the simulation results and software threads running on an
 operating system are heavily dynamic and unpredictable. Especially, in case of
 self-adaptive systems acquiring parameters at runtime, long running
 simulations are not applicable. Therefore, learning strategies observing the
-state of the system and its work load seem to be more suitable for power
+state of the system and its work load seems to be more suitable for power
 estimation at runtime. While turning on and off threads or disabling external
 components temporarily, the system might be able to learn the effects of a
 single component under different load situations.
@@ -630,7 +646,7 @@ The Ball on Plate demonstrator consist out of a variety of hardware threads,
 implemented using a combination of Vivado HLS and \ac{VHDL}. During
 development it clearly turned out, that \ac{HLS} approaches simplify the
 development process and reduce the implementation time significantly.
-Especially the advanced debugging capabilities, by executing the hardware
+Especially, the advanced debugging capabilities, by executing the hardware
 implementation in software, avoid time consuming \ac{RTL} simulations and
 allow a more easy verification of the algorithm's correctness. It also clearly
 turned out, that \ac{HLS} has its strengths in complex arithmetic calculations
@@ -647,12 +663,12 @@ instantiates a scaling entity to transform the voltages into coordinates in
 the plate's coordinate system.
 
 \subsection{Performance}
-Incorporating the \ac{FPGA} into the system and spending spending additional
-effort for developing hardware implementations of different threads promises
-significant speedups and lower energy consumption. To demonstrate the possible
-benefits in utilizing hardware threads, this section presents a performance
-evaluation of the system and compares different implementation modes of the
-various threads and resources.
+Incorporating the \ac{FPGA} into the system and spending additional effort for
+developing hardware implementations of different threads promises significant
+speedups and lower energy consumption. To demonstrate the possible benefits in
+utilizing hardware threads, this section presents a performance evaluation of
+the system and compares different implementation modes of the various threads
+and resources.
 
 Table \ref{tab:demo_perf} and figure \ref{fig:demo_perf} present the measured
 performance characteristics, i.e. the execution times, as well as the power
@@ -686,6 +702,12 @@ different threads.
 	\hline
 	\end{tabular}
 \end{table}
+\begin{figure}
+	\centering
+	\includegraphics{../figures/demo_perf}
+	\caption{Performance evaluation of demonstrator}
+	\label{fig:demo_perf}
+\end{figure}
 The execution times are measured as described in section
 \ref{sssec:processing} and listed for the \emph{Touch}, \emph{Control} and
 \emph{Inverse} threads. For the \emph{Touch} thread, it does not include the
@@ -694,17 +716,11 @@ controller, averaging multiple values and eventually rejecting invalid
 measurements. The overhead is calculated by measuring the time needed for the
 entire cycle and subtracting the single execution times. Note, that the
 execution time of the \emph{Inverse} thread also include communication
-overhead, since it represent the time required for calculating all six legs,
+overhead, since it represents the time required for calculating all six legs,
 determined as the difference of start time of first leg and end time of last
 leg. The power is measured utilizing the LTC4151 \ac{IC} as described in
 section \ref{sssec:power}. All measurements where averaged over 1000 samples,
 acquired during $\SI{20}{\second}$.
-\begin{figure}
-	\centering
-	\includegraphics{../figures/demo_perf}
-	\caption{Performance evaluation of demonstrator}
-	\label{fig:demo_perf}
-\end{figure}
 
 As already predicted when designing the system, the inverse kinematics require
 the most computation time during the scan cycle and significantly benefits
@@ -782,8 +798,7 @@ XPower tool from Xilinx is used for analysis of the implemented logic. Table
 \begin{table}
 	\scriptsize
 	\centering
-	\captionabove{Power consumption estimated by XPower for different \ac{FF}
-	toggle rates}
+	\captionabove{Power consumption estimated by XPower for different \ac{FF} toggle rates}
 	\label{tab:xpower}
 	\begin{tabular}{lccc}
 	\hline
