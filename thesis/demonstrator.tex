@@ -3,7 +3,7 @@
 \label{chap:demonstrator}
 
 To demonstrate the aspects described in the previous chapters and its
-feasibility for a \ac{PAC} design in a real world application, this chapeter
+feasibility for a \ac{PAC} design in a real world application, this chapter
 presents a Ball on Plate system. It tries to balance a ball by tracking its
 position and adjusting the angle of an underlying plate, thus allowing to
 compensate external impacts and keeping the ball in the center. Therefore, the
@@ -121,15 +121,15 @@ relevant notations.
 	\label{fig:stewart_notation}
 \end{figure}
 
-As already described, the system consists out of a lower base and an upper
-platform, connected by six legs. For both, the base and platform, a particular
-coordinate system is introduced as shown in figures \ref{fig:stewart_base} and
+The system consists out of a lower base and an upper platform, connected by
+six legs. For both, the base and platform, a particular coordinate system is
+introduced as shown in figures \ref{fig:stewart_base} and
 \ref{fig:stewart_platform}. While the origin of the base coordinate system $B$
-is located in the center of the base and at the same height as the shaft of
+is located at the center of the base and at the same height as the shaft of
 the servos, the origin of the platform's coordinate system $P$ is located
 exactly at the height of the platform joints $J_i$. With regard to the
-platform's coordinate system, the coordinates of the six joints are annotated
-in figure \ref{fig:stewart_platform}.
+platform's coordinate system, the coordinates (in $\SI{}{\centi\meter}$) of
+the six joints are annotated in figure \ref{fig:stewart_platform}.
 
 Additionally, each servo specifies its own coordinate system $S_i$, located at
 the intersection point of the servo's shaft and the servo's joint position.
@@ -139,33 +139,33 @@ or down, depending of the servo, i.e. for even servos it points down and for
 odd servos it point up. Figure \ref{fig:stewart_side} illustrates the servo
 coordinate systems and shows the angle $\alpha$ of the servo arm. The
 different coordinate systems for even and odd servos allow to handle all
-servos analogously and abstract from the physical configuration of the servo
-arms.
+servos analogously and to abstract from the physical configuration of the
+servo arms.
 
 Calculating the inverse kinematics of the platform requires to transform the
-joints of the platform to the corresponding servo coordinate systems. This is
-done by applying two transformations successively, first from $P$ to $B$ and
-then from $B$ to $S_i$. While the transformation to the base coordinate system
-$B$ is performed by adding an offset $C_h$ to the z coordinate, transforming
-the resulting point to the servo coordinate system $S_i$ requires more
-sophisticated calculations. At first, the base coordinate system is rotated to
-match the y axis of the appropriate servo coordinate system, followed by
-mirroring the x and z axis to fit the desired orientations. Finally, the
-origin is translated by $C_{sx}$ and $C_{sy}$ to match the servo positions.
+joints of the platform to their corresponding servo coordinate systems. This
+is done by applying two transformations successively, first from $P$ to $B$
+and then from $B$ to $S_i$. While the transformation to the base coordinate
+system $B$ is performed by adding an offset $C_h$ to the z coordinate,
+transforming the resulting point to the servo coordinate system $S_i$ requires
+more sophisticated calculations. At first, the base coordinate system is
+rotated to match the y axis of the appropriate servo coordinate system,
+followed by mirroring the x and z axis to fit the desired orientations.
+Finally, the origin is translated by $C_{sx}$ and $C_{sy}$ to match the servo
+positions.
 
 \subsection{Inverse Kinematics}
 Taking the basic notations of the previous section as a basis, the inverse
 kinematic calculates the required servo angles for a desired angle of the
 platform. Unlike for serial manipulators, the inverse kinematics of a Stewart
 platform has a unique analytic solution, while the forward kinematics problem
-is highly nonlinear and requires iterative approaches. Furthermore, the
-low-cost variant utilizing rotary instead of linear actuators introduces
-additional calculations to determine the required servo angles out of the
-desired leg lengths.
+is highly nonlinear. Furthermore, the low-cost variant utilizing rotary
+instead of linear actuators introduces additional calculations to determine
+the required servo angles out of the desired leg lengths.
 
 Assuming, that the desired angle of the platform is given by a rotation axis
 $r$ and a rotation angle $r_a$, equation \ref{eq:platform_rot} shows the
-calculation of the required platform joint's positions.
+calculation of the required platform joints' positions.
 \begin{equation}
 J'_i = 
 \begin{pmatrix}
@@ -175,21 +175,21 @@ J'_i =
 \end{pmatrix}
 \label{eq:platform_rot}
 \end{equation}
-Transforming these positions to the appropriate servo coordinate systems as
+Transforming these points to their related servo coordinate systems as
 described in the previous section, allows to calculate the distance between
 the servo joint and the platform joint. While for a linear actuator this would
 be the solution, rotary actuators can not vary the length of the legs
 directly. Therefore, the angle $\alpha$ must be adjusted in a way, that the
-distance between its joint and the platform joint is equal to the fixed leg
-length $C_l$. While there exist an analytic solution for this problem, it
+distance between the servo joint and the platform joint is equal to the fixed
+leg length $C_l$. While there exist an analytic solution for this problem, it
 includes terms of higher degree and complex operations like $\arctan$ and
 square roots. Therefore, an iterative approach was chosen to find the
 appropriate angle. More details on the concrete implementation of this
 iterative approach will be covered in the implementation section.
 
 \section{Touchscreen}
-To track the ball's position on the plate, a resistive touchscreen is mounted
-on top of the plate and touched by the ball. Compared to, for example camera
+To track the ball's position, a resistive touchscreen is mounted
+on top of the plate and touched by the ball. Compared to, for example, camera
 based tracking techniques, a touchscreen provides low-latency data,
 independent from external influences like lighting conditions or camera
 movements. Furthermore, it requires less computational effort, as well as a
@@ -207,24 +207,24 @@ film, both coated with a conductor \ac{ITO} \citep{Wal12}, as shown in figure
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\includegraphics{../figures/touch_build}
-		\caption{Construction of resistive touchscreen}
+		\caption{Construction of a resistive touchscreen}
 		\label{fig:touch_build}
 	\end{subfigure}
 	\begin{subfigure}{0.49\textwidth}
 		\centering
 		\includegraphics{../figures/touch_five}
-		\caption{Five-wire touchscreen}
+		\caption{Model of a five-wire touchscreen}
 		\label{fig:touch_five}
 	\end{subfigure}
 	\caption{Analog resistive touchscreen technology \citep[adapted from][]{Wal12}}
 	\label{fig:touch}
 \end{figure}
-The two conductive surfaces are facing each other and
-are separated by insulating spacer dots \citep{Wal12}. When a voltage is
-applied across the surfaces and the flexible film is pressed down, the two
-surfaces make electrical contact, resulting in a voltage divider created by
-the resistance of the \ac{ITO}. Measuring the ratio of the different voltages
-allows to calculate the touch position.
+The two conductive surfaces are facing each other and are separated by
+insulating spacer dots \citep{Wal12}. When a voltage is applied across the
+surfaces and the flexible film is pressed down, the two surfaces make
+electrical contact, resulting in a voltage divider created by the resistance
+of the \ac{ITO}. Measuring the ratio of the voltages allows to calculate the
+touch position.
 
 Basically, there exist three major variants of resistive touchscreens, namely
 four-wire, five-wire and eight-wire touchscreens, differing in the number of
@@ -233,9 +233,8 @@ touchscreen was used as shown in figure \ref{fig:touch_five}, due to its
 increased durability and sustainability. The X and Y voltages are applied to
 the four corners of the lower glass, while the upper film is used only as a
 contact point to measure the voltage at the touch position (wiper). To
-determine, for example the X position, a voltage is applied to the two left
-corners, while the two right corners are connected to ground and the voltage
-on the wiper is measured.
+determine, for example, the X position, a voltage is applied to the two left
+corners, while the two right corners are connected to ground.
 
 \subsection{Interfacing the Touchscreen}
 To interface the touchscreen, voltage needs to be applied to different corners
@@ -252,7 +251,7 @@ used. While the ZedBoard provides both digital I/O and an on-chip \ac{ADC},
 its input requirements are limited and additional circuits would be required.
 Since circuit design is not target of this thesis, a pre-assembled evaluation
 module was chosen. It provides an appropriate connector for the touchscreen
-and interfaces with the \ac{FPGA} via an \ac{SPI} interface as shown in figure
+and interfaces with the \ac{FPGA} via a \ac{SPI} interface as shown in figure
 \ref{fig:touch_spi}.
 \begin{figure}
 	\centering
@@ -292,7 +291,7 @@ technology \citep{Joh05}. Even complex applications comprise control networks
 out of basic \ac{PID} loops.
 
 Figure \ref{fig:pid_rep} illustrates the concept of a \ac{PID} controller with
-regard to the Ball on Plate application as the process of the control loop.
+regard to the Ball on Plate application.
 \begin{figure}
 	\centering
 	\centering
@@ -310,8 +309,9 @@ acceleration, the platform needs to be rotated around an axis perpendicular to
 the acceleration vector and by an angle proportional to the length of the
 vector. These two values can be determined by applying geometric calculations
 and fed into the inverse kinematics algorithm to achieve the correct rotation.
-Note, that the controller output vector does generally not point to the target
-position, since the derivative term compensates the velocity of the ball.
+Note, that the controller's output vector does generally not point to the
+target position, since the derivative term compensates the velocity of the
+ball.
 
 While the implementation of a \ac{PID} controller is well-known, the
 challenging part is to tune its parameters, i.e. the factors for the
@@ -382,7 +382,7 @@ translations and scaling. Additionally, to reduce noise in the ball's
 position, multiple measurements are performed in a single scan cycle. Thereby,
 a series of measurements is discarded, when a pair of consecutive readouts
 differs noticeably, for example, because of insufficient pressure applied to
-the touchscreen. Only if all measurements passe the validity check, their
+the touchscreen. Only if all measurements pass the validity check, their
 average is used for calculating the ball's position. Since this procedure
 results in a varying acquisition time, the touch thread also monitors the
 actual period of time past the last measurement and reports it to the control
@@ -390,7 +390,7 @@ thread.
 
 \paragraph{Control} The \emph{Control} thread implements the \ac{PID}
 controller as described in the previous section. Therefore, it receives the
-ball position from the \emph{Touch} thread, calculates the error vector and
+ball's position from the \emph{Touch} thread, calculates the error vector and
 applies the \ac{PID} control algorithm as sketched in listing \ref{lst:pid}
 for the x coordinate.
 \begin{lstlisting}[
@@ -442,7 +442,7 @@ $\SI{22}{\milli\second}$, resulting in the minimal or maximal angle,
 respectively. Additionally to the control signal, the servos require an
 external power supply, since the ZedBoard is not capable of providing
 sufficient power. Therefore, the PmodCON3 modules provide a dedicated power
-input and connect the control signals directly to the servo.
+input and connect the control signals to the servo.
 
 \section{Self-Awareness}
 While the system described so far implements the basic functionality of the
@@ -482,14 +482,13 @@ of the system.
 The self-properties are acquired by the threads of the system and stored in
 the globally accessible shared memory region. While the acquiring of the
 properties is typically performed in parallel to the regular processing, the
-additional memory access introduces an overhead and might effects the
-overall system performance. However, since the shared memory is not utilized
-so far, the overhead can be neglected. For software threads a
-single word access is, obviously, not performance critical and a hardware
-thread requires less than 10 clock cycles for an access via the memory
-subsystem. It does not need to block until the word is written to the system
-memory, but can proceed after the request is written to the \ac{MEMIF}
-\ac{FIFO}.
+additional memory access introduces an overhead and might effects the overall
+system performance. However, since the shared memory is not utilized so far,
+the overhead can be neglected. For software threads, a single word access is
+not performance critical and a hardware thread requires less than 10 clock
+cycles for an access via the memory subsystem. It does not need to block until
+the word is written to the system memory, but can proceed after the request is
+written to the \ac{MEMIF} \ac{FIFO}.
 
 To demonstrate self-adaptive capabilities of the system, the power
 consumption, the ball's position on the plate and performance measures of the
@@ -498,8 +497,8 @@ different threads are acquired and processed by the self-expression engine.
 \subsubsection{Power Consumption}
 \label{sssec:power}
 The power consumption of the system is affected by many components and can be
-measured at different levels of granularity, ranging from different threads
-through the entire Zynq \ac{SoC} to external devices like the touch
+measured at different levels of granularity, ranging from different threads,
+through the entire Zynq \ac{SoC}, to external devices like the touch
 controller. For a sophisticated self-expression strategy, a fine-grained
 measurement of the different component's power consumption would be desirable.
 
@@ -580,22 +579,23 @@ performance needs to be monitored continuously and observed over time.
 
 To provide performance measurements during runtime, the threads must save
 globally valid time stamps at specific points during execution. Therefore, a
-dedicated performance thread receives request from the different threads via a
-mailbox implemented in hardware, containing all necessary information to
-identify the thread and its execution state. While this approach introduces a
+dedicated performance thread receives requests from the different threads via
+a mailbox implemented in hardware, containing all necessary information to
+identify the thread and its execution state. While this approach introduces an
 inaccuracy due to the propagation time of the message from the sending thread
 to the performance thread, it becomes necessary to allow hardware threads
 generated using Vivado HLS to capture performance information. Vivado HLS does
 not provide a way to influence the scheduling of operations directly, whereby
 performance measurements must be executed in specific states. Utilizing the
-sequential meaning of \ac{FIFO} accesses via the mailbox call forces the execution in the desired state.
+sequential meaning of \ac{FIFO} accesses via the mailbox call forces the
+execution in the desired state.
 
 Considering the propagation times of a hardware mailbox presented earlier, the
 additional inaccuracy introduced becomes negligible. Even for software threads
 the overhead is acceptable, since anyway, they need to access a globally valid
-time stamp through the system bus. Furthermore, the approach of performance
-threads unifies the performance evaluation for all types of threads without
-additional drivers, signals or hardware components.
+time stamp through the system bus. Furthermore, the approach of a performance
+thread unifies the performance evaluation for all types of threads without the
+need for additional drivers, signals or hardware components.
 
 \subsection{Adaptation Strategies}
 Based on the self-properties described in the previous section, the
@@ -642,25 +642,24 @@ discussed self-adaptation strategies are evaluated and to what extend they
 influence the system's power consumption.
 
 \subsection{\acl{HLS}}
-The Ball on Plate demonstrator consist out of a variety of hardware threads,
-implemented using a combination of Vivado HLS and \ac{VHDL}. During
-development it clearly turned out, that \ac{HLS} approaches simplify the
-development process and reduce the implementation time significantly.
-Especially, the advanced debugging capabilities, by executing the hardware
+The Ball on Plate demonstrator consists out of a variety of hardware threads,
+implemented using combinations of Vivado HLS and \ac{VHDL}. During development
+it clearly turned out, that \ac{HLS} approaches simplify the development
+process and reduce the implementation time significantly. Especially, the
+advanced debugging capabilities, for example executing the hardware
 implementation in software, avoid time consuming \ac{RTL} simulations and
 allow a more easy verification of the algorithm's correctness. It also clearly
 turned out, that \ac{HLS} has its strengths in complex arithmetic calculations
 including fixed point data types and divisions, while it is not useful for
 implementing timing critical functions. For example, the inverse kinematics
-include many fixed point calculations for transformations between the
+include many fixed point calculations for the transformations between the
 different coordinate systems, while the implementation of the \ac{SPI}
 protocol for the touch controller or the generation of a \ac{PWM} signal for
 the servos require clock accurate timing. However, even if a hardware thread
-is implemented in either \ac{VHDL} or \ac{HLS}, it can still benefit from
-both's advantages by instantiating custom user logic generated using \ac{HLS}
-techniques in a \ac{VHDL} thread. For example, the \emph{Touch} thread
-instantiates a scaling entity to transform the voltages into coordinates in
-the plate's coordinate system.
+is implemented in \ac{VHDL}, it can still benefit from both's advantages by
+instantiating custom user logic generated using \ac{HLS} techniques. For
+example, the \emph{Touch} thread instantiates a scaling entity to transform
+the voltages into coordinates in the plate's coordinate system.
 
 \subsection{Performance}
 Incorporating the \ac{FPGA} into the system and spending additional effort for
@@ -671,13 +670,12 @@ the system and compares different implementation modes of the various threads
 and resources.
 
 Table \ref{tab:demo_perf} and figure \ref{fig:demo_perf} present the measured
-performance characteristics, i.e. the execution times, as well as the power
+performance characteristics, i.e. the execution times and the power
 consumptions for different configurations of the system, varying in number and
 implementation modes of threads and resources. \emph{HC} and \emph{SC}
 indicate the mode of the control thread, \emph{HI} and \emph{SI} the number of
 threads solving the inverse kinematics problem and \emph{HIc} and \emph{SIc}
-the implementation mode of the resources used for communication between the
-different threads.
+the implementation modes of the resources.
 \begin{table}
 	\scriptsize
 	\centering
@@ -715,7 +713,7 @@ idle time until the next read, but only the time needed to interface the touch
 controller, averaging multiple values and eventually rejecting invalid
 measurements. The overhead is calculated by measuring the time needed for the
 entire cycle and subtracting the single execution times. Note, that the
-execution time of the \emph{Inverse} thread also include communication
+execution time of the \emph{Inverse} thread also includes communication
 overhead, since it represents the time required for calculating all six legs,
 determined as the difference of start time of first leg and end time of last
 leg. The power is measured utilizing the LTC4151 \ac{IC} as described in
@@ -726,20 +724,20 @@ As already predicted when designing the system, the inverse kinematics require
 the most computation time during the scan cycle and significantly benefits
 from a hardware implementation in several aspects. First of all, a single
 software thread needs around $\SI{14}{\milli\second}$ for its calculation,
-which is far beyond the targeted scan cycle rate of $\SI{10}{\milli\second}$.
-Even two software threads are straight at the limit and do not scale linearly,
-due to other task executed on the processor. In comparison, the hardware
-implementation provides a speedup of 14 with regard to the single thread
-configuration and even up to 28 with regard to multiple threads. Furthermore,
-the hardware threads scale linearly, i.e. doubling the number of threads
-halves the execution time. A single hardware thread takes
+which is far beyond the targeted scan cycle interval of
+$\SI{10}{\milli\second}$. Even two software threads are straight at the limit
+and do not scale linearly due to other tasks executed on the processor. In
+comparison, the hardware implementation provides a speedup of 14 with regard
+to the single thread configuration and even up to 28 with regard to multiple
+threads. Furthermore, the hardware threads scale linearly, i.e. doubling the
+number of threads halves the execution time. A single hardware thread takes
 $\SI{0.988770}{\milli\second}$, while two hardware threads take
 $\SI{0.494335}{\milli\second}$, resulting in a speedup of $\nicefrac{\SI{0.988
 770}{\milli\second}}{\SI{0.494335}{\milli\second}}=2.000202$. In applications
 requiring even shorter scan cycles, a hardware implementation can provide huge
 benefits. Note, that five inverse threads provide no more speedup compared to
 three, since in both cases two executions are necessary. Only a sixth thread
-would provide a further speedup, but due to resource limitation cause by
+would provide a further speedup, but due to resource limitation caused by
 insufficient \ac{DSP} blocks, six threads could not be implemented on the
 ZedBoard. Not only the processing performance is effected by the
 implementation mode, but also the power consumption can be reduced by
@@ -752,20 +750,20 @@ also achieves a speedup of approximately 10. Since the control algorithm
 cannot be parallelized and has significantly lower processing requirements,
 this speedup is less prominent and, furthermore, has no influence on the
 system's power consumption. However, the hardware implementation offers less
-overhead due to the direct communication in hardware and a clearly lower
-jitter in execution time. While for this application the jitter is not too
-important, it might be relevant for jitter sensitive applications and a reason
-for a hardware thread implementation.
+overhead due to the direct communication in hardware and a lower jitter in
+execution time. While for this application the jitter is not too important, it
+might be relevant for other sensitive applications and a reason for a hardware
+implementation.
 
 Besides the implementation modes of the threads, the modes of the resources
 are influencing the performance of the system. As the last rows of table
 \ref{tab:demo_perf} indicate, the overhead introduced by the software
 resources heavily influences the overall performance. While, for example in
-case \emph{HC, 5 HI, HIc} the overhead constitute only 0.64\% of the inverse
-and control threads' execution time, in case \emph{HC, 5 HI, SIc}, it account
-for 43.82\%. Since it is far below the minimal scan cycle time, the overhead
-is still acceptable for this application, but for more low-latency purposes,
-it might be an important consideration.
+case \emph{HC, 5 HI, HIc} the overhead constitutes only 0.64\% of the inverse
+and control threads' execution time, in case \emph{HC, 5 HI, SIc}, it accounts
+for 43.82\%. Since it is far below the minimal scan cycle interval, the
+overhead is still acceptable for this application. However, for low-latency
+purposes it might be an important consideration.
 
 \subsection{Self-Adaptation and Power Consumption}
 \begin{figure}
@@ -780,18 +778,17 @@ the closed loop controller and, thereby, extending idle periods. Figure
 \ref{fig:selfadapt_pw} shows an exemplary execution and how the adaptation in
 scan rate effects the overall power consumption of the system. It clearly
 shows the relation of the two variables and that the system is able to reduce
-its power consumption by using self-adaptation techniques. However, these
-measurements were made with the inverse kinematics calculated in software,
-which is, as shown in the previous section, not optimal in terms of processing
-performance. However, in general, it might be an option if other applications
-require resources on the \ac{FPGA}. When investigating the effect of the scan
-rate with the inverse kinematics implemented in hardware, no change in power
-consumption could be measured via the LTC4151 \ac{IC}. The LTC4151 has a
-resolution of $\SI{20}{\micro\volt}$ \citep{LTC4151}, which corresponds to
+its power consumption by using self-adaptation techniques. These measurements
+were made with the inverse kinematics calculated in software, which is, as
+shown in the previous section, not optimal in terms of processing performance.
+In general, it might be an option if other applications require resources on
+the \ac{FPGA}. When investigating the effect of the scan rate with the inverse
+kinematics implemented in hardware, no change in power consumption could be
+measured via the LTC4151 \ac{IC}. The LTC4151 has a resolution of
+$\SI{20}{\micro\volt}$ \citep{LTC4151}, which corresponds to
 $\SI{0.024}{\watt}$, and a conversion rate of typically $\SI{7.5}{\hertz}$,
 i.e. a single measurement takes around $\SI{130}{\milli\second}$. To get an
-impression of the power consumption of the system and verify, that the
-expected change is below the measurement accuracy, the already mentioned
+impression of the power consumption of the system, the already mentioned
 XPower tool from Xilinx is used for analysis of the implemented logic. Table
 \ref{tab:xpower} shows the power consumption of the threads for different
 \ac{FF} toggle rates.
@@ -815,6 +812,5 @@ XPower tool from Xilinx is used for analysis of the implemented logic. Table
 	\end{tabular}
 \end{table}
 Even with a maximum toggle rate of 100\% the total power consumption of all
-processing threads is beneath the resolution of the LTC4151. Furthermore, the
+processing threads is below the resolution of the LTC4151. Furthermore, the
 conversion rate is below the slowest possible cycle rate of the system.
-Therefore, it is not possible to measure any difference in power consumption.
