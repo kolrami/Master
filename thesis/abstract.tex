@@ -5,8 +5,20 @@ exceeding the traditional control and automation tasks. To accomodate these
 new challenges, the so-called \ac{PAC} was introduced, combining the
 advantages of traditional \acp{PLC} and \acp{PC}. The recent versions,
 additionally, incorporate custom hardware for high-performance or low-latency
-tasks, implemented on an \ac{FPGA}. The goal of this master project is to
-develop an adaptive PAC, based on a heterogeneous reconfigurable
-hardware/software architecture (ReconOS), with a focus on communication,
-programmability and self-adaptation strategies.
+tasks, implemented on a \ac{FPGA}. This thesis investigates the feasibility of
+a heterogeneous reconfigurable hardware/software architecture (ReconOS) for
+\acp{PAC}, with a focus on communication, programmability and self-adaptation
+strategies.
+
+The integration of \ac{HLS} approaches into the ReconOS toolchain reduces the
+implementation effort for hardware threads considerably and lowers the entry
+barrier for software developers. Combined with a newly developed hardware
+interconnect for low-latency and jitter-free communication between hardware
+threads providing a speedup of up to 100, the feasibility of the ReconOS
+framework for modern \ac{PAC} devices was proven by a Ball on Plate
+demonstrator. By incorporating hardware accelerated threads, a speedup of
+around 14 could be achieved and the power consumption could be lowered by 4\%.
+Furthermore, self-adaption strategies were investigated and integrated into
+the demonstrator, adapting parameters of the system to optimize the energy
+consumption.
 \end{abstract}

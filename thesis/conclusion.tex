@@ -18,7 +18,7 @@ devices is addressed, by applying the multithreaded programming model based on
 the ReconOS framework and extending it with support for \ac{HLS}. By
 integrating it seamlessly into the existing toolchain and providing a unified
 program description for both hardware and software implementation, its
-feasibility and advantages for several applications was proven.
+feasibility and advantages were proven.
 
 Based on the extended ReconOS framework, shortcomings of the current
 implementation were addressed, limiting the benefits for its usage in
@@ -30,10 +30,13 @@ developed. It allows hardware threads to communicate directly, without
 interfacing the processor and reduces the communication overhead and jitter.
 Based on an evaluation of related work, the new interconnect architecture was
 proposed and extensively evaluated. By comparing several aspects of an
-application, the benefits of the new interconnect were clearly stated.
-Additionally, with regard to current research on self-adapting systems,
-considerations for reconfiguring the interconnect were made and a working
-prototype was presented.
+application, the benefits of the new interconnect were clearly stated. For
+example, a mailbox call could be speed up by a factor of more than 100 and a
+typical image processing application gains a speedup of more than three
+compared to a classical implementation using shared memory. Additionally, with
+regard to current research on self-adapting systems, considerations for
+reconfiguring the interconnect were made and a working prototype was
+presented.
 
 Since the self-adapting capabilities are highly relevant in current research
 and for future \ac{PAC} applications, the third part of this thesis addressed
@@ -43,7 +46,7 @@ and software threads implemented traditionally and with the use of
 \ac{HLS}, the new interconnect architecture, as well as self-adaptation
 strategies to minimize power consumption. An extensive evaluation of this
 system was presented and its feasibility of the presented approaches in a
-real-world \ac{PAC} application was proven.
+real-world \ac{PAC} application was proven. Utilizing the \ac{FPGA} for computationally intensive tasks provided a speedup of more than 14 and lowered the energy consumption by, in average, 4\%.
 
 \section{Future Work}
 While this thesis introduced new ideas and developed prototypical
