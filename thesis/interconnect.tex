@@ -120,7 +120,7 @@ architecture developed and presented in this thesis.
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/interconnect}
-	\caption{Reconfigurable interconnect}
+	\caption{Integration of reconfigurable interconnect into ReconOS architecture}
 	\label{fig:interconnect}
 \end{figure}
 It seamlessly integrates into the existing ReconOS architecture by utilizing
@@ -161,7 +161,7 @@ control flag.
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/proto}
-	\caption{Control message preceding each message}
+	\caption{Structure of control message introduced for the interconnect}
 	\label{fig:proto}
 \end{figure}
 They consist out of a source and destination, as well as a length field,
@@ -298,7 +298,7 @@ by a flag indicating the implementation mode. Listing
 \lstinline{MBOX_GET} implementation.
 \begin{lstlisting}[
 	language=C,
-	caption={Excerp from the \lstinline{mbox_get} implementation},
+	caption={Implementation of the abstraction layer for \lstinline{MBOX_GET}},
 	label={lst:mbox_get},
 	float=tb
 ]
@@ -367,7 +367,7 @@ generation of an appropriate interconnect. Listing \ref{lst:hwres_cfg} shows
 an example of two mailboxes, one implemented in software, the other one
 implemented in hardware.
 \begin{lstlisting}[
-	caption={Excerp from the ReconOS configuration},
+	caption={Specificaion of hardware and software resources in the ReconOS configuration},
 	label={lst:hwres_cfg},
 	float=tb
 ]
@@ -420,7 +420,7 @@ resources and are generated accordingly during implementation.
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/crossbar}
-	\caption{Crossbar interconnect}
+	\caption{Architecture of crossbar interconnect}
 	\label{fig:crossbar}
 \end{figure}
 The procedure of routing a message from a master port to the appropriate
@@ -451,7 +451,7 @@ as illustrated in figure \ref{fig:router_fsm}.
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/router_fsm}
-	\caption{\acs{FSM} of router}
+	\caption{\acs{FSM} of router component of interconnect}
 	\label{fig:router_fsm}
 \end{figure}
 In its initial state \emph{W}, the router waits for a message becoming
@@ -483,7 +483,7 @@ figure \ref{fig:arbiter_fsm}.
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/arbiter_fsm}
-	\caption{\acs{FSM} of arbiter}
+	\caption{\acs{FSM} of arbiter component of interconnect}
 	\label{fig:arbiter_fsm}
 \end{figure}
 Initially in state \emph{W}, the arbiter waits for a message being present at
@@ -562,7 +562,7 @@ step in the design and implementation flow of a reconfigurable interconnect.
 		\caption{Arbitration component}
 		\label{fig:crossbar_util_arbiter}
 	\end{subfigure}
-	\caption{Resource utilization for different number of ports}
+	\caption{Resource utilization of crossbar interconnect's components}
 	\label{fig:crossbar_util}
 \end{figure}
 While the crossbar interconnect allows parallel transactions between different
@@ -662,7 +662,7 @@ pending requests.
 		\caption{Control logic}
 		\label{fig:mbox_hw_fsm}
 	\end{subfigure}
-	\caption{Mailbox implementation in hardware}
+	\caption{Hardware implementation of mailbox}
 	\label{fig:mbox_hw}
 \end{figure}
 Each request is enqueued into the corresponding \ac{FIFO} to free the input
@@ -951,7 +951,7 @@ image and exchanging its lines in a pipeline as shown in figure
 	%	\label{fig:img_proc_mem}
 	%\end{subfigure}
 	\includegraphics[width=0.97\textwidth]{../figures/img_proc}
-	\caption{Image processing application}
+	\caption{Structure of image processing application}
 	\label{fig:img_proc}
 \end{figure}
 The first filter thread brightens up the image by multiplying each pixel with

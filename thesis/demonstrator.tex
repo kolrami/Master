@@ -296,7 +296,7 @@ regard to the Ball on Plate application.
 	\centering
 	\centering
 	\includegraphics{../figures/pid_rep}
-	\caption{Representation of controlled system}
+	\caption{Representation of controlled system for Ball on Plate demonstrator}
 	\label{fig:pid_rep}
 \end{figure}
 The platform's rotation constitutes the manipulated variable, while the ball's
@@ -327,7 +327,7 @@ shows an image of its construction.
 \begin{figure}
 	\centering
 	\includegraphics[width=8cm]{../figures/stewart_photo}
-	\caption{The Ball on Plate prototype}
+	\caption{Photo of Ball on Plate prototype}
 	\label{fig:stewart_photo}
 \end{figure}
 The Stewart platform itself was not build in the scope of this thesis but
@@ -348,7 +348,7 @@ implementation of the different components. Consider figure
 \begin{figure}
 	\centering
 	\includegraphics{../figures/demo_structure}
-	\caption{Overall structure of the demonstrator}
+	\caption{Structure of the demonstrator's implementation}
 	\label{fig:demo_structure}
 \end{figure}
 It consists out of four types of ReconOS threads, which are representing the
@@ -395,7 +395,7 @@ applies the \ac{PID} control algorithm as sketched in listing \ref{lst:pid}
 for the x coordinate.
 \begin{lstlisting}[
 	language=VHDL,
-	caption={\acs{PID} implementation},
+	caption={Implementation of \acs{PID} controller for x axis},
 	label={lst:pid},
 	float=tb
 ]
@@ -461,7 +461,7 @@ presenting an extended structure of the demonstrator inspired by
 \begin{figure}
 	\centering
 	\includegraphics{../figures/demo_selfaware}
-	\caption{Extended structure of the demonstrator}
+	\caption{Extended structure of the demonstrator's implementation}
 	\label{fig:demo_selfaware}
 \end{figure}
 A globally accessible shared memory region allows to collect various types of

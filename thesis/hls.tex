@@ -34,7 +34,7 @@ analysis of the generated hardware.
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/hls_flow}
-	\caption{The typical Vivado HLS flow \citep[adapted from][]{ug902}}
+	\caption{Typical Vivado HLS toolflow \citep[adapted from][]{ug902}}
 	\label{fig:hls_flow}
 \end{figure}
 
@@ -104,7 +104,7 @@ consider only line 5, containing a multiplication and two additions. Figure
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/hls_sb}
-	\caption{Scheduled operations for \lstinline{a*x + b + c}}
+	\caption{Scheduled operations for \lstinline{a*x + b + c} (line 5)}
 	\label{fig:hls_sb}
 \end{figure}
 Since all three operations cannot be finished within a single clock cycle,
@@ -172,7 +172,7 @@ the default interface synthesis settings to the example in listing
 \begin{figure}[tb]
 	\centering
 	\includegraphics{../figures/hls_if}
-	\caption{Generated interface with default settings}
+	\caption{Generated interface with default settings for example algorithm}
 	\label{fig:hls_if}
 \end{figure}
 The block-level interfaces control the \ac{IP} by allowing the block to start
@@ -245,7 +245,7 @@ signals.
 		\caption{Interface inferred by Vivado HLS}
 		\label{fig:hwt_if_h}
 	\end{subfigure}
-	\caption{Interfaces of hardware thread}
+	\caption{Comparison of hardware thread's interface required by ReconOS and inferred by Vivado HLS}
 	\label{fig:hwt_if}
 \end{figure}
 When generating a hardware thread using Vivado HLS, these interfaces must be
@@ -262,7 +262,7 @@ Listing \ref{lst:hwt_if_h} shows the definition of the top-level function of a
 hardware thread, including arguments and directives.
 \begin{lstlisting}[
 	language=C,
-	caption={Exemplary ReconOS thread in C},
+	caption={Interface definition of a ReconOS thread in Vivado HLS},
 	label={lst:hwt_if_h},
 	morekeywords={uint32},
 	float=tb
@@ -369,7 +369,7 @@ function, but not meaningful here. Listing \ref{lst:call_mbox} shows exemplary
 the implementation of \lstinline{MBOX_GET}.
 \begin{lstlisting}[
 	language=C,
-	caption={Implementation of \lstinline{MBOX_GET}},
+	caption={Implementation of mailbox get in Vivado HLS},
 	label={lst:call_mbox},
 	morekeywords={uint32},
 	float=tb
@@ -389,7 +389,7 @@ in three different states, sequentially executed after each other.
 \begin{figure}[tb]
 	\centering
 	\includegraphics[width=10cm]{../figures/osfsm_a}
-	\caption{Analysis of synthesized \acs{OSSFSM}}
+	\caption{Analysis of scheduling of exemplary \acs{OSSFSM}}
 	\label{fig:osfsm_a}
 \end{figure}
 Furthermore, data dependencies introduced by the \ac{OS} calls are preserved.
@@ -434,7 +434,7 @@ additional \ac{HLS} step before the \ac{IP} packaging as illustrated in figure
 \begin{figure}
 	\centering
 	\includegraphics{../figures/rdk}
-	\caption{Adopted toolflow for Vivado HLS}
+	\caption{Adopted ReconOS toolflow to include Vivado HLS}
 	\label{fig:rdk}
 \end{figure}
 To automate the process of executing Vivado HLS and generating the \ac{RTL}
@@ -443,7 +443,7 @@ operation mode. Listing \ref{lst:hls_tcl} shows the \ac{Tcl} template used for
 synthesizing the developer's source code.
 \begin{lstlisting}[
 	language=TCL,
-	caption={\acs{Tcl} template for Vivado HLS},
+	caption={\acs{Tcl} template used by the \acs{RDK} to synthesize a thread},
 	label={lst:hls_tcl},
 	float=tb
 ]
@@ -518,7 +518,7 @@ implementations on a ZedBoard evaluation board.
 \begin{table}
 	\scriptsize
 	\centering
-	\captionabove{Resource utilization of \acs{VHDL} and \acs{HLS}}
+	\captionabove{Comparison of resource utilization of the SortDemo thread}
 	\label{tab:hls_util}
 	\begin{tabular}{lcccc}
 	\hline
