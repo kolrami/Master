@@ -935,7 +935,9 @@ example and to compare its performance to a classical shared memory approach,
 an image processing application was implemented in various versions. It
 consists out of multiple threads, applying line based modification to the
 image and exchanging its lines in a pipeline as shown in figure
-\ref{fig:img_proc}. 
+\ref{fig:img_proc}.
+The first filter thread brightens up the image by multiplying each pixel with
+$1.2$ and the second one mirrors the image horizontally.
 \begin{figure}
 	\centering
 	%\begin{subfigure}{0.49\textwidth}
@@ -954,8 +956,7 @@ image and exchanging its lines in a pipeline as shown in figure
 	\caption{Structure of image processing application}
 	\label{fig:img_proc}
 \end{figure}
-The first filter thread brightens up the image by multiplying each pixel with
-$1.2$ and the second one mirrors the image horizontally. In both cases, the
+In both cases, the
 original and modified images are read from and written to the shared memory to
 make them accessible from the processor. Therefore, the read and write threads
 receive an address via mailbox and the write thread sends an acknowledge back
