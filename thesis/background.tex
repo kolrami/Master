@@ -94,19 +94,19 @@ perfectly fit into the concept of \acp{PAC}, especially with upcoming
 integrated \acp{SoC}, it is limited to hardware designers capable of
 programming in low-level languages like \ac{VHDL} and understanding the
 architecture of the underlying system. Efficiently programming such a hybrid
-system requires a high-level abstraction of hardware and software resources
-\citep{ANA04} and a unified programming environment. Both topics are part of
-ongoing research including programming models for hybrid multi-core systems
-and high-level specifications of hardware logic.
+system incorporating general purpose processors and \acp{FPGA} requires a
+high-level abstraction of hardware and software resources \citep{ANA04} and a
+unified programming environment. Both topics are part of ongoing research
+including programming models for hybrid multi-core systems and high-level
+specifications of hardware logic.
 
 \section{ReconOS for Hybrid Multi-Core Systems}
 With increasing demand for high-performance embedded systems and upcoming
 \acp{SoC}, integrating powerful general-purpose processors with reconfigurable
-logic, convenient programming models are required to tap the full potential of
-these hybrid systems \citep{ANA04,VMB13}. \ac{HLS} approaches allow the
-synthesis from a high-level language and simplify the development of custom
-hardware, but do not provide an abstraction for the underlying hardware
-components at system level.
+logic, convenient programming models are required to tap their full potential
+\citep{ANA04,VMB13}. \ac{HLS} approaches allow the synthesis from a high-level
+language and simplify the development of custom hardware, but do not provide
+an abstraction for the underlying hardware components at system level.
 
 ReconOS addresses this problem and provides a unified execution environment
 leveraging the well-established multithreaded programming model and extending
